@@ -3,29 +3,12 @@
 namespace App\Services;
 
 use PDO;
-
-
-
-
-namespace App\Services;
-
-use PDO;
-
+use PDOException;
 
 // facturacion-service/src/Services/SunatService.php
 // FIX: se añade try/catch al constructor PDO para evitar que un .env
 // mal configurado exponga rutas internas del servidor en el error PHP.
 // FIX: se valida que el certificado .pfx exista antes de usarlo.
-
-namespace App\Services;
-
-use PDO;
-use PDOException;
-
-
-
-
-
 
 class SunatService
 {
@@ -33,23 +16,6 @@ class SunatService
 
     public function __construct()
     {
-
-
-
-
-
-
-
-        $dsn = "pgsql:host={$_ENV['DB_HOST']};port={$_ENV['DB_PORT']};dbname={$_ENV['DB_NAME']}";
-        $this->db = new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
-
-
-
-
-
-
         $host = $_ENV['DB_HOST'] ?? null;
         $port = $_ENV['DB_PORT'] ?? '5432';
         $name = $_ENV['DB_NAME'] ?? null;
@@ -79,11 +45,6 @@ class SunatService
                 'Error de conexión a la base de datos. Contacta al administrador.'
             );
         }
-
-
-
-
-
     }
 
     public function getSiguienteCorrelativo(int $empresaId, string $serie): int
@@ -97,18 +58,6 @@ class SunatService
             $stmt->execute([$empresaId, $serie]);
 
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-
-            $row = $stmt->fetch();
-
-
-
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            $row = $stmt->fetch();
-
-
-
 
             if (!$row) {
                 $tipo = str_starts_with($serie, 'F') ? 'factura' : (str_starts_with($serie, 'B') ? 'boleta' : 'nota_credito');
@@ -130,16 +79,6 @@ class SunatService
             $this->db->commit();
             return $correlativo;
 
-
-
-
-
-
-
-
-
-
-
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
@@ -148,20 +87,7 @@ class SunatService
 
     public function guardarComprobante(array $datos): int
     {
-
         $stmt = $this->db->prepare(" 
-
-
-        $stmt = $this->db->prepare("
-
-
-
-        $stmt = $this->db->prepare(" 
-
-        $stmt = $this->db->prepare("
-
-
-
             INSERT INTO comprobantes (
                 empresa_id, venta_id, tipo, serie, correlativo, numero,
                 ruc_cliente, razon_social, direccion,
@@ -193,18 +119,6 @@ class SunatService
         $stmt->execute([$id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-
-
-        return $stmt->fetch() ?: null;
-
-
-
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-
-        return $stmt->fetch() ?: null;
-
-
-
     }
 
     public function listarPorEmpresa(int $empresaId, int $limit = 50): array
@@ -217,18 +131,6 @@ class SunatService
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-        return $stmt->fetchAll();
-
-
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return $stmt->fetchAll();
-
-
-
     }
 
     public function getEmpresa(int $empresaId): ?array
@@ -237,17 +139,5 @@ class SunatService
         $stmt->execute([$empresaId]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-
-
-        return $stmt->fetch() ?: null;
-
-
-
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-
-        return $stmt->fetch() ?: null;
-
-
-
     }
 }
