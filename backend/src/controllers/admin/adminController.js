@@ -13,23 +13,12 @@ const {
 const { clearFeatureCache, getEffectiveFeaturesForEmpresa } = require('../../services/featureGateService');
 const { runBillingCollection, applyPaymentAndReactivate } = require('../../services/billingService');
 const { createCheckoutForPago } = require('../../services/paymentGatewayService');
-
-
 const ESTADOS_EMPRESA = ['activo', 'suspendido', 'eliminado'];
 const ESTADOS_PAGO = ['pagado', 'pendiente', 'vencido'];
 const ESTADOS_SUSCRIPCION = ['activa', 'cancelada', 'suspendida', 'trial'];
-
 const parsePagination = (req) => {
-  const page = Math.max(Number(req.query.page || 1), 1);
-
-const ESTADOS_EMPRESA     = ['activo', 'suspendido', 'eliminado'];
-const ESTADOS_PAGO        = ['pagado', 'pendiente', 'vencido'];
-const ESTADOS_SUSCRIPCION = ['activa', 'cancelada', 'suspendida', 'trial'];
-
-const parsePagination = (req) => {
-  const page     = Math.max(Number(req.query.page || 1), 1);
-
-  const pageSize = Math.min(Math.max(Number(req.query.pageSize || 20), 1), 100);
+const page = Math.max(Number(req.query.page || 1), 1);
+const pageSize = Math.min(Math.max(Number(req.query.pageSize || 20), 1), 100);
   return { page, pageSize, offset: (page - 1) * pageSize };
 };
 
@@ -583,7 +572,6 @@ const listarPagos = async (req, res) => {
 
   const pagos = await Pago.findAll({ include: [Empresa, Suscripcion], where, order: [['id', 'DESC']] });
   return res.json(pagos);
-
       total_empresas: totalEmpresas, empresas_activas: empresasActivas,
       empresas_suspendidas: empresasSuspendidas, mrr: mrrActual,
       nuevas_suscripciones: nuevasSuscripciones, cancelaciones, pagos_pendientes: pagosPendientes,
