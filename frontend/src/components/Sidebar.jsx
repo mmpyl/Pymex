@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../api/axios';
 import { cn } from '../lib/utils';
 import { 
-  LayoutDashboard, Package, Tag, Warehouse, DollarSign, CreditCard, Users, Truck, FileText, Bell, Brain, FileInvoice, Shield, LogOut, ChevronLeft, ChevronRight 
+  LayoutDashboard, Package, Tag, Warehouse, DollarSign, CreditCard, Users, Truck, FileText, Bell, Brain, FileBox, Shield, LogOut, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 
 const Sidebar = ({ collapsed = false }) => {
@@ -41,7 +41,7 @@ const Sidebar = ({ collapsed = false }) => {
     { path: '/reportes', icon: FileText, label: 'Reportes' },
     { path: '/alertas', icon: Bell, badge: alertasSinLeer, label: 'Alertas' },
     { path: '/predicciones', icon: Brain, visible: hasFeature('predicciones'), label: 'Predicciones' },
-    { path: '/facturacion', icon: FileInvoice, visible: hasFeature('facturacion_electronica'), label: 'Facturación' },
+    { path: '/facturacion', icon: FileBox, visible: hasFeature('facturacion_electronica'), label: 'Facturación' },
     { path: '/admin', icon: Shield, visible: esAdminGlobal, label: 'Super Admin' },
   ].filter(item => item.visible !== false);
 

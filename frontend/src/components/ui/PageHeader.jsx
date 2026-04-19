@@ -9,3 +9,4 @@ const PageHeader = ({ title, subtitle, action = null }) => (
 );
 
 export default PageHeader;
+export { PageHeader };

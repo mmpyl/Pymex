@@ -1,6 +1,6 @@
 import { useTheme } from '@/lib/theme'
 import { useAuth } from '../context/AuthContext'
-import { Button } from './ui/button'
+import { Button } from './ui/Button'
 import { Sun, Moon, Bell, User, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
