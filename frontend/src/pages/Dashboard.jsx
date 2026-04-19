@@ -1,33 +1,5 @@
 // frontend/src/pages/Dashboard.jsx — versión completa consolidada (sin conflictos de merge)
 import { useEffect, useState } from 'react';
-
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid,
-         Tooltip, ResponsiveContainer } from 'recharts';
-import api from '../api/axios';
-
-const Dashboard = () => {
-  const [resumen, setResumen]           = useState(null);
-  const [ventasMes, setVentasMes]       = useState([]);
-  const [gastosMes, setGastosMes]       = useState([]);
-  const [topProductos, setTopProductos] = useState([]);
-  const [cargando, setCargando]         = useState(true);
-
-  useEffect(() => { cargar(); }, []);
-
-  const cargar = async () => {
-    try {
-      const [r, v, g, t] = await Promise.all([
-        api.get('/dashboard/resumen'),
-        api.get('/dashboard/ventas-mensuales'),
-        api.get('/dashboard/gastos-mensuales'),
-        api.get('/dashboard/top-productos')
-      ]);
-      setResumen(r.data);
-      setVentasMes(v.data.map(d => ({
-        mes: new Date(d.mes).toLocaleDateString('es-PE', { month: 'short', year: '2-digit' }),
-        ventas: parseFloat(d.total)
-      })));
-
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -178,170 +150,15 @@ const Dashboard = () => {
       });
       setVentasMes(combined);
 
-
-      setGastosMes(g.data.map(d => ({
-        mes: new Date(d.mes).toLocaleDateString('es-PE', { month: 'short', year: '2-digit' }),
-        gastos: parseFloat(d.total)
-      })));
-
-
-
       setTopProductos(t.data.map(d => ({
-
         nombre: d.Producto?.nombre || 'Desconocido',
         ingresos: parseFloat(d.total_ingresos),
       })));
+
+      setAlertas((a.data || []).filter(x => !x.leido).slice(0, 4));
     } catch (error) { console.error(error); }
     finally { setCargando(false); }
   };
-
-  // KPIs: ventas_mes, gastos_mes, utilidad_mes,
-  //       total_productos, stock_bajo, crecimiento_ventas
-  // Graficas: BarChart ventas, BarChart gastos, BarChart horizontal top productos
 };
 
 export default Dashboard;
-
-        nombre:   d.Producto?.nombre || 'Desconocido',
-        ingresos: parseFloat(d.total_ingresos),
-        vendido:  parseInt(d.total_vendido)
-      })));
-
-      setAlertas((a.data || []).filter(x => !x.leido).slice(0, 4));
-    } catch (e) {
-      console.error('[Dashboard] Error cargando datos:', e.message);
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  if (cargando) return (
-    <div style={{ ...S.container, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
-      <div style={{ textAlign: 'center', color: '#9ca3af' }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-        <div>Cargando dashboard...</div>
-      </div>
-    </div>
-  );
-
-  const r            = resumen || {};
-  const ventasVal    = r.ventas_mes  || 0;
-  const gastosVal    = r.gastos_mes  || 0;
-  const utilidad     = r.utilidad_mes || 0;
-  const ultimoMes    = ventasMes[ventasMes.length - 1];
-  const penultimoMes = ventasMes[ventasMes.length - 2];
-  const deltaVentas  = penultimoMes?.ventas > 0
-    ? (((ultimoMes?.ventas - penultimoMes?.ventas) / penultimoMes.ventas) * 100).toFixed(1)
-    : null;
-
-  return (
-    <div style={S.container}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={S.titulo}>Dashboard</h1>
-        <div style={{ fontSize: 13, color: '#9ca3af', textTransform: 'capitalize' }}>{fecha}</div>
-      </div>
-
-      {/* KPIs */}
-      <div style={S.grid6}>
-        <KPI label="Ventas del mes"    value={`S/ ${Number(ventasVal).toFixed(2)}`}
-          color="#6366f1" icon="💰" delta={r.crecimiento_ventas} sub="vs mes anterior" />
-        <KPI label="Gastos del mes"    value={`S/ ${Number(gastosVal).toFixed(2)}`}
-          color="#ef4444" icon="💸" sub="acumulado del mes" />
-        <KPI label="Utilidad neta"     value={`S/ ${Number(utilidad).toFixed(2)}`}
-          color={utilidad >= 0 ? '#10b981' : '#ef4444'}
-          icon={utilidad >= 0 ? '📈' : '📉'}
-          sub={`Margen ${ventasVal > 0 ? ((utilidad / ventasVal) * 100).toFixed(1) : 0}%`} />
-        <KPI label="Productos activos" value={r.total_productos || 0}
-          color="#f59e0b" icon="📦" sub={`${r.stock_bajo || 0} con stock bajo`} />
-        <KPI label="Stock bajo"        value={r.stock_bajo || 0}
-          color={r.stock_bajo > 0 ? '#ef4444' : '#10b981'} icon="⚠️" sub="requieren reposición" />
-        <KPI label="Crecimiento"       value={`${r.crecimiento_ventas || 0}%`}
-          color={r.crecimiento_ventas >= 0 ? '#10b981' : '#ef4444'}
-          icon="📊" delta={deltaVentas} sub="último mes registrado" />
-      </div>
-
-      {/* Barra utilidad */}
-      <div style={{ marginBottom: 20 }}>
-        <UtilBar ventas={ventasVal} gastos={gastosVal} />
-      </div>
-
-      {/* Charts */}
-      <div style={S.grid2}>
-        <div style={S.card}>
-          <div style={S.sectionH}>Ventas vs Gastos — últimos 12 meses</div>
-          {ventasMes.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <AreaChart data={ventasMes} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gG" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#ef4444" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<TooltipCustom />} />
-                <Area type="monotone" dataKey="ventas" stroke="#6366f1" strokeWidth={2}
-                  fill="url(#gV)" name="Ventas" dot={false} />
-                <Area type="monotone" dataKey="gastos" stroke="#ef4444" strokeWidth={2}
-                  fill="url(#gG)" name="Gastos" dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 13 }}>
-              Sin ventas registradas aún
-            </div>
-          )}
-        </div>
-
-        <div style={S.card}>
-          <div style={S.sectionH}>Top 5 productos por ingresos</div>
-          {topProductos.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={topProductos} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="nombre" type="category" width={120} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<TooltipCustom />} />
-                <Bar dataKey="ingresos" radius={[0, 6, 6, 0]} name="Ingresos" barSize={18}>
-                  {topProductos.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 13 }}>
-              Sin ventas registradas aún
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Alertas recientes */}
-      {alertas.length > 0 && (
-        <div style={S.card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={S.sectionH}>Alertas sin leer</div>
-            <a href="/alertas" style={{ fontSize: 13, color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
-              Ver todas →
-            </a>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 }}>
-            {alertas.map(a => <AlertaBadge key={a.id} alerta={a} />)}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-}
-
-
-};
-
-export default Dashboard;
-
