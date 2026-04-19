@@ -6,7 +6,6 @@ node_modules/
 dist/
 build/
 *.js.map
-*.jsx.map
 
 # Environment
 .env
@@ -22,26 +21,11 @@ build/
 # Logs
 *.log
 
-# Temp files
-*.tmp
-
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-*.so
-.DS_Store
-Thumbs.db
+# Temporary files
+*.tmp
 ```
