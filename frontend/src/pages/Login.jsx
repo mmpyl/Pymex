@@ -3,80 +3,130 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import useAsyncOperation from '../hooks/useAsyncOperation';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 
 const Login = () => {
     const [form, setForm] = useState({ email: '', password: '' });
-    const [cargando, setCargando] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    const handleSuccess = (data) => {
+        login(data);
+        navigate('/dashboard');
+    };
+
+    const { loading, execute } = useAsyncOperation(
+        handleSuccess,
+        null,
+        {
+            showToast: false, // Manejamos los toasts manualmente para personalizar
+            successMessage: `Bienvenido`,
+        }
+    );
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setCargando(true);
+        
         try {
-            const { data } = await api.post('/auth/login', form);
-            login(data);
+            const { data } = await execute(() => api.post('/auth/login', form));
             toast.success(`Bienvenido ${data.usuario.nombre}`);
-            navigate('/dashboard');
         } catch (error) {
-            toast.error(error.response?.data?.error || 'Error al iniciar sesión');
-        } finally {
-            setCargando(false);
+            // El error ya fue manejado por el hook y mostrado en el interceptor
+            // No hacemos nada adicional aquí
         }
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h1 style={styles.titulo}>SaaS PYMES</h1>
-                <p style={styles.subtitulo}>Inicia sesión en tu cuenta</p>
-
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.grupo}>
-                        <label style={styles.label}>Email</label>
-                        <input
-                            style={styles.input}
-                            type="email"
-                            placeholder="tu@email.com"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            required
-                        />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+            <Card className="w-full max-w-md shadow-2xl border-slate-200">
+                <CardHeader className="space-y-1 text-center pb-8">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                     </div>
-                    <div style={styles.grupo}>
-                        <label style={styles.label}>Contraseña</label>
-                        <input
-                            style={styles.input}
-                            type="password"
-                            placeholder="••••••••"
-                            value={form.password}
-                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <button style={styles.btn} type="submit" disabled={cargando}>
-                        {cargando ? 'Ingresando...' : 'Ingresar'}
-                    </button>
-                </form>
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        SaaS PYMES
+                    </CardTitle>
+                    <CardDescription className="text-slate-500 text-base">
+                        Inicia sesión en tu cuenta
+                    </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                                Email
+                            </label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="tu@email.com"
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                required
+                                className="h-11"
+                                disabled={loading}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                                Contraseña
+                            </label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                required
+                                className="h-11"
+                                disabled={loading}
+                            />
+                        </div>
 
-                <p style={styles.registro}>
-                    ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
-                </p>
-            </div>
+                        <Button 
+                            type="submit" 
+                            className="w-full h-11 text-base font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    Ingresando...
+                                </span>
+                            ) : (
+                                'Ingresar'
+                            )}
+                        </Button>
+                    </form>
+                </CardContent>
+
+                <CardFooter className="flex flex-col space-y-4 pt-2">
+                    <p className="text-center text-sm text-slate-500">
+                        ¿No tienes cuenta?{' '}
+                        <Link 
+                            to="/register" 
+                            className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+                        >
+                            Regístrate aquí
+                        </Link>
+                    </p>
+                    <div className="text-xs text-center text-slate-400">
+                        <p>Protegido con autenticación segura</p>
+                    </div>
+                </CardFooter>
+            </Card>
         </div>
     );
-};
-
-const styles = {
-    container: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9' },
-    card: { backgroundColor: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' },
-    titulo: { textAlign: 'center', color: '#1e1b4b', marginBottom: '4px' },
-    subtitulo: { textAlign: 'center', color: '#64748b', marginBottom: '30px' },
-    grupo: { marginBottom: '16px' },
-    label: { display: 'block', marginBottom: '6px', fontWeight: '600', color: '#374151', fontSize: '14px' },
-    input: { width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' },
-    btn: { width: '100%', padding: '12px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', marginTop: '8px' },
-    registro: { textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#64748b' }
 };
 
 export default Login;
