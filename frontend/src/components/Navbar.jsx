@@ -1,21 +1,12 @@
-
-
-// frontend/src/components/Navbar.jsx — versión consolidada (sin conflictos de merge)
-// FIX: combina el botón de tema dark/light (rama HEAD) con la versión más limpia (rama main)
+// frontend/src/components/Navbar.jsx
 
 import { useAuth } from '../context/AuthContext';
 import { useUIStore } from '../store/uiStore';
 
 const Navbar = ({ onToggleSidebar }) => {
-
   const { usuario } = useAuth();
   const theme = useUIStore((s) => s.theme);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
-
-  const { usuario }    = useAuth();
-  const theme          = useUIStore(s => s.theme);
-  const toggleTheme    = useUIStore(s => s.toggleTheme);
-
 
   return (
     <header style={styles.navbar}>
@@ -25,19 +16,8 @@ const Navbar = ({ onToggleSidebar }) => {
             ☰
           </button>
         )}
-
         <strong>SaPyme SaaS</strong>
       </div>
-      <div style={styles.right}>
-        <button onClick={toggleTheme} style={styles.themeBtn}>
-          {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-        </button>
-        <span style={styles.badge}>Beta</span>
-        <span>{usuario?.nombre || 'Usuario'}</span>
-
-        <strong style={{ color: '#1e1b4b' }}>SaPyme</strong>
-      </div>
-
       <div style={styles.right}>
         <button
           onClick={toggleTheme}
@@ -51,7 +31,6 @@ const Navbar = ({ onToggleSidebar }) => {
         <span style={{ color: '#334155', fontSize: 14 }}>
           {usuario?.nombre || 'Usuario'}
         </span>
-
       </div>
     </header>
   );
@@ -59,7 +38,6 @@ const Navbar = ({ onToggleSidebar }) => {
 
 const styles = {
   navbar: {
-
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -78,14 +56,17 @@ const styles = {
     background: '#fff',
     width: 34,
     height: 34,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontSize: 16
   },
   themeBtn: {
-    border: '1px solid #cbd5e1',
+    border: '1px solid #e2e8f0',
     borderRadius: 999,
     padding: '5px 10px',
     background: '#fff',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontSize: 16,
+    lineHeight: 1
   },
   badge: {
     fontSize: 12,
@@ -94,53 +75,6 @@ const styles = {
     background: '#dbeafe',
     color: '#1e3a8a',
     fontWeight: 700
-
-    display:       'flex',
-    justifyContent:'space-between',
-    alignItems:    'center',
-    padding:       '14px 20px',
-    background:    '#ffffff',
-    borderBottom:  '1px solid #e2e8f0',
-    position:      'sticky',
-    top:           0,
-    zIndex:        20
-  },
-  left: {
-    display:   'flex',
-    alignItems:'center',
-    gap:       12
-  },
-  right: {
-    display:   'flex',
-    alignItems:'center',
-    gap:       10
-  },
-  iconBtn: {
-    border:      '1px solid #cbd5e1',
-    borderRadius:8,
-    background:  '#fff',
-    width:       34,
-    height:      34,
-    cursor:      'pointer',
-    fontSize:    16
-  },
-  themeBtn: {
-    border:      '1px solid #e2e8f0',
-    borderRadius:999,
-    padding:     '5px 10px',
-    background:  '#fff',
-    cursor:      'pointer',
-    fontSize:    16,
-    lineHeight:  1
-  },
-  badge: {
-    fontSize:        12,
-    padding:         '2px 8px',
-    borderRadius:    999,
-    background:      '#dbeafe',
-    color:           '#1e3a8a',
-    fontWeight:      700
-
   }
 };
 

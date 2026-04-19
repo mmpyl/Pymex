@@ -5,7 +5,8 @@ node_modules/
 # Build artifacts
 dist/
 build/
-*.js
+*.js.map
+*.jsx.map
 
 # Environment
 .env
@@ -15,11 +16,32 @@ build/
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Logs
 *.log
 
 # Temp files
 *.tmp
-*.swp
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+*.so
+.DS_Store
+Thumbs.db
 ```
