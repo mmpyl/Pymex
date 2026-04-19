@@ -1,15 +1,29 @@
-// frontend/src/pages/Categorias.jsx — versión consolidada (sin conflictos de merge)
-// FIX: confirm() con mensaje correcto en español.
-// FIX: añade grid de cards completo con la versión de la rama main.
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Plus, Tag, Trash2 } from 'lucide-react';
+
+const styles = {
+  container: { padding: '24px', maxWidth: '1200px', margin: '0 auto' },
+  formCard: { marginBottom: '24px', padding: '20px' },
+  form: { display: 'flex', gap: '16px', alignItems: 'end', flexWrap: 'wrap' },
+  grupo: { display: 'flex', flexDirection: 'column', flex: 1, minWidth: '180px' },
+  label: { marginBottom: '5px', fontWeight: '600', color: '#374151', fontSize: '13px' },
+  input: { padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '14px' },
+  card: { backgroundColor: 'white', borderRadius: '10px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: '12px' },
+  btnEliminar: { padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', flexShrink: 0 }
+};
 
 const Categorias = () => {
-  const [categorias,  setCategorias]  = useState([]);
-  const [form,        setForm]        = useState({ nombre: '', descripcion: '' });
+  const [categorias, setCategorias] = useState([]);
+  const [form, setForm] = useState({ nombre: '', descripcion: '' });
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [cargando,    setCargando]    = useState(false);
+  const [cargando, setCargando] = useState(false);
 
   useEffect(() => { cargar(); }, []);
 
@@ -35,15 +49,7 @@ const Categorias = () => {
   };
 
   const eliminar = async (id) => {
-
-
-    if (!confirm('Eliminar esta categoria?')) return;
-
-    if (!confirm('¿Eliminar esta categoria?')) return;
-
-
     if (!confirm('¿Eliminar esta categoría? Los productos asociados quedarán sin categoría.')) return;
-
     try {
       await api.delete(`/categorias/${id}`);
       toast.success('Categoría eliminada');
@@ -53,25 +59,20 @@ const Categorias = () => {
     }
   };
 
-
-  // Render: formulario + grid de cards por categoria
-
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.titulo}>Categorías</h1>
-          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#64748b' }}>
-            {categorias.length} categoría{categorias.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <button style={styles.btnPrimario} onClick={() => setMostrarForm(!mostrarForm)}>
-          {mostrarForm ? 'Cancelar' : '+ Nueva categoría'}
-        </button>
-      </div>
+      <PageHeader 
+        title="Categorías" 
+        subtitle={`${categorias.length} categoría${categorias.length !== 1 ? 's' : ''}`} 
+      />
+
+      <Button onClick={() => setMostrarForm(!mostrarForm)} className="mb-6">
+        <Plus className="w-4 h-4 mr-2" />
+        {mostrarForm ? 'Cancelar' : 'Nueva categoría'}
+      </Button>
 
       {mostrarForm && (
-        <div style={styles.formCard}>
+        <Card className="p-6 mb-6">
           <h3 style={{ margin: '0 0 16px', color: '#1e1b4b' }}>Nueva categoría</h3>
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.grupo}>
@@ -95,24 +96,26 @@ const Categorias = () => {
                 placeholder="Descripción opcional"
               />
             </div>
-            <button style={styles.btnPrimario} type="submit" disabled={cargando}>
+            <Button type="submit" disabled={cargando}>
               {cargando ? 'Guardando...' : 'Guardar'}
-            </button>
+            </Button>
           </form>
-        </div>
+        </Card>
       )}
 
       <div style={styles.grid}>
         {categorias.map(c => (
           <div key={c.id} style={styles.card}>
-            <span style={{ fontSize: 28 }}>🏷️</span>
+            <Tag className="w-8 h-8 text-indigo-500" />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontWeight: 700, color: '#1e1b4b', fontSize: 15 }}>{c.nombre}</p>
-              <p style={{ margin: '3px 0 0', fontSize: 12, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <p style={{ margin: 0, fontWeight: 700, color: '#1e1b4b', fontSize: '15px' }}>{c.nombre}</p>
+              <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {c.descripcion || 'Sin descripción'}
               </p>
             </div>
-            <button onClick={() => eliminar(c.id)} style={styles.btnEliminar} title="Eliminar categoría">✕</button>
+            <button onClick={() => eliminar(c.id)} style={styles.btnEliminar} title="Eliminar categoría">
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         ))}
         {categorias.length === 0 && (
@@ -123,36 +126,6 @@ const Categorias = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  container:   { padding: '30px', flex: 1 },
-
-  header:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
-  titulo:      { fontSize: '24px', fontWeight: '700', color: '#1e1b4b', margin: 0 },
-  btnPrimario: { padding: '10px 20px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' },
-  btnEliminar: { padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '700' },
-  formCard:    { backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '24px' },
-  form:        { display: 'flex', gap: '16px', alignItems: 'end', flexWrap: 'wrap' },
-  grupo:       { display: 'flex', flexDirection: 'column' },
-  label:       { marginBottom: '5px', fontWeight: '600', color: '#374151', fontSize: '13px' },
-  input:       { padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', minWidth: '200px' },
-  grid:        { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '14px' },
-  card:        { backgroundColor: 'white', borderRadius: '10px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: '12px' }
-
-
-  header:      { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
-  titulo:      { fontSize: 24, fontWeight: 700, color: '#1e1b4b', margin: 0 },
-  btnPrimario: { padding: '10px 20px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 },
-  btnEliminar: { padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, flexShrink: 0 },
-  formCard:    { backgroundColor: 'white', padding: 20, borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 24 },
-  form:        { display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' },
-  grupo:       { display: 'flex', flexDirection: 'column', flex: 1, minWidth: 180 },
-  label:       { marginBottom: 5, fontWeight: 600, color: '#374151', fontSize: 13 },
-  input:       { padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14 },
-  grid:        { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 },
-  card:        { backgroundColor: 'white', borderRadius: 10, padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: 12 }
-
 };
 
 export default Categorias;
