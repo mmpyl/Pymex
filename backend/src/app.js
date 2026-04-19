@@ -44,14 +44,16 @@ app.use(cors({
 }));
 
 // ─── 5. Rate limits ───────────────────────────────────────────────────────────
+// Límite global más restrictivo para API B2B (150 req / 15 min)
 const limiterGlobal = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
-  max:      Number(process.env.RATE_LIMIT_MAX || 600),
+  max:      Number(process.env.RATE_LIMIT_MAX || 150),
   standardHeaders: true,
   legacyHeaders:   false,
   message: { error: 'Demasiadas solicitudes. Intenta más tarde.' }
 });
 
+// Límite estricto para autenticación (20 intentos / 15 min) - se aplica antes que el global
 const limiterAuth = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      20,
@@ -60,7 +62,10 @@ const limiterAuth = rateLimit({
   message: { error: 'Demasiados intentos de autenticación. Espera 15 minutos.' }
 });
 
-app.use('/api', limiterGlobal);
+// Aplicar limiterAuth ANTES que limiterGlobal para endpoints críticos
+app.use('/api/auth/login', limiterAuth);
+app.use('/api/auth/register', limiterAuth);
+app.use('/api/auth', limiterGlobal);
 
 // ─── 6. Logging ───────────────────────────────────────────────────────────────
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -106,7 +111,8 @@ app.get('/health', (_req, res) =>
 app.get('/', (_req, res) => res.json({ mensaje: 'SaaS PYMES API OK' }));
 
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────
-app.use('/api/auth',        limiterAuth, require('./routes/auth'));
+// Nota: limiterAuth ya se aplica en la sección 5 para /api/auth/login y /api/auth/register
+// El limiterGlobal se aplica en /api/auth para el resto de endpoints de autenticación
 app.use('/api/usuarios',    require('./routes/usuarios'));
 app.use('/api/productos',   require('./routes/productos'));
 app.use('/api/categorias',  require('./routes/categorias'));
