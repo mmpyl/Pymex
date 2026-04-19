@@ -14,7 +14,6 @@ const {
   FeatureOverride, Pago, AuditoriaAdmin
 } = require('../../models');
 const { clearFeatureCache } = require('../../services/featureGateService');
-
 const ESTADOS_SUSCRIPCION = ['activa', 'cancelada', 'suspendida', 'trial'];
 const ESTADOS_PAGO        = ['pagado', 'pendiente', 'vencido'];
 
