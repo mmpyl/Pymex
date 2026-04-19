@@ -37,13 +37,14 @@ router.post('/login', validateSchema(authSchema), login);
 
 router.get('/profile', verificarTokenEmpresa, perfil);
 
-router.post('/logout', verificarTokenEmpresa, (req, res) => {
+router.post('/logout', verificarTokenEmpresa, async (req, res) => {
   try {
     if (req.usuario?.jti && req.usuario?.exp) {
-      revokeToken(req.usuario.jti, req.usuario.exp * 1000);
+      await revokeToken(req.usuario.jti, req.usuario.exp * 1000);
     }
     return res.json({ mensaje: 'Sesión cerrada correctamente' });
-  } catch {
+  } catch (error) {
+    console.error('[Auth] Error en logout:', error.message);
     return res.json({ mensaje: 'Sesión cerrada' });
   }
 });
@@ -53,13 +54,14 @@ router.post('/admin/login', validateSchema(authSchema), loginAdmin);
 
 router.get('/admin/profile', verificarTokenAdmin, (req, res) => res.json(req.admin));
 
-router.post('/admin/logout', verificarTokenAdmin, (req, res) => {
+router.post('/admin/logout', verificarTokenAdmin, async (req, res) => {
   try {
     if (req.admin?.jti && req.admin?.exp) {
-      revokeToken(req.admin.jti, req.admin.exp * 1000);
+      await revokeToken(req.admin.jti, req.admin.exp * 1000);
     }
     return res.json({ mensaje: 'Sesión admin cerrada correctamente' });
-  } catch {
+  } catch (error) {
+    console.error('[Auth] Error en logout admin:', error.message);
     return res.json({ mensaje: 'Sesión cerrada' });
   }
 });
