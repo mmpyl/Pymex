@@ -1,21 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-
 import { Suspense } from 'react';
-
-
-import { Suspense } from 'react';
-
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from '../context/AuthContext';
-
 
 import { ProtectedRoute, RoleRoute, FeatureRoute } from './guards';
 import SaasLayout from '../layouts/SaasLayout';
 import AdminLayout from '../layouts/AdminLayout';
 import LandingLayout from '../layouts/LandingLayout';
-
-
-
 
 import AppProviders from '../app/providers/AppProviders';
 import {
@@ -101,79 +91,6 @@ const AppRouter = () => (
       </Suspense>
     </BrowserRouter>
   </AppProviders>
-
-
-
-
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import Productos from '../pages/Productos';
-import Categorias from '../pages/Categorias';
-import Inventario from '../pages/Inventario';
-import Ventas from '../pages/Ventas';
-import Gastos from '../pages/Gastos';
-import Clientes from '../pages/Clientes';
-import Proveedores from '../pages/Proveedores';
-import Reportes from '../pages/Reportes';
-import Alertas from '../pages/Alertas';
-import Predicciones from '../pages/Predicciones';
-import Facturacion from '../pages/Facturacion';
-
-import LandingPage from '../pages/landing/LandingPage';
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import NotAuthorized from '../pages/saas/NotAuthorized';
-
-const AppRouter = () => (
-  <AuthProvider>
-    <BrowserRouter>
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/" element={<LandingLayout><LandingPage /></LandingLayout>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        <Route path="/dashboard" element={<ProtectedRoute><SaasLayout><Dashboard /></SaasLayout></ProtectedRoute>} />
-        <Route path="/productos" element={<ProtectedRoute><SaasLayout><Productos /></SaasLayout></ProtectedRoute>} />
-        <Route path="/categorias" element={<ProtectedRoute><SaasLayout><Categorias /></SaasLayout></ProtectedRoute>} />
-        <Route path="/inventario" element={<ProtectedRoute><SaasLayout><Inventario /></SaasLayout></ProtectedRoute>} />
-        <Route path="/ventas" element={<ProtectedRoute><SaasLayout><Ventas /></SaasLayout></ProtectedRoute>} />
-        <Route path="/gastos" element={<ProtectedRoute><SaasLayout><Gastos /></SaasLayout></ProtectedRoute>} />
-        <Route path="/clientes" element={<ProtectedRoute><SaasLayout><Clientes /></SaasLayout></ProtectedRoute>} />
-        <Route path="/proveedores" element={<ProtectedRoute><SaasLayout><Proveedores /></SaasLayout></ProtectedRoute>} />
-        <Route path="/reportes" element={<ProtectedRoute><SaasLayout><Reportes /></SaasLayout></ProtectedRoute>} />
-        <Route path="/alertas" element={<ProtectedRoute><SaasLayout><Alertas /></SaasLayout></ProtectedRoute>} />
-        <Route path="/predicciones" element={<ProtectedRoute><SaasLayout><Predicciones /></SaasLayout></ProtectedRoute>} />
-
-        <Route
-          path="/facturacion"
-          element={(
-            <ProtectedRoute>
-              <FeatureRoute featureCode="facturacion_electronica">
-                <SaasLayout><Facturacion /></SaasLayout>
-              </FeatureRoute>
-            </ProtectedRoute>
-          )}
-        />
-
-        <Route
-          path="/admin"
-          element={(
-            <ProtectedRoute>
-              <RoleRoute roles={['super_admin']}>
-                <AdminLayout><AdminDashboard /></AdminLayout>
-              </RoleRoute>
-            </ProtectedRoute>
-          )}
-        />
-
-        <Route path="/403" element={<NotAuthorized />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  </AuthProvider>
-
-
 );
 
 export default AppRouter;

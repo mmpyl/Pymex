@@ -1,30 +1,6 @@
-
-import { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-
-const SaasLayout = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--app-bg, #f8fafc)' }}>
-      <div style={{ width: collapsed ? 88 : 260, transition: 'width 0.2s ease' }}>
-        <Sidebar collapsed={collapsed} />
-      </div>
-      <main style={{ flex: 1, overflow: 'auto' }}>
-        <Navbar onToggleSidebar={() => setCollapsed((v) => !v)} />
-        <div style={{ padding: 24 }}>{children}</div>
-      </main>
-
-// frontend/src/layouts/SaasLayout.jsx — versión corregida
-// FIX: integra TrialBanner que estaba en App.jsx (rama main) pero ausente en AppRouter (rama HEAD).
-// FIX: el sidebar colapsable funciona correctamente con la prop `collapsed`.
-// FIX: el estado de colapso se persiste en localStorage para no resetearse al navegar.
-
 import { useState, useEffect } from 'react';
-import Sidebar from '../components/sidebar';
+import Sidebar from '../components/Sidebar';
 import Topbar from '../components/topbar';
-import { cn } from '../lib/utils';
 import TrialBanner from '../components/TrialBanner';
 
 const SaasLayout = ({ children }) => {
