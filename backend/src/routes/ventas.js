@@ -2,15 +2,7 @@
 // Combina checkPermission (RBAC) + checkLimit (plan) sin conflictos de merge
 const router = require('express').Router();
 const { listar, crear } = require('../controllers/ventaController');
-
 const { verificarToken } = require('../middleware/auth');
-const { checkPermission } = require('../middleware/roles');
-
-router.use(verificarToken);
-router.get('/', checkPermission('ventas_ver'), listar);
-router.post('/', checkPermission('ventas_crear'), crear);
-
-const { verificarToken }  = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
 const { checkLimit }      = require('../middleware/featureGate');
 const { Venta }           = require('../models');
