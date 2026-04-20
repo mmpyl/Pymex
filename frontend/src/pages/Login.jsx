@@ -52,7 +52,7 @@ const Login = () => {
                         SaaS PYMES
                     </CardTitle>
                     <CardDescription className="text-slate-500 text-base">
-                        Inicia sesión en tu cuenta
+                        Inicia sesión como usuario de empresa
                     </CardDescription>
                 </CardHeader>
                 
@@ -120,6 +120,14 @@ const Login = () => {
                             Regístrate aquí
                         </Link>
                     </p>
+
+                    <p className="text-center text-xs text-slate-400">
+                        ¿Eres parte del staff?{' '}
+                        <Link to="/staff/login" className="font-semibold text-slate-600 hover:text-slate-500 transition-colors">
+                            Acceso staff
+                        </Link>
+                    </p>
+
                     <div className="text-xs text-center text-slate-400">
                         <p>Protegido con autenticación segura</p>
                     </div>

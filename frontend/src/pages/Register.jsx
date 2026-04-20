@@ -17,7 +17,7 @@ const Register = () => {
         try {
             await api.post('/auth/register', form);
             toast.success('Empresa registrada. Ya puedes iniciar sesión.');
-            navigate('/login');
+            navigate('/empresa/login');
         } catch (error) {
             toast.error(error.response?.data?.error || 'Error al registrar');
         } finally {
@@ -61,7 +61,7 @@ const Register = () => {
                 </form>
 
                 <p style={styles.login}>
-                    ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+                    ¿Ya tienes cuenta? <Link to="/empresa/login">Inicia sesión</Link>
                 </p>
             </div>
         </div>
