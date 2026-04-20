@@ -1,1 +1,4 @@
-Nothing should be ignored based on the provided file changes. The modification of 'backend/src/routes/ventas.js' is a source code file that should be tracked in version control. No build artifacts, dependencies, or temporary files are present in the changes to warrant adding ignore rules.
+```javascript
+// No build artifacts, dependencies, or temporary files detected in changes
+// Only source code modification present
+```
