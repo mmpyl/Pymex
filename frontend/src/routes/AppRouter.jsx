@@ -6,11 +6,14 @@ import { ProtectedRoute, RoleRoute, FeatureRoute } from './guards';
 import SaasLayout from '../layouts/SaasLayout';
 import AdminLayout from '../layouts/AdminLayout';
 import LandingLayout from '../layouts/LandingLayout';
+import AdminRoute from '../components/AdminRoute';
 
 import AppProviders from '../app/providers/AppProviders';
 import {
   LandingPage,
-  LoginPage,
+  LoginHubPage,
+  EmpresaLoginPage,
+  AdminLoginPage,
   RegisterPage,
   SaasDashboardPage,
   VentasPage,
@@ -42,7 +45,11 @@ const AppRouter = () => (
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/" element={<LandingLayout><LandingPage /></LandingLayout>} />
-          <Route path="/login" element={<LoginPage />} />
+
+          <Route path="/login" element={<LoginHubPage />} />
+          <Route path="/empresa/login" element={<EmpresaLoginPage />} />
+          <Route path="/staff/login" element={<AdminLoginPage />} />
+          <Route path="/admin/login" element={<Navigate to="/staff/login" replace />} />
           <Route path="/register" element={<RegisterPage />} />
 
           <Route path="/dashboard" element={<ProtectedRoute><SaasLayout><SaasDashboardPage /></SaasLayout></ProtectedRoute>} />
@@ -70,25 +77,26 @@ const AppRouter = () => (
           <Route
             path="/admin"
             element={(
-              <ProtectedRoute>
+              <AdminRoute>
                 <RoleRoute roles={['super_admin']}>
                   <AdminLayout><AdminDashboardPage /></AdminLayout>
                 </RoleRoute>
-              </ProtectedRoute>
+              </AdminRoute>
             )}
           />
-          <Route path="/admin/empresas" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminEmpresasPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/planes" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPlanesPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/features" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminFeaturesPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/pagos" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPagosPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/suscripciones" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/auditoria" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
-          <Route path="/admin/metricas" element={<ProtectedRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></ProtectedRoute>} />
+          <Route path="/admin/empresas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminEmpresasPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/planes" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPlanesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/features" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminFeaturesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/pagos" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPagosPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/suscripciones" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/auditoria" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></AdminRoute>} />
+          <Route path="/admin/metricas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
           <Route path="/403" element={<NotAuthorizedPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <Toaster position="top-right" />
     </BrowserRouter>
   </AppProviders>
 );

@@ -185,21 +185,56 @@ export default function Login() {
               />
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-              style={{ height: 42, marginTop: 4, fontSize: 15 }}
-            >
-              {loading ? (
-                <>
-                  <SpinnerIcon /> Ingresando...
-                </>
-              ) : (
-                'Ingresar'
-              )}
-            </button>
-          </form>
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+            <Card className="w-full max-w-md shadow-2xl border-slate-200">
+                <CardHeader className="space-y-1 text-center pb-8">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        SaaS PYMES
+                    </CardTitle>
+                    <CardDescription className="text-slate-500 text-base">
+                        Inicia sesión como usuario de empresa
+                    </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                                Email
+                            </label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="tu@email.com"
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                required
+                                className="h-11"
+                                disabled={loading}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                                Contraseña
+                            </label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                required
+                                className="h-11"
+                                disabled={loading}
+                            />
+                        </div>
 
           <div style={{
             marginTop: 24, paddingTop: 24,
@@ -213,14 +248,29 @@ export default function Login() {
             </Link>
           </div>
 
-          <div style={{
-            marginTop: 16, textAlign: 'center',
-            fontSize: 11, color: 'hsl(var(--muted-foreground))',
-          }}>
-            <Link to="/admin/login" style={{ color: 'inherit', textDecoration: 'none', opacity: 0.6 }}>
-              Acceso Super Admin
-            </Link>
-          </div>
+                <CardFooter className="flex flex-col space-y-4 pt-2">
+                    <p className="text-center text-sm text-slate-500">
+                        ¿No tienes cuenta?{' '}
+                        <Link 
+                            to="/register" 
+                            className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+                        >
+                            Regístrate aquí
+                        </Link>
+                    </p>
+
+                    <p className="text-center text-xs text-slate-400">
+                        ¿Eres parte del staff?{' '}
+                        <Link to="/staff/login" className="font-semibold text-slate-600 hover:text-slate-500 transition-colors">
+                            Acceso staff
+                        </Link>
+                    </p>
+
+                    <div className="text-xs text-center text-slate-400">
+                        <p>Protegido con autenticación segura</p>
+                    </div>
+                </CardFooter>
+            </Card>
         </div>
       </div>
     </div>

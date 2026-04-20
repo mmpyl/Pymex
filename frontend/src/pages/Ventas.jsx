@@ -1,6 +1,37 @@
 // pages/Ventas.jsx — Rediseñado
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
+import toast from 'react-hot-toast';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import Select from '../components/ui/Select';
+import { Card } from '../components/ui/Card';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Plus, Trash2, Package } from 'lucide-react';
+
+const styles = {
+  container: { padding: '24px', maxWidth: '1200px', margin: '0 auto' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
+  titulo: { fontSize: '24px', fontWeight: '700', color: '#1e293b' },
+  formCard: { ...Card.style, marginBottom: '24px', padding: '20px' },
+  formTitulo: { fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#1e293b' },
+  label: { display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '6px', color: '#475569' },
+  itemRow: { display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '12px', marginBottom: '12px', alignItems: 'center' },
+  select: { width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' },
+  inputNum: { width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' },
+  subtotal: { fontSize: '14px', fontWeight: '600', color: '#1e293b' },
+  btnQuitar: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '6px' },
+  btnSecundario: { padding: '8px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' },
+  totalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' },
+  totalLabel: { fontSize: '16px', fontWeight: '700', color: '#1e293b' },
+  tabla: { overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  thead: { background: '#f8fafc' },
+  th: { padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#64748b', borderBottom: '1px solid #e2e8f0' },
+  tr: { borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '12px 16px', fontSize: '14px', color: '#334155' },
+  badge: { padding: '4px 8px', borderRadius: '999px', fontSize: '12px', fontWeight: '500', background: '#dcfce7', color: '#166534' }
+};
 
 const fmt = n => new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 

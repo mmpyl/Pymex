@@ -73,7 +73,7 @@ api.interceptors.response.use(
 
       const currentPath = window.location.pathname;
       if (!currentPath.includes('/login')) {
-        window.location.href = wasAdmin ? '/admin/login' : '/login';
+        window.location.href = wasAdmin ? '/staff/login' : '/empresa/login';
       }
 
       error.userMessage = 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
