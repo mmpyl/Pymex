@@ -4,8 +4,11 @@ from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import joblib
-import os
+from pathlib import Path
+from datetime import datetime
 from .config import MODELS_DIR
+
+MODELS_PATH = Path(MODELS_DIR)
 
 def entrenar_modelo_demanda(empresa_id: int, df: pd.DataFrame) -> dict:
     """Entrena XGBoost por producto para predecir demanda mensual."""
@@ -49,7 +52,7 @@ def entrenar_modelo_demanda(empresa_id: int, df: pd.DataFrame) -> dict:
         modelo.fit(X, y)
 
         # Guardar modelo por producto
-        path = os.path.join(MODELS_DIR, f"demanda_{empresa_id}_{producto_id}.pkl")
+        path = MODELS_PATH / f"demanda_{empresa_id}_{producto_id}.pkl"
         joblib.dump(modelo, path)
         resultados[str(producto_id)] = "entrenado"
 
@@ -60,13 +63,12 @@ def entrenar_modelo_demanda(empresa_id: int, df: pd.DataFrame) -> dict:
 
 def predecir_demanda_productos(empresa_id: int, df: pd.DataFrame) -> list:
     """Predice la demanda del próximo mes para cada producto."""
-    import datetime
 
     df['fecha'] = pd.to_datetime(df['fecha'])
     demanda = df.groupby(['producto_id', 'producto', 'anio', 'mes'])['cantidad'].sum().reset_index()
 
     predicciones = []
-    hoy = datetime.datetime.now()
+    hoy = datetime.now()
     mes_siguiente = hoy.month + 1 if hoy.month < 12 else 1
     anio_siguiente = hoy.year if hoy.month < 12 else hoy.year + 1
 
@@ -74,9 +76,9 @@ def predecir_demanda_productos(empresa_id: int, df: pd.DataFrame) -> list:
         prod_df = demanda[demanda['producto_id'] == producto_id].copy().sort_values(['anio', 'mes'])
         nombre = prod_df['producto'].iloc[-1]
 
-        path = os.path.join(MODELS_DIR, f"demanda_{empresa_id}_{producto_id}.pkl")
+        path = MODELS_PATH / f"demanda_{empresa_id}_{producto_id}.pkl"
 
-        if not os.path.exists(path) or len(prod_df) < 3:
+        if not path.exists() or len(prod_df) < 3:
             # Estimación simple si no hay modelo
             promedio = prod_df['cantidad'].mean()
             predicciones.append({

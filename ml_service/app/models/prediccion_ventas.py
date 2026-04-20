@@ -5,9 +5,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_absolute_error
 import joblib
-import os
+from pathlib import Path
 from datetime import datetime, timedelta
 from .config import MODELS_DIR
+
+MODELS_PATH = Path(MODELS_DIR)
 
 def preparar_features(df: pd.DataFrame) -> pd.DataFrame:
     """Prepara las variables de entrada para el modelo."""
@@ -63,7 +65,7 @@ def entrenar_modelo_ventas(empresa_id: int, df: pd.DataFrame) -> dict:
     score = modelo.score(X_test, y_test)
 
     # Guardar modelo
-    path = os.path.join(MODELS_DIR, f"ventas_{empresa_id}.pkl")
+    path = MODELS_PATH / f"ventas_{empresa_id}.pkl"
     joblib.dump(modelo, path)
 
     return {
@@ -76,10 +78,10 @@ def entrenar_modelo_ventas(empresa_id: int, df: pd.DataFrame) -> dict:
 def predecir_ventas_proximos_meses(empresa_id: int, df: pd.DataFrame, meses: int = 3) -> list:
     """Predice las ventas para los próximos N meses."""
 
-    path = os.path.join(MODELS_DIR, f"ventas_{empresa_id}.pkl")
+    path = MODELS_PATH / f"ventas_{empresa_id}.pkl"
 
     # Si no hay modelo entrenado, entrena uno
-    if not os.path.exists(path):
+    if not path.exists():
         resultado = entrenar_modelo_ventas(empresa_id, df)
         if "error" in resultado:
             return [{"error": resultado["error"]}]
