@@ -8,25 +8,11 @@ const router = require('express').Router();
 const axios  = require('axios');
 const { verificarToken } = require('../middleware/auth');
 
-
 const { Venta, Producto, DetalleVenta, Cliente, Comprobante } = require('../models');
 
 const FACT_URL = process.env.FACTURACION_SERVICE_URL || 'http://localhost:9000/api';
 const FACT_TIMEOUT_MS = Number(process.env.FACTURACION_TIMEOUT_MS || 15000);
 const ALLOW_EMPTY_COMPROBANTES_FALLBACK = String(process.env.ALLOW_EMPTY_COMPROBANTES_FALLBACK || 'false') === 'true';
-
-const { Venta, Producto, DetalleVenta, Cliente } = require('../models');
-
-const FACT_URL = process.env.FACTURACION_SERVICE_URL || 'http://localhost:9000/api';
-const FACT_TIMEOUT_MS = Number(process.env.FACTURACION_TIMEOUT_MS || 15000);
-
-
-const { Venta, Producto, DetalleVenta, Cliente, Comprobante } = require('../models');
-
-const FACT_URL     = process.env.FACTURACION_SERVICE_URL || 'http://localhost:9000/api';
-const FACT_TIMEOUT = Number(process.env.FACTURACION_TIMEOUT_MS || 15000);
-const ALLOW_EMPTY_FALLBACK = String(process.env.ALLOW_EMPTY_COMPROBANTES_FALLBACK || 'false') === 'true';
-
 
 router.use(verificarToken);
 
@@ -36,16 +22,6 @@ const esSerieValida   = (serie, prefijo) =>
 const esRucValido     = (ruc)  => typeof ruc === 'string' && /^[0-9]{11}$/.test(ruc);
 const esDniValido     = (dni)  => !dni || /^[0-9]{8}$/.test(String(dni));
 
-
-const responderErrorIntegracion = (res, error) => {
-    const detalle = error.response?.data?.error || error.response?.data?.descripcion || error.message;
-
-    const traceId = res.getHeader('x-request-id');
-    return res.status(502).json({ error: `Error de integración con facturación: ${detalle}`, trace_id: traceId });
-
-    return res.status(502).json({ error: `Error de integración con facturación: ${detalle}` });
-
-
 const responderError  = (res, error) => {
   const detalle  = error.response?.data?.error || error.response?.data?.descripcion || error.message;
   const traceId  = res.getHeader('x-request-id');
@@ -54,11 +30,10 @@ const responderError  = (res, error) => {
     error:    `Error de integración con facturación: ${detalle}`,
     trace_id: traceId
   });
-
 };
 
 const axiosHeaders = (req) => ({
-  timeout: FACT_TIMEOUT,
+  timeout: FACT_TIMEOUT_MS,
   headers: { 'x-request-id': req.requestId }
 });
 
@@ -102,47 +77,11 @@ router.post('/factura/:venta_id', async (req, res) => {
       items: buildItems(venta.DetalleVentas)
     };
 
-
-        const items = venta.DetalleVentas.map(d => ({
-            codigo: `P${String(d.producto_id).padStart(3, '0')}`,
-            descripcion: d.Producto.nombre,
-            cantidad: d.cantidad,
-            precio_unitario: parseFloat(d.precio_unitario),
-            unidad: 'NIU'
-        }));
-
-        const payload = {
-            empresa_id: req.usuario.empresa_id,
-            venta_id: venta.id,
-            serie,
-            moneda: 'PEN',
-            cliente: {
-                ruc: req.body.ruc_cliente,
-                razon_social: req.body.razon_social,
-                direccion: req.body.direccion || ''
-            },
-            items
-        };
-
-
-        const { data } = await axios.post(`${FACT_URL}/facturas/emitir`, payload, {
-            timeout: FACT_TIMEOUT_MS,
-            headers: { 'x-request-id': req.requestId }
-        });
-
-        const { data } = await axios.post(`${FACT_URL}/facturas/emitir`, payload, { timeout: FACT_TIMEOUT_MS });
-
-        res.json(data);
-    } catch (error) {
-        responderErrorIntegracion(res, error);
-    }
-
     const { data } = await axios.post(`${FACT_URL}/facturas/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
   }
-
 });
 
 // ─── POST /api/facturacion/boleta/:venta_id ───────────────────────────────────
@@ -172,46 +111,11 @@ router.post('/boleta/:venta_id', async (req, res) => {
       items: buildItems(venta.DetalleVentas)
     };
 
-
-        const items = venta.DetalleVentas.map(d => ({
-            codigo: `P${String(d.producto_id).padStart(3, '0')}`,
-            descripcion: d.Producto.nombre,
-            cantidad: d.cantidad,
-            precio_unitario: parseFloat(d.precio_unitario),
-            unidad: 'NIU'
-        }));
-
-        const payload = {
-            empresa_id: req.usuario.empresa_id,
-            venta_id: venta.id,
-            serie,
-            moneda: 'PEN',
-            cliente: {
-                nombre: req.body.nombre_cliente || 'CLIENTE VARIOS',
-                dni: req.body.dni_cliente || ''
-            },
-            items
-        };
-
-
-        const { data } = await axios.post(`${FACT_URL}/boletas/emitir`, payload, {
-            timeout: FACT_TIMEOUT_MS,
-            headers: { 'x-request-id': req.requestId }
-        });
-
-        const { data } = await axios.post(`${FACT_URL}/boletas/emitir`, payload, { timeout: FACT_TIMEOUT_MS });
-
-        res.json(data);
-    } catch (error) {
-        responderErrorIntegracion(res, error);
-    }
-
     const { data } = await axios.post(`${FACT_URL}/boletas/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
   }
-
 });
 
 // ─── POST /api/facturacion/nota-credito ───────────────────────────────────────
@@ -222,28 +126,12 @@ router.post('/nota-credito', async (req, res) => {
     if (!Array.isArray(req.body.items) || req.body.items.length === 0)
       return res.status(400).json({ error: 'Debe enviar items para la nota de crédito' });
 
-
-        const payload = { ...req.body, empresa_id: req.usuario.empresa_id };
-
-        const { data } = await axios.post(`${FACT_URL}/notas-credito/emitir`, payload, {
-            timeout: FACT_TIMEOUT_MS,
-            headers: { 'x-request-id': req.requestId }
-        });
-
-        const { data } = await axios.post(`${FACT_URL}/notas-credito/emitir`, payload, { timeout: FACT_TIMEOUT_MS });
-
-        res.json(data);
-    } catch (error) {
-        responderErrorIntegracion(res, error);
-    }
-
     const payload = { ...req.body, empresa_id: req.usuario.empresa_id };
     const { data } = await axios.post(`${FACT_URL}/notas-credito/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
   }
-
 });
 
 // ─── GET /api/facturacion/comprobantes ────────────────────────────────────────
@@ -259,38 +147,6 @@ router.get('/comprobantes', async (req, res) => {
   } catch (dbError) {
     console.error('⚠️ Error consultando comprobantes en DB local:', dbError.message);
     try {
-
-
-        const comprobantes = await Comprobante.findAll({
-            where: { empresa_id: req.usuario.empresa_id },
-            order: [['fecha_emision', 'DESC']],
-            limit: 100
-        });
-
-        res.json(comprobantes);
-    } catch (dbError) {
-        console.error('⚠️ Error consultando comprobantes en DB local:', dbError.message);
-        try {
-            const { data } = await axios.get(`${FACT_URL}/comprobantes/empresa/${req.usuario.empresa_id}`, {
-                timeout: FACT_TIMEOUT_MS,
-                headers: { 'x-request-id': req.requestId }
-            });
-            res.json(data);
-        } catch (error) {
-            console.error('⚠️ Error consultando comprobantes en microservicio:', error.message);
-            if (ALLOW_EMPTY_COMPROBANTES_FALLBACK) {
-                // Útil solo para continuidad de UI en modo degradado.
-                return res.status(200).json([]);
-            }
-            return responderErrorIntegracion(res, error);
-        }
-
-        const { data } = await axios.get(`${FACT_URL}/comprobantes/empresa/${req.usuario.empresa_id}`, { timeout: FACT_TIMEOUT_MS });
-        res.json(data);
-    } catch (error) {
-        responderErrorIntegracion(res, error);
-
-
       const { data } = await axios.get(
         `${FACT_URL}/comprobantes/empresa/${req.usuario.empresa_id}`,
         axiosHeaders(req)
@@ -298,9 +154,8 @@ router.get('/comprobantes', async (req, res) => {
       return res.json(data);
     } catch (msError) {
       console.error('⚠️ Error consultando comprobantes en microservicio:', msError.message);
-      if (ALLOW_EMPTY_FALLBACK) return res.status(200).json([]);
+      if (ALLOW_EMPTY_COMPROBANTES_FALLBACK) return res.status(200).json([]);
       return responderError(res, msError);
-
     }
   }
 });
@@ -311,24 +166,6 @@ router.get('/pdf/:id/:tipo', async (req, res) => {
     const tiposPermitidos = ['factura', 'boleta'];
     if (!tiposPermitidos.includes(req.params.tipo))
       return res.status(400).json({ error: 'Tipo no soportado para PDF. Usa: factura, boleta' });
-
-
-        const url = `${FACT_URL}/${req.params.tipo}s/${req.params.id}/pdf`;
-
-        const response = await axios.get(url, {
-            responseType: 'arraybuffer',
-            timeout: FACT_TIMEOUT_MS,
-            headers: { 'x-request-id': req.requestId }
-        });
-
-        const response = await axios.get(url, { responseType: 'arraybuffer', timeout: FACT_TIMEOUT_MS });
-
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=comprobante_${req.params.id}.pdf`);
-        res.send(response.data);
-    } catch (error) {
-        responderErrorIntegracion(res, error);
-    }
 
     const url      = `${FACT_URL}/${req.params.tipo}s/${req.params.id}/pdf`;
     const response = await axios.get(url, { responseType: 'arraybuffer', ...axiosHeaders(req) });
