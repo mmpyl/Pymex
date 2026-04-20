@@ -84,25 +84,16 @@ const checkFeature = (featureCode) => {
       const resolution = await resolveFeatureAccess(req.usuario.empresa_id, featureCode);
       if (!resolution.active) {
         return res.status(403).json({
-
           error: `Feature desactivada: ${featureCode}`,
           feature_code: featureCode,
           source: resolution.source,
           trace_id: req.requestId
-
-          error:        `Feature desactivada: ${featureCode}`,
-          feature_code: featureCode,
-          source:       resolution.source,
-          trace_id:     req.requestId
-
         });
       }
 
       req.featureCheck = { code: featureCode, source: resolution.source };
 
       next();
-
-      return next();
 
     } catch (error) {
       return res.status(500).json({ error: error.message, trace_id: req.requestId });
