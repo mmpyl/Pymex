@@ -1,127 +1,28 @@
-// frontend/src/pages/Dashboard.jsx — versión completa consolidada (sin conflictos de merge)
+// pages/Dashboard.jsx — Rediseñado
 import { useEffect, useState } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, Cell
+  CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import api from '../api/axios';
 
-// ─── Tokens de diseño ─────────────────────────────────────────────────────────
-const S = {
-  container: { padding: '28px 32px', flex: 1, maxWidth: 1280, margin: '0 auto', width: '100%' },
-  titulo:    { fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 4 },
-  subtitulo: { fontSize: 13, color: '#6b7280', marginBottom: 24 },
-  grid2:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 20, marginBottom: 20 },
-  grid6:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 },
-  card:      { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 20 },
-  label:     { fontSize: 12, color: '#6b7280', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' },
-  val:       { fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px' },
-  sub:       { fontSize: 12, color: '#9ca3af', marginTop: 4 },
-  sectionH:  { fontSize: 13, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 },
+const fmt = (n) => {
+  if (!n && n !== 0) return '—';
+  return new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 };
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
+const fmtInt = (n) => new Intl.NumberFormat('es-PE').format(n || 0);
 
-// ─── Componentes auxiliares ───────────────────────────────────────────────────
-const TooltipCustom = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 14px', fontSize: 13 }}>
-      <div style={{ fontWeight: 600, marginBottom: 5 }}>{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color }}>
-          {p.name}: <strong>S/ {Number(p.value).toFixed(2)}</strong>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const Delta = ({ val }) => {
-  if (val === undefined || val === null) return null;
-  const pos = Number(val) >= 0;
-  return (
-    <span style={{
-      fontSize: 12, fontWeight: 600, marginLeft: 6,
-      color: pos ? '#10b981' : '#ef4444',
-      background: pos ? '#d1fae5' : '#fee2e2',
-      borderRadius: 6, padding: '1px 7px'
-    }}>
-      {pos ? '▲' : '▼'} {Math.abs(val)}%
-    </span>
-  );
-};
-
-const KPI = ({ label, value, sub, color = '#6366f1', delta, icon }) => (
-  <div style={{ ...S.card, borderTop: `3px solid ${color}` }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <div style={S.label}>{label}</div>
-      {icon && <span style={{ fontSize: 20 }}>{icon}</span>}
-    </div>
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
-      <div style={{ ...S.val, color }}>{value}</div>
-      <Delta val={delta} />
-    </div>
-    {sub && <div style={S.sub}>{sub}</div>}
-  </div>
-);
-
-const AlertaBadge = ({ alerta }) => {
-  const cfg = {
-    stock_bajo:   { bg: '#fef2f2', color: '#b91c1c', icon: '📦' },
-    ventas_bajas: { bg: '#fffbeb', color: '#92400e', icon: '📉' },
-    default:      { bg: '#f3f4f6', color: '#374151', icon: '🔔' },
-  }[alerta.tipo] || { bg: '#f3f4f6', color: '#374151', icon: '🔔' };
-
-  return (
-    <div style={{ background: cfg.bg, borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{cfg.icon}</span>
-      <span style={{ fontSize: 13, color: cfg.color, lineHeight: 1.5 }}>{alerta.mensaje}</span>
-    </div>
-  );
-};
-
-const UtilBar = ({ ventas, gastos }) => {
-  const utilidad  = ventas - gastos;
-  const margen    = ventas > 0 ? ((utilidad / ventas) * 100).toFixed(1) : 0;
-  const gastoPct  = ventas > 0 ? Math.min((gastos / ventas) * 100, 100) : 0;
-  const positivo  = utilidad >= 0;
-  return (
-    <div style={S.card}>
-      <div style={S.sectionH}>Margen del mes</div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 13 }}>
-        <span style={{ color: '#6b7280' }}>Gastos sobre ventas</span>
-        <span style={{ fontWeight: 700, color: positivo ? '#10b981' : '#ef4444' }}>Margen: {margen}%</span>
-      </div>
-      <div style={{ height: 10, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden' }}>
-        <div style={{ height: 10, width: `${gastoPct}%`, background: positivo ? '#6366f1' : '#ef4444', borderRadius: 99, transition: 'width 0.8s' }} />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: '#9ca3af' }}>
-        <span>Ventas: S/ {Number(ventas).toFixed(2)}</span>
-        <span>Gastos: S/ {Number(gastos).toFixed(2)}</span>
-        <span style={{ color: positivo ? '#10b981' : '#ef4444', fontWeight: 600 }}>Utilidad: S/ {Number(utilidad).toFixed(2)}</span>
-      </div>
-    </div>
-  );
-};
-
-// ─── Componente principal ─────────────────────────────────────────────────────
-const Dashboard = () => {
-  const [resumen,      setResumen]      = useState(null);
-  const [ventasMes,    setVentasMes]    = useState([]);
+export default function Dashboard() {
+  const [resumen, setResumen] = useState(null);
+  const [series, setSeries] = useState([]);
   const [topProductos, setTopProductos] = useState([]);
-  const [alertas,      setAlertas]      = useState([]);
-  const [cargando,     setCargando]     = useState(true);
-  const [fecha,        setFecha]        = useState('');
+  const [alertas, setAlertas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setFecha(new Date().toLocaleDateString('es-PE', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    }));
-    cargar();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  const cargar = async () => {
+  const load = async () => {
     try {
       const [r, v, g, t, a] = await Promise.all([
         api.get('/dashboard/resumen'),
@@ -133,203 +34,382 @@ const Dashboard = () => {
 
       setResumen(r.data);
 
-      // Combinar ventas + gastos en un solo dataset
       const vMap = {};
       v.data.forEach(d => {
-        const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short', year: '2-digit' });
-        vMap[k] = { mes: k, ventas: parseFloat(d.total), gastos: 0 };
+        const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short' });
+        vMap[k] = { mes: k, ventas: parseFloat(d.total || 0), gastos: 0 };
       });
       g.data.forEach(d => {
-        const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short', year: '2-digit' });
-        if (vMap[k]) vMap[k].gastos = parseFloat(d.total);
-        else vMap[k] = { mes: k, ventas: 0, gastos: parseFloat(d.total) };
+        const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short' });
+        if (vMap[k]) vMap[k].gastos = parseFloat(d.total || 0);
+        else vMap[k] = { mes: k, ventas: 0, gastos: parseFloat(d.total || 0) };
       });
-      const combined = Object.values(vMap).sort((a, b) => {
-        const parse = s => { const [m, y] = s.split(' '); return new Date(`01 ${m} 20${y}`); };
-        return parse(a.mes) - parse(b.mes);
-      });
-      setVentasMes(combined);
-
-      setTopProductos(t.data.map(d => ({
-        nombre: d.Producto?.nombre || 'Desconocido',
-        ingresos: parseFloat(d.total_ingresos),
-      })));
-
-      setAlertas((a.data || []).filter(x => !x.leido).slice(0, 4));
-    } catch (error) { console.error(error); }
-    finally { setCargando(false); }
+      setSeries(Object.values(vMap).slice(-6));
+      setTopProductos((t.data || []).slice(0, 5));
+      setAlertas((a.data || []).filter(x => !x.leido).slice(0, 5));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (cargando) {
-    return (
-      <div style={S.container}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-          <div style={{ fontSize: 16, color: '#6b7280' }}>Cargando dashboard...</div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <DashboardSkeleton />;
+
+  const utilidad = (resumen?.ventas_mes || 0) - (resumen?.gastos_mes || 0);
+  const margen = resumen?.ventas_mes > 0
+    ? ((utilidad / resumen.ventas_mes) * 100).toFixed(1)
+    : 0;
+
+  const kpis = [
+    {
+      label: 'Ventas del mes',
+      value: `S/ ${fmt(resumen?.ventas_mes)}`,
+      delta: resumen?.crecimiento_ventas,
+      up: (resumen?.crecimiento_ventas || 0) >= 0,
+      color: 'var(--navy-700)',
+      accent: 'var(--navy-500)',
+      icon: <KpiIconVentas />,
+    },
+    {
+      label: 'Gastos del mes',
+      value: `S/ ${fmt(resumen?.gastos_mes)}`,
+      delta: null,
+      color: 'var(--coral-500)',
+      accent: '#E97060',
+      icon: <KpiIconGastos />,
+    },
+    {
+      label: 'Utilidad neta',
+      value: `S/ ${fmt(utilidad)}`,
+      delta: parseFloat(margen),
+      up: utilidad >= 0,
+      deltaLabel: `${margen}% margen`,
+      color: utilidad >= 0 ? 'var(--sage-600)' : 'var(--coral-500)',
+      accent: utilidad >= 0 ? 'var(--sage-400)' : '#E97060',
+      icon: <KpiIconUtilidad />,
+    },
+    {
+      label: 'Productos activos',
+      value: fmtInt(resumen?.total_productos),
+      sub: `${fmtInt(resumen?.stock_bajo)} con stock bajo`,
+      subDanger: (resumen?.stock_bajo || 0) > 0,
+      color: 'var(--amber-600)',
+      accent: 'var(--amber-400)',
+      icon: <KpiIconProductos />,
+    },
+  ];
 
   return (
-    <div style={S.container}>
-      {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={S.titulo}>Dashboard</h1>
-        <p style={S.subtitulo}>{fecha}</p>
+    <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      {/* Page Header */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <h1 className="page-heading">
+            {greeting()},{' '}
+            <span style={{ color: 'var(--navy-600)' }}>
+              {firstName()}
+            </span>
+          </h1>
+          <p className="page-desc">
+            {new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <button className="btn btn-accent" onClick={load}>
+          <RefreshIcon /> Actualizar
+        </button>
       </div>
 
-      {/* KPIs Grid */}
-      <div style={S.grid6}>
-        <KPI 
-          label="Ventas del mes" 
-          value={`S/ ${Number(resumen?.ventas_mes || 0).toFixed(2)}`}
-          delta={resumen?.delta_ventas || 0}
-          color="#6366f1"
-          icon="💰"
-        />
-        <KPI 
-          label="Gastos del mes" 
-          value={`S/ ${Number(resumen?.gastos_mes || 0).toFixed(2)}`}
-          delta={resumen?.delta_gastos || 0}
-          color="#ef4444"
-          icon="📊"
-        />
-        <KPI 
-          label="Utilidad" 
-          value={`S/ ${Number((resumen?.ventas_mes || 0) - (resumen?.gastos_mes || 0)).toFixed(2)}`}
-          delta={resumen?.delta_utilidad || 0}
-          color="#10b981"
-          icon="📈"
-        />
-        <KPI 
-          label="Productos vendidos" 
-          value={resumen?.productos_vendidos || 0}
-          delta={resumen?.delta_productos || 0}
-          color="#f59e0b"
-          icon="📦"
-        />
-        <KPI 
-          label="Clientes nuevos" 
-          value={resumen?.clientes_nuevos || 0}
-          delta={resumen?.delta_clientes || 0}
-          color="#3b82f6"
-          icon="👥"
-        />
-        <KPI 
-          label="Ticket promedio" 
-          value={`S/ ${Number(resumen?.ticket_promedio || 0).toFixed(2)}`}
-          delta={resumen?.delta_ticket || 0}
-          color="#8b5cf6"
-          icon="🎫"
-        />
+      {/* KPI Cards */}
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        {kpis.map(kpi => (
+          <StatCard key={kpi.label} {...kpi} />
+        ))}
       </div>
 
-      {/* Gráficos y Utilidad */}
-      <div style={S.grid2}>
-        {/* Gráfico de Ventas vs Gastos */}
-        <div style={S.card}>
-          <div style={S.sectionH}>Ventas vs Gastos (Últimos 6 meses)</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={ventasMes}>
+      {/* Charts Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+        {/* Ventas vs Gastos */}
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.2px' }}>
+                Ventas vs Gastos
+              </div>
+              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 2 }}>
+                Últimos 6 meses
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--navy-500)', display: 'inline-block' }} />
+                Ventas
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#E97060', display: 'inline-block' }} />
+                Gastos
+              </span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                <linearGradient id="gventa" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--navy-500)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="var(--navy-500)" stopOpacity={0} />
                 </linearGradient>
-                <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                <linearGradient id="ggasto" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#E97060" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#E97060" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="mes" stroke="#9ca3af" fontSize={12} />
-              <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `S/ ${v}`} />
-              <Tooltip content={<TooltipCustom />} />
-              <Area type="monotone" dataKey="ventas" stroke="#6366f1" fillOpacity={1} fill="url(#colorVentas)" name="Ventas" strokeWidth={2} />
-              <Area type="monotone" dataKey="gastos" stroke="#ef4444" fillOpacity={1} fill="url(#colorGastos)" name="Gastos" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={v => `S/${v > 999 ? (v / 1000).toFixed(0) + 'k' : v}`} />
+              <Tooltip
+                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 13 }}
+                formatter={v => [`S/ ${fmt(v)}`]}
+              />
+              <Area type="monotone" dataKey="ventas" stroke="var(--navy-500)" strokeWidth={2} fill="url(#gventa)" name="Ventas" />
+              <Area type="monotone" dataKey="gastos" stroke="#E97060" strokeWidth={2} fill="url(#ggasto)" name="Gastos" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Utilidad Bar */}
-        <UtilBar 
-          ventas={resumen?.ventas_mes || 0}
-          gastos={resumen?.gastos_mes || 0}
-        />
-      </div>
-
-      {/* Top Productos y Alertas */}
-      <div style={S.grid2}>
         {/* Top Productos */}
-        <div style={S.card}>
-          <div style={S.sectionH}>Productos más vendidos</div>
-          {topProductos.length === 0 ? (
-            <div style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>
-              No hay datos disponibles
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {topProductos.slice(0, 5).map((prod, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < topProductos.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ 
-                      width: 28, height: 28, borderRadius: '50%', 
-                      background: COLORS[i % COLORS.length], 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontSize: 12, fontWeight: 600
-                    }}>
-                      {i + 1}
-                    </div>
-                    <span style={{ fontSize: 13, color: '#111827', fontWeight: 500 }}>{prod.nombre}</span>
-                  </div>
-                  <span style={{ fontSize: 13, color: '#6366f1', fontWeight: 600 }}>
-                    S/ {Number(prod.ingresos).toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.2px' }}>Top productos</div>
+          <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}>Por ingreso acumulado</div>
 
-        {/* Alertas */}
-        <div style={S.card}>
-          <div style={S.sectionH}>Alertas recientes</div>
-          {alertas.length === 0 ? (
-            <div style={{ 
-              background: '#f0fdf4', border: '1px solid #bbf7d0', 
-              borderRadius: 8, padding: '16px', textAlign: 'center' 
-            }}>
-              <span style={{ fontSize: 24 }}>✅</span>
-              <div style={{ fontSize: 13, color: '#166534', marginTop: 8 }}>
-                Todo está en orden
-              </div>
+          {topProductos.length === 0 ? (
+            <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>
+              Sin ventas registradas
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {alertas.map((alerta, i) => (
-                <AlertaBadge key={i} alerta={alerta} />
-              ))}
+              {topProductos.map((p, i) => {
+                const maxVal = parseFloat(topProductos[0]?.total_ingresos || 1);
+                const pct = ((parseFloat(p.total_ingresos) / maxVal) * 100).toFixed(0);
+                const COLORS = ['var(--navy-600)', 'var(--navy-400)', 'var(--navy-300)', 'var(--amber-500)', 'var(--amber-400)'];
+                return (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 5 }}>
+                      <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
+                        {p.Producto?.nombre}
+                      </span>
+                      <span style={{ fontWeight: 600, color: 'var(--navy-600)', flexShrink: 0 }}>
+                        S/ {fmt(p.total_ingresos)}
+                      </span>
+                    </div>
+                    <div style={{ height: 5, background: 'hsl(var(--muted))', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: COLORS[i], borderRadius: 3, transition: 'width 0.6s ease' }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* Predicciones */}
-      {resumen?.prediccion_ventas && (
-        <div style={{ ...S.card, marginTop: 20, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
-          <div style={{ color: '#fff' }}>
-            <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8 }}>🔮 Predicción del próximo mes</div>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>
-              S/ {Number(resumen.prediccion_ventas).toFixed(2)}
+      {/* Bottom Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {/* Alertas */}
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>Alertas recientes</div>
+            {alertas.length > 0 && (
+              <span className="badge badge-danger">{alertas.length} sin leer</span>
+            )}
+          </div>
+
+          {alertas.length === 0 ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              padding: '24px 0', gap: 8,
+            }}>
+              <CheckCircleIcon />
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--sage-600)' }}>Todo en orden</div>
+              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>No hay alertas pendientes</div>
             </div>
-            <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
-              Basado en el histórico de ventas y tendencias actuales
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {alertas.map(a => <AlertRow key={a.id} alerta={a} />)}
+            </div>
+          )}
+        </div>
+
+        {/* Margen Visual */}
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Salud financiera del mes</div>
+          <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 20 }}>
+            Ratio gastos / ventas
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { label: 'Ventas', value: resumen?.ventas_mes || 0, color: 'var(--navy-500)', max: resumen?.ventas_mes || 1 },
+              { label: 'Gastos', value: resumen?.gastos_mes || 0, color: '#E97060', max: resumen?.ventas_mes || 1 },
+              { label: 'Utilidad', value: Math.max(0, utilidad), color: 'var(--sage-500)', max: resumen?.ventas_mes || 1 },
+            ].map(item => {
+              const pct = Math.min(100, ((item.value / item.max) * 100)).toFixed(1);
+              return (
+                <div key={item.label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
+                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>{item.label}</span>
+                    <span style={{ fontWeight: 600 }}>S/ {fmt(item.value)}</span>
+                  </div>
+                  <div style={{ height: 8, background: 'hsl(var(--muted))', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: item.color, borderRadius: 4, transition: 'width 0.8s ease' }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ marginTop: 20, padding: '12px 16px', background: 'hsl(var(--muted))', borderRadius: 8 }}>
+            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 2 }}>Margen neto</div>
+            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px', color: utilidad >= 0 ? 'var(--sage-600)' : 'var(--coral-500)' }}>
+              {margen}%
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ——— Sub-components ——— */
+
+function StatCard({ label, value, delta, up, sub, subDanger, deltaLabel, color, accent, icon }) {
+  return (
+    <div className="stat-card">
+      <div className="stat-card-accent" style={{ background: accent }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="stat-card-icon" style={{ background: `color-mix(in srgb, ${accent} 12%, transparent)` }}>
+          <span style={{ color, width: 20, height: 20 }}>{icon}</span>
+        </div>
+      </div>
+      <div className="stat-label">{label}</div>
+      <div className="stat-value" style={{ color }}>{value}</div>
+      {delta !== null && delta !== undefined && (
+        <span className={`stat-trend ${up ? 'up' : 'down'}`}>
+          {up ? '↑' : '↓'} {deltaLabel || `${Math.abs(delta).toFixed(1)}%`}
+        </span>
+      )}
+      {sub && (
+        <div style={{ fontSize: 12, marginTop: 6, color: subDanger ? 'var(--coral-500)' : 'hsl(var(--muted-foreground))' }}>
+          {sub}
         </div>
       )}
     </div>
   );
+}
+
+const ALERT_TYPES = {
+  stock_bajo:   { bg: 'var(--coral-50)',  color: 'var(--coral-500)', label: 'Stock bajo' },
+  ventas_bajas: { bg: 'var(--amber-50)',  color: 'var(--amber-700)', label: 'Ventas bajas' },
+  default:      { bg: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', label: 'Alerta' },
 };
 
-export default Dashboard;
+function AlertRow({ alerta }) {
+  const cfg = ALERT_TYPES[alerta.tipo] || ALERT_TYPES.default;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      padding: '10px 12px', borderRadius: 8,
+      background: cfg.bg,
+    }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, marginTop: 5, flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+          {cfg.label}
+        </div>
+        <div style={{ fontSize: 13, color: 'hsl(var(--foreground))', lineHeight: 1.5 }}>{alerta.mensaje}</div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 16 }}>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="skeleton" style={{ height: 110, borderRadius: 12 }} />
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+        <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ——— Icons ——— */
+function KpiIconVentas() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 14l4-5 3 3 4-5 3 4"/>
+    </svg>
+  );
+}
+function KpiIconGastos() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="16" height="12" rx="2"/>
+      <path d="M14 5V4a2 2 0 00-2-2H8a2 2 0 00-2 2v1"/>
+      <path d="M10 11v2M10 9v.5"/>
+    </svg>
+  );
+}
+function KpiIconUtilidad() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="8"/>
+      <path d="M10 6v2.5M10 11.5V14"/>
+      <path d="M8 8.5c0-1 .9-2 2-2s2 .9 2 2-1 1.5-2 1.5-2 .5-2 1.5.9 2 2 2 2-.9 2-2"/>
+    </svg>
+  );
+}
+function KpiIconProductos() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 5.5l7-3.5 7 3.5v9l-7 3.5-7-3.5v-9z"/>
+      <path d="M10 2v13M3 5.5l7 3.5 7-3.5"/>
+    </svg>
+  );
+}
+function RefreshIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1.5 7A5.5 5.5 0 0112 4M12.5 7A5.5 5.5 0 012 10"/>
+      <path d="M10.5 3.5L12 4.5V3M1.5 11.5v-1.5L3 11"/>
+    </svg>
+  );
+}
+function CheckCircleIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--sage-400)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="16" cy="16" r="13"/>
+      <path d="M10 16l4 4 8-8"/>
+    </svg>
+  );
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Buenos días';
+  if (h < 18) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+function firstName() {
+  const stored = localStorage.getItem('usuario');
+  if (!stored) return '';
+  try {
+    const u = JSON.parse(stored);
+    return (u.nombre || '').split(' ')[0];
+  } catch { return ''; }
+}

@@ -7,9 +7,7 @@ from sklearn.metrics import mean_absolute_error
 import joblib
 import os
 from datetime import datetime, timedelta
-
-MODELS_DIR = "trained_models"
-os.makedirs(MODELS_DIR, exist_ok=True)
+from .config import MODELS_DIR
 
 def preparar_features(df: pd.DataFrame) -> pd.DataFrame:
     """Prepara las variables de entrada para el modelo."""

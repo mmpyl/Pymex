@@ -5,9 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import joblib
 import os
-
-MODELS_DIR = "trained_models"
-os.makedirs(MODELS_DIR, exist_ok=True)
+from .config import MODELS_DIR
 
 def entrenar_modelo_demanda(empresa_id: int, df: pd.DataFrame) -> dict:
     """Entrena XGBoost por producto para predecir demanda mensual."""
@@ -62,13 +60,13 @@ def entrenar_modelo_demanda(empresa_id: int, df: pd.DataFrame) -> dict:
 
 def predecir_demanda_productos(empresa_id: int, df: pd.DataFrame) -> list:
     """Predice la demanda del próximo mes para cada producto."""
-    from datetime import datetime
+    import datetime
 
     df['fecha'] = pd.to_datetime(df['fecha'])
     demanda = df.groupby(['producto_id', 'producto', 'anio', 'mes'])['cantidad'].sum().reset_index()
 
     predicciones = []
-    hoy = datetime.now()
+    hoy = datetime.datetime.now()
     mes_siguiente = hoy.month + 1 if hoy.month < 12 else 1
     anio_siguiente = hoy.year if hoy.month < 12 else hoy.year + 1
 
