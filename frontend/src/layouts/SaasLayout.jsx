@@ -1,33 +1,35 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import Topbar from '../components/topbar';
+import Topbar from '../components/Topbar';
 import TrialBanner from '../components/TrialBanner';
 
-const SaasLayout = ({ children }) => {
+export default function SaasLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
 
-  const toggleSidebar = () => setCollapsed(prev => !prev);
-
+  // Auto-collapse on mobile
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
-    const handler = () => mq.matches && setCollapsed(true);
+    const handler = (e) => setCollapsed(e.matches);
     mq.addEventListener('change', handler);
-    handler();
+    handler(mq);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar collapsed={collapsed} />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Topbar onToggleSidebar={toggleSidebar} />
+    <div className="app-shell">
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      <div className="app-content">
+        <Topbar
+          onToggleSidebar={() => setCollapsed(c => !c)}
+          pathname={location.pathname}
+        />
         <TrialBanner />
-        <main className="flex-1 overflow-auto p-8">
+        <main className="page-body fade-in">
           {children}
         </main>
       </div>
     </div>
   );
-};
-
-export default SaasLayout;
+}
