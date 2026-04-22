@@ -55,7 +55,7 @@ export const SkeletonTable = ({ rows = 5, columns = 4 }) => (
     </div>
     <div className="divide-y">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+        <div key={i} className="p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
           {Array.from({ length: columns }).map((_, j) => (
             <Skeleton key={j} className="h-4 w-full" />
           ))}
