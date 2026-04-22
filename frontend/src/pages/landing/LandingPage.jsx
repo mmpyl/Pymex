@@ -1,36 +1,49 @@
 import { Link } from 'react-router-dom';
 
+const features = [
+  'Dashboard en tiempo real',
+  'Facturación electrónica',
+  'Predicciones de demanda',
+  'Panel Super Admin',
+];
+
 const LandingPage = () => {
   return (
-    <div style={{ padding: '56px 24px', maxWidth: 1100, margin: '0 auto' }}>
-      <section style={{ textAlign: 'center', marginBottom: 48 }}>
-        <h1 style={{ fontSize: 44, margin: 0 }}>ERP SaaS para PYMES</h1>
-        <p style={{ fontSize: 18, color: '#475569', maxWidth: 760, margin: '16px auto' }}>
-          Controla ventas, inventario, gastos, reportes y predicciones con una plataforma moderna multiempresa.
+    <div className="mx-auto max-w-6xl px-6 py-14">
+      <section className="mb-12 text-center">
+        <h1 className="m-0 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">ERP SaaS para PYMES</h1>
+        <p className="mx-auto mt-4 max-w-3xl text-lg text-slate-600">
+          Controla ventas, inventario, gastos, reportes y predicciones con una plataforma moderna
+          multiempresa.
         </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <Link to="/register" style={styles.primary}>Comenzar gratis</Link>
-          <Link to="/login" style={styles.secondary}>Iniciar sesión</Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/register"
+            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-500"
+          >
+            Comenzar gratis
+          </Link>
+          <Link
+            to="/login"
+            className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 font-medium text-slate-900 transition hover:bg-slate-50"
+          >
+            Iniciar sesión
+          </Link>
         </div>
       </section>
 
-      <section style={styles.grid}>
-        {['Dashboard en tiempo real', 'Facturación electrónica', 'Predicciones de demanda', 'Panel Super Admin'].map((item) => (
-          <article key={item} style={styles.card}>
-            <h3>{item}</h3>
-            <p style={{ color: '#64748b' }}>Diseño SaaS moderno, responsive y enfocado en productividad empresarial.</p>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {features.map((item) => (
+          <article key={item} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-900">{item}</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Diseño SaaS moderno, responsive y enfocado en productividad empresarial.
+            </p>
           </article>
         ))}
       </section>
     </div>
   );
-};
-
-const styles = {
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 18 },
-  primary: { background: '#2563eb', color: '#fff', padding: '10px 18px', borderRadius: 10, textDecoration: 'none' },
-  secondary: { background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '10px 18px', borderRadius: 10, textDecoration: 'none' }
 };
 
 export default LandingPage;
