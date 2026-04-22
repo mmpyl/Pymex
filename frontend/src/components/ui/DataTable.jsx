@@ -12,7 +12,7 @@ const DataTable = ({ columns, rows }) => {
   }, [rows, query]);
 
   return (
-    <div style={{ display: 'grid', gap: 10 }}>
+    <div className="grid gap-2.5">
       <Input placeholder="Filtrar..." value={query} onChange={(e) => setQuery(e.target.value)} />
       <Table columns={columns} rows={filtered} />
     </div>

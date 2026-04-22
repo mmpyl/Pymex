@@ -1,21 +1,14 @@
-const palette = {
-  default: { bg: '#e2e8f0', color: '#1e293b' },
-  success: { bg: '#dcfce7', color: '#166534' },
-  warning: { bg: '#fef3c7', color: '#92400e' },
-  danger: { bg: '#fee2e2', color: '#b91c1c' }
+const badgeVariants = {
+  default: 'bg-slate-200 text-slate-800',
+  success: 'bg-green-100 text-green-800',
+  warning: 'bg-yellow-100 text-yellow-800',
+  danger: 'bg-red-100 text-red-800'
 };
 
 const Badge = ({ children, variant = 'default' }) => (
-  <span style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '2px 8px',
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 600,
-    background: palette[variant].bg,
-    color: palette[variant].color
-  }}>{children}</span>
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${badgeVariants[variant]}`}>
+    {children}
+  </span>
 );
 
 export default Badge;
