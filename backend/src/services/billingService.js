@@ -8,18 +8,29 @@
 const { Op }    = require('sequelize');
 const { Empresa, Suscripcion, Pago, sequelize } = require('../models');
 
-const BILLING_GRACE_DAYS = Number(process.env.BILLING_GRACE_DAYS || 5);
+const sanitizePositiveInt = (value, fallback, { min = 1, max = 365 } = {}) => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  if (parsed < min) return min;
+  if (parsed > max) return max;
+  return parsed;
+};
+
+const BILLING_GRACE_DAYS = sanitizePositiveInt(process.env.BILLING_GRACE_DAYS, 5);
 
 // ─── applyPaymentAndReactivate ─────────────────────────────────────────────────
 // Marca un pago como pagado y reactiva empresa + suscripción.
 // Acepta una transacción externa (txExternal) para encadenarse con webhooks.
 const applyPaymentAndReactivate = async (pagoId, referencia = null, txExternal = null) => {
+  const pagoIdSafe = sanitizePositiveInt(pagoId, null, { min: 1, max: Number.MAX_SAFE_INTEGER });
+  if (!pagoIdSafe) throw new Error('pagoId inválido');
+
   const tx    = txExternal || await sequelize.transaction();
   const ownTx = !txExternal;
 
   try {
-    const pago = await Pago.findByPk(pagoId, { transaction: tx });
-    if (!pago) throw new Error(`Pago #${pagoId} no encontrado`);
+    const pago = await Pago.findByPk(pagoIdSafe, { transaction: tx });
+    if (!pago) throw new Error(`Pago #${pagoIdSafe} no encontrado`);
 
     await pago.update({
       estado:     'pagado',
