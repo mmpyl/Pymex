@@ -1,14 +1,14 @@
 const Alert = ({ title, description, variant = 'info' }) => {
-  const styles = {
-    info: { border: '#bfdbfe', bg: '#eff6ff', color: '#1e3a8a' },
-    warning: { border: '#fde68a', bg: '#fffbeb', color: '#92400e' },
-    danger: { border: '#fecaca', bg: '#fef2f2', color: '#991b1b' }
+  const variantStyles = {
+    info: { border: 'border-blue-200 dark:border-blue-800', bg: 'bg-blue-50 dark:bg-blue-900/20', color: 'text-blue-900 dark:text-blue-300' },
+    warning: { border: 'border-yellow-200 dark:border-yellow-800', bg: 'bg-yellow-50 dark:bg-yellow-900/20', color: 'text-yellow-900 dark:text-yellow-300' },
+    danger: { border: 'border-red-200 dark:border-red-800', bg: 'bg-red-50 dark:bg-red-900/20', color: 'text-red-900 dark:text-red-300' }
   }[variant];
-
+  
   return (
-    <div style={{ border: `1px solid ${styles.border}`, background: styles.bg, color: styles.color, borderRadius: 10, padding: 12 }}>
+    <div className={`border ${variantStyles.border} ${variantStyles.bg} ${variantStyles.color} rounded-lg p-3`}>
       <strong>{title}</strong>
-      {description && <p style={{ margin: '6px 0 0 0' }}>{description}</p>}
+      {description && <p className="mt-1.5 mb-0">{description}</p>}
     </div>
   );
 };

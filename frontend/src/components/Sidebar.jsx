@@ -62,15 +62,15 @@ export default function Sidebar({ collapsed, onToggle }) {
   const isAdmin = ['super_admin', 'soporte'].includes(role);
 
   return (
-    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+    <aside className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
       {/* Brand */}
-      <div className="sidebar-brand">
-        <div className="sidebar-logo">SP</div>
-        <span className="sidebar-brand-name">SaPyme</span>
+      <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">SP</div>
+        {!collapsed && <span className="ml-3 text-lg font-semibold text-gray-900 dark:text-white">SaPyme</span>}
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar-nav">
+      <nav className="flex-1 overflow-y-auto py-4">
         {NAV_SECTIONS.map(section => {
           const visibleItems = section.items.filter(item => {
             if (item.feature && !hasFeature(item.feature)) return false;
@@ -80,8 +80,8 @@ export default function Sidebar({ collapsed, onToggle }) {
           if (!visibleItems.length) return null;
 
           return (
-            <div key={section.title}>
-              <div className="sidebar-section-title">{section.title}</div>
+            <div key={section.title} className="mb-6">
+              {!collapsed && <div className="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{section.title}</div>}
               {visibleItems.map(item => {
                 const Icon = item.icon;
                 const count = item.badge ? alertCount : 0;
@@ -89,12 +89,22 @@ export default function Sidebar({ collapsed, onToggle }) {
                   <NavLink
                     key={item.path}
                     to={item.path}
-                    className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                    className={({ isActive }) => 
+                      `flex items-center px-4 py-2.5 mx-2 my-1 rounded-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`
+                    }
                     title={collapsed ? item.label : undefined}
                   >
-                    <Icon className="nav-icon" />
-                    <span className="nav-label">{item.label}</span>
-                    {count > 0 && <span className="nav-badge">{count > 99 ? '99+' : count}</span>}
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {!collapsed && <span className="ml-3 text-sm font-medium">{item.label}</span>}
+                    {!collapsed && count > 0 && (
+                      <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}
@@ -103,37 +113,49 @@ export default function Sidebar({ collapsed, onToggle }) {
         })}
 
         {isAdmin && (
-          <div>
-            <div className="sidebar-section-title">Sistema</div>
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            {!collapsed && <div className="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sistema</div>}
             <NavLink
               to="/admin"
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+              className={({ isActive }) => 
+                `flex items-center px-4 py-2.5 mx-2 my-1 rounded-lg transition-colors ${
+                  isActive 
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`
+              }
               title={collapsed ? 'Super Admin' : undefined}
             >
-              <IconAdmin className="nav-icon" />
-              <span className="nav-label">Super Admin</span>
+              <IconAdmin className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span className="ml-3 text-sm font-medium">Super Admin</span>}
             </NavLink>
           </div>
         )}
       </nav>
 
       {/* Footer / User */}
-      <div className="sidebar-footer">
-        <div className="sidebar-user" onClick={() => navigate('/perfil')}>
-          <div className="user-avatar">{initials}</div>
-          <div className="user-info">
-            <div className="user-name">{usuario?.nombre}</div>
-            <div className="user-role">{usuario?.Empresa?.nombre || 'Mi empresa'}</div>
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+        <div 
+          className="flex items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 -mx-2 transition-colors"
+          onClick={() => navigate('/perfil')}
+        >
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {initials}
           </div>
+          {!collapsed && (
+            <div className="ml-3 flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{usuario?.nombre}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{usuario?.Empresa?.nombre || 'Mi empresa'}</div>
+            </div>
+          )}
         </div>
         <button
           onClick={logout}
-          className="nav-item"
-          style={{ width: '100%', marginTop: 4, border: 'none', cursor: 'pointer', textAlign: 'left' }}
+          className="flex items-center w-full px-4 py-2.5 mt-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           title={collapsed ? 'Cerrar sesión' : undefined}
         >
-          <IconLogout className="nav-icon" />
-          <span className="nav-label">Cerrar sesión</span>
+          <IconLogout className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span className="ml-3 text-sm font-medium">Cerrar sesión</span>}
         </button>
       </div>
     </aside>
