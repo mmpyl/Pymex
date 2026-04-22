@@ -1,5 +1,6 @@
 // pages/Dashboard.jsx — Rediseñado
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [topProductos, setTopProductos] = useState([]);
   const [alertas, setAlertas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { usuario } = useAuth();
 
   useEffect(() => { load(); }, []);
 
@@ -108,7 +110,7 @@ export default function Dashboard() {
           <h1 className="page-heading">
             {greeting()},{' '}
             <span style={{ color: 'var(--navy-600)' }}>
-              {firstName()}
+              {firstName(usuario)}
             </span>
           </h1>
           <p className="page-desc">
@@ -405,11 +407,7 @@ function greeting() {
   return 'Buenas noches';
 }
 
-function firstName() {
-  const stored = localStorage.getItem('usuario');
-  if (!stored) return '';
-  try {
-    const u = JSON.parse(stored);
-    return (u.nombre || '').split(' ')[0];
-  } catch { return ''; }
+function firstName(usuario) {
+  if (!usuario?.nombre) return '';
+  return usuario.nombre.split(' ')[0];
 }
