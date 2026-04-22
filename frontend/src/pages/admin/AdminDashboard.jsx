@@ -1,16 +1,16 @@
 const Stat = ({ label, value }) => (
-  <div style={{ background: '#111827', border: '1px solid #374151', borderRadius: 12, padding: 16 }}>
-    <p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>{label}</p>
-    <h3 style={{ margin: '8px 0 0 0', fontSize: 24, color: '#fff' }}>{value}</h3>
+  <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+    <p className="m-0 text-xs text-slate-400">{label}</p>
+    <h3 className="mt-2 text-2xl font-semibold text-white">{value}</h3>
   </div>
 );
 
 const AdminDashboard = () => {
   return (
     <div>
-      <h1 style={{ marginTop: 0 }}>Dashboard Super Admin</h1>
-      <p style={{ color: '#94a3b8' }}>Métricas globales del SaaS</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14 }}>
+      <h1 className="mt-0 text-3xl font-bold tracking-tight text-white">Dashboard Super Admin</h1>
+      <p className="mb-5 text-slate-400">Métricas globales del SaaS</p>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Total empresas" value="--" />
         <Stat label="Empresas activas" value="--" />
         <Stat label="MRR" value="--" />

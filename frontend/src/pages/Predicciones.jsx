@@ -53,7 +53,7 @@ const Predicciones = () => {
     };
 
     return (
-        <div style={styles.container}>
+        <div className="flex-1 p-6">
             <div style={styles.header}>
                 <h1 style={styles.titulo}>🤖 Predicciones ML</h1>
                 <button style={styles.btnEntrenar} onClick={entrenar} disabled={entrenando}>

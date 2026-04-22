@@ -1,45 +1,3 @@
-
-
-// Cambios respecto a la version anterior:
-
-// 1. Agregar estado de categorias:
-const [categorias, setCategorias] = useState([]);
-
-// 2. Agregar en useEffect:
-useEffect(() => {
-  cargar();
-  cargarCategorias();
-}, []);
-
-const cargarCategorias = async () => {
-  try {
-    const { data } = await api.get('/categorias');
-    setCategorias(data);
-  } catch {}
-};
-
-// 3. Agregar categoria_id al form inicial:
-const [form, setForm] = useState({
-  nombre: '', precio_compra: '', precio_venta: '',
-  stock: '', stock_minimo: 5, categoria_id: ''
-});
-
-// 4. Agregar selector en el JSX del formulario:
-<div style={styles.grupo}>
-  <label style={styles.label}>Categoria</label>
-  <select style={styles.input}
-    value={form.categoria_id}
-    onChange={(e) => setForm({ ...form, categoria_id: e.target.value })}>
-    <option value=''>Sin categoria</option>
-    {categorias.map(c => (
-      <option key={c.id} value={c.id}>{c.nombre}</option>
-    ))}
-  </select>
-</div>
-
-
-// frontend/src/pages/Productos.jsx — versión completa consolidada (sin conflictos de merge)
-
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -137,7 +95,7 @@ const Productos = () => {
   ];
 
   return (
-    <div style={styles.container}>
+    <div className="mx-auto max-w-6xl p-6">
       <div style={styles.header}>
         <div>
           <h1 style={styles.titulo}>Productos</h1>

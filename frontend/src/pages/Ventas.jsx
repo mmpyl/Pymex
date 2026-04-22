@@ -116,7 +116,7 @@ export default function Ventas() {
   const METODOS = ['efectivo', 'tarjeta', 'transferencia', 'yape'];
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+    <div className="mx-auto max-w-[1100px]">
       {/* Toast */}
       {toast && (
         <div style={{
