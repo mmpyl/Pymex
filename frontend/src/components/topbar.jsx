@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useUIStore } from '../../store/uiStore';
+import { useUIStore } from '../store/uiStore';
 
 const PAGE_META = {
   '/dashboard':    { title: 'Dashboard',            desc: 'Vista general de tu negocio' },
