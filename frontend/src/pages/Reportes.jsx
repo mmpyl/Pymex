@@ -1,116 +1,88 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import api from '../api/axios'; 
+import api from '../api/axios';
 
 const Reportes = () => {
-    const [desde, setDesde] = useState('');
-    const [hasta, setHasta] = useState('');
-    const [cargando, setCargando] = useState('');
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
+  const [cargando, setCargando] = useState('');
 
-    const descargar = async (tipo) => {
+  const descargar = async (tipo) => {
     setCargando(tipo);
-        try {
-            const params = desde && hasta ? `?desde=${desde}&hasta=${hasta}` : '';
-            const urls = {
-                'ventas-pdf':   `/reportes/ventas/pdf${params}`,
-                'ventas-excel': `/reportes/ventas/excel${params}`,
-                'gastos-excel': `/reportes/gastos/excel`
-            };
-    
-            const response = await api.get(urls[tipo], { responseType: 'blob' });
-            const url = window.URL.createObjectURL(response.data);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = tipo.includes('pdf') ? `reporte_${tipo}.pdf` : `reporte_${tipo}.xlsx`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            toast.success('Reporte descargado');
-        } catch {
-            toast.error('Error al descargar reporte');
-        } finally {
-            setCargando('');
-        }
-    };
+    try {
+      const params = desde && hasta ? `?desde=${desde}&hasta=${hasta}` : '';
+      const urls = {
+        'ventas-pdf': `/reportes/ventas/pdf${params}`,
+        'ventas-excel': `/reportes/ventas/excel${params}`,
+        'gastos-excel': '/reportes/gastos/excel'
+      };
 
-    const reportes = [
-        { id: 'ventas-pdf', titulo: 'Reporte de Ventas', formato: 'PDF', icono: '📄', color: '#dc2626', bg: '#fee2e2', desc: 'Historial completo de ventas con totales' },
-        { id: 'ventas-excel', titulo: 'Reporte de Ventas', formato: 'Excel', icono: '📊', color: '#16a34a', bg: '#dcfce7', desc: 'Ventas en hoja de cálculo editable' },
-        { id: 'gastos-excel', titulo: 'Reporte de Gastos', formato: 'Excel', icono: '💸', color: '#d97706', bg: '#fef3c7', desc: 'Gastos agrupados por categoría' }
-    ];
+      const response = await api.get(urls[tipo], { responseType: 'blob' });
+      const url = window.URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = tipo.includes('pdf') ? `reporte_${tipo}.pdf` : `reporte_${tipo}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('Reporte descargado');
+    } catch {
+      toast.error('Error al descargar reporte');
+    } finally {
+      setCargando('');
+    }
+  };
 
-    return (
-        <div style={styles.container}>
-            <h1 style={styles.titulo}>Reportes</h1>
+  const reportes = [
+    { id: 'ventas-pdf', titulo: 'Reporte de Ventas', formato: 'PDF', icono: '📄', color: 'text-red-700', bg: 'bg-red-100', btn: 'bg-red-600' },
+    { id: 'ventas-excel', titulo: 'Reporte de Ventas', formato: 'Excel', icono: '📊', color: 'text-emerald-700', bg: 'bg-emerald-100', btn: 'bg-emerald-600' },
+    { id: 'gastos-excel', titulo: 'Reporte de Gastos', formato: 'Excel', icono: '💸', color: 'text-amber-700', bg: 'bg-amber-100', btn: 'bg-amber-600' }
+  ];
 
-            {/* Filtro de fechas */}
-            <div style={styles.filtroCard}>
-                <h3 style={styles.filtroTitulo}>📅 Filtrar por fecha (opcional)</h3>
-                <div style={styles.filtroRow}>
-                    <div style={styles.grupo}>
-                        <label style={styles.label}>Desde</label>
-                        <input style={styles.input} type="date" value={desde} onChange={e => setDesde(e.target.value)} />
-                    </div>
-                    <div style={styles.grupo}>
-                        <label style={styles.label}>Hasta</label>
-                        <input style={styles.input} type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
-                    </div>
-                    <button style={styles.btnLimpiar} onClick={() => { setDesde(''); setHasta(''); }}>
-                        Limpiar filtro
-                    </button>
-                </div>
-                {desde && hasta && (
-                    <p style={styles.filtroInfo}>
-                        Reportes del {new Date(desde).toLocaleDateString('es-PE')} al {new Date(hasta).toLocaleDateString('es-PE')}
-                    </p>
-                )}
-            </div>
+  return (
+    <div className="flex-1 p-6">
+      <h1 className="mb-6 text-2xl font-bold text-slate-900">Reportes</h1>
 
-            {/* Cards de reportes */}
-            <div style={styles.grid}>
-                {reportes.map(r => (
-                    <div key={r.id} style={styles.card}>
-                        <div style={{ ...styles.cardIcono, backgroundColor: r.bg, color: r.color }}>
-                            {r.icono}
-                        </div>
-                        <div style={styles.cardBody}>
-                            <h3 style={styles.cardTitulo}>{r.titulo}</h3>
-                            <p style={styles.cardDesc}>{r.desc}</p>
-                            <span style={{ ...styles.formatoBadge, backgroundColor: r.bg, color: r.color }}>
-                                {r.formato}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => descargar(r.id)}
-                            disabled={cargando === r.id}
-                            style={{ ...styles.btnDescargar, backgroundColor: r.color, opacity: cargando === r.id ? 0.7 : 1 }}>
-                            {cargando === r.id ? '⏳ Generando...' : '⬇ Descargar'}
-                        </button>
-                    </div>
-                ))}
-            </div>
+      <div className="mb-6 rounded-xl bg-white p-5 shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold text-slate-700">📅 Filtrar por fecha (opcional)</h3>
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-col">
+            <label className="mb-1 text-xs font-semibold text-slate-700">Desde</label>
+            <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
+          </div>
+          <div className="flex flex-col">
+            <label className="mb-1 text-xs font-semibold text-slate-700">Hasta</label>
+            <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
+          </div>
+          <button className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600" onClick={() => { setDesde(''); setHasta(''); }}>
+            Limpiar filtro
+          </button>
         </div>
-    );
-};
+        {desde && hasta && (
+          <p className="mt-3 text-sm font-semibold text-indigo-600">Reportes del {new Date(desde).toLocaleDateString('es-PE')} al {new Date(hasta).toLocaleDateString('es-PE')}</p>
+        )}
+      </div>
 
-const styles = {
-    container: { padding: '30px', flex: 1 },
-    titulo: { fontSize: '24px', fontWeight: '700', color: '#1e1b4b', marginBottom: '24px' },
-    filtroCard: { backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', marginBottom: '24px' },
-    filtroTitulo: { margin: '0 0 14px', color: '#374151', fontSize: '15px' },
-    filtroRow: { display: 'flex', gap: '16px', alignItems: 'end', flexWrap: 'wrap' },
-    filtroInfo: { margin: '10px 0 0', fontSize: '13px', color: '#4f46e5', fontWeight: '600' },
-    grupo: { display: 'flex', flexDirection: 'column' },
-    label: { marginBottom: '5px', fontWeight: '600', color: '#374151', fontSize: '13px' },
-    input: { padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px' },
-    btnLimpiar: { padding: '9px 16px', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' },
-    card: { backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' },
-    cardIcono: { width: '52px', height: '52px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
-    cardBody: { flex: 1 },
-    cardTitulo: { margin: '0 0 6px', color: '#1e1b4b', fontSize: '16px' },
-    cardDesc: { margin: '0 0 10px', color: '#64748b', fontSize: '13px' },
-    formatoBadge: { padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' },
-    btnDescargar: { padding: '10px', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px', transition: 'opacity 0.2s' }
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        {reportes.map((r) => (
+          <div key={r.id} className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${r.bg} ${r.color}`}>{r.icono}</div>
+            <div className="flex-1">
+              <h3 className="mb-1 text-base font-semibold text-slate-900">{r.titulo}</h3>
+              <p className="mb-2 text-sm text-slate-500">Descarga el reporte en formato {r.formato}.</p>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${r.bg} ${r.color}`}>{r.formato}</span>
+            </div>
+            <button
+              onClick={() => descargar(r.id)}
+              disabled={cargando === r.id}
+              className={`rounded-lg px-4 py-2 font-semibold text-white ${r.btn} disabled:opacity-70`}
+            >
+              {cargando === r.id ? '⏳ Generando...' : '⬇ Descargar'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Reportes;
