@@ -1,9 +1,8 @@
-// pages/Dashboard.jsx — Rediseñado
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer
+  CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import api from '../api/axios';
 
@@ -37,18 +36,19 @@ export default function Dashboard() {
       setResumen(r.data);
 
       const vMap = {};
-      v.data.forEach(d => {
+      v.data.forEach((d) => {
         const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short' });
         vMap[k] = { mes: k, ventas: parseFloat(d.total || 0), gastos: 0 };
       });
-      g.data.forEach(d => {
+      g.data.forEach((d) => {
         const k = new Date(d.mes).toLocaleDateString('es-PE', { month: 'short' });
         if (vMap[k]) vMap[k].gastos = parseFloat(d.total || 0);
         else vMap[k] = { mes: k, ventas: 0, gastos: parseFloat(d.total || 0) };
       });
+
       setSeries(Object.values(vMap).slice(-6));
       setTopProductos((t.data || []).slice(0, 5));
-      setAlertas((a.data || []).filter(x => !x.leido).slice(0, 5));
+      setAlertas((a.data || []).filter((x) => !x.leido).slice(0, 5));
     } catch (err) {
       console.error(err);
     } finally {
@@ -59,152 +59,98 @@ export default function Dashboard() {
   if (loading) return <DashboardSkeleton />;
 
   const utilidad = (resumen?.ventas_mes || 0) - (resumen?.gastos_mes || 0);
-  const margen = resumen?.ventas_mes > 0
-    ? ((utilidad / resumen.ventas_mes) * 100).toFixed(1)
-    : 0;
+  const margen = resumen?.ventas_mes > 0 ? ((utilidad / resumen.ventas_mes) * 100).toFixed(1) : 0;
 
   const kpis = [
-    {
-      label: 'Ventas del mes',
-      value: `S/ ${fmt(resumen?.ventas_mes)}`,
-      delta: resumen?.crecimiento_ventas,
-      up: (resumen?.crecimiento_ventas || 0) >= 0,
-      color: 'var(--navy-700)',
-      accent: 'var(--navy-500)',
-      icon: <KpiIconVentas />,
-    },
-    {
-      label: 'Gastos del mes',
-      value: `S/ ${fmt(resumen?.gastos_mes)}`,
-      delta: null,
-      color: 'var(--coral-500)',
-      accent: '#E97060',
-      icon: <KpiIconGastos />,
-    },
-    {
-      label: 'Utilidad neta',
-      value: `S/ ${fmt(utilidad)}`,
-      delta: parseFloat(margen),
-      up: utilidad >= 0,
-      deltaLabel: `${margen}% margen`,
-      color: utilidad >= 0 ? 'var(--sage-600)' : 'var(--coral-500)',
-      accent: utilidad >= 0 ? 'var(--sage-400)' : '#E97060',
-      icon: <KpiIconUtilidad />,
-    },
-    {
-      label: 'Productos activos',
-      value: fmtInt(resumen?.total_productos),
-      sub: `${fmtInt(resumen?.stock_bajo)} con stock bajo`,
-      subDanger: (resumen?.stock_bajo || 0) > 0,
-      color: 'var(--amber-600)',
-      accent: 'var(--amber-400)',
-      icon: <KpiIconProductos />,
-    },
+    { label: 'Ventas del mes', value: `S/ ${fmt(resumen?.ventas_mes)}`, sub: resumen?.crecimiento_ventas != null ? `${resumen.crecimiento_ventas.toFixed(1)}% vs mes pasado` : 'Sin variación', color: 'text-indigo-700' },
+    { label: 'Gastos del mes', value: `S/ ${fmt(resumen?.gastos_mes)}`, sub: 'Control de egresos', color: 'text-rose-600' },
+    { label: 'Utilidad neta', value: `S/ ${fmt(utilidad)}`, sub: `${margen}% margen`, color: utilidad >= 0 ? 'text-emerald-600' : 'text-rose-600' },
+    { label: 'Productos activos', value: fmtInt(resumen?.total_productos), sub: `${fmtInt(resumen?.stock_bajo)} con stock bajo`, color: 'text-amber-600' },
   ];
 
+  const serieFinanciera = [
+    { label: 'Ventas', value: resumen?.ventas_mes || 0, color: 'bg-indigo-500' },
+    { label: 'Gastos', value: resumen?.gastos_mes || 0, color: 'bg-rose-500' },
+    { label: 'Utilidad', value: utilidad, color: utilidad >= 0 ? 'bg-emerald-500' : 'bg-rose-700' },
+  ];
+  const maxRef = Math.max(...serieFinanciera.map((i) => Math.abs(i.value)), 1);
+
   return (
-    <div className="mx-auto max-w-[1280px]">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="page-header-left">
-          <h1 className="page-heading">
-            {greeting()},{' '}
-            <span style={{ color: 'var(--navy-600)' }}>
-              {firstName(usuario)}
-            </span>
+    <div className="mx-auto max-w-[1280px] space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white p-5 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {greeting()}, <span className="text-indigo-600">{firstName(usuario)}</span>
           </h1>
-          <p className="page-desc">
+          <p className="text-sm text-slate-500">
             {new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <button className="btn btn-accent" onClick={load}>
+        <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white" onClick={load}>
           <RefreshIcon /> Actualizar
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-        {kpis.map(kpi => (
-          <StatCard key={kpi.label} {...kpi} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="rounded-xl bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-600">{kpi.label}</p>
+            <p className={`mt-1 text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
+            <p className="mt-2 text-xs text-slate-500">{kpi.sub}</p>
+          </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
-        {/* Ventas vs Gastos */}
-        <div className="card" style={{ padding: '20px 22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="rounded-xl bg-white p-5 shadow-sm xl:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.2px' }}>
-                Ventas vs Gastos
-              </div>
-              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 2 }}>
-                Últimos 6 meses
-              </div>
+              <h3 className="text-sm font-semibold text-slate-800">Ventas vs Gastos</h3>
+              <p className="text-xs text-slate-500">Últimos meses</p>
             </div>
-            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--navy-500)', display: 'inline-block' }} />
-                Ventas
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#E97060', display: 'inline-block' }} />
-                Gastos
-              </span>
+            <div className="flex gap-3 text-xs text-slate-500">
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-indigo-500" />Ventas</span>
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-rose-400" />Gastos</span>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gventa" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--navy-500)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="var(--navy-500)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="ggasto" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#E97060" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#E97060" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={v => `S/${v > 999 ? (v / 1000).toFixed(0) + 'k' : v}`} />
-              <Tooltip
-                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 13 }}
-                formatter={v => [`S/ ${fmt(v)}`]}
-              />
-              <Area type="monotone" dataKey="ventas" stroke="var(--navy-500)" strokeWidth={2} fill="url(#gventa)" name="Ventas" />
-              <Area type="monotone" dataKey="gastos" stroke="#E97060" strokeWidth={2} fill="url(#ggasto)" name="Gastos" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={series} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="ventasGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.22} />
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="mes" />
+                <YAxis />
+                <Tooltip formatter={(v) => `S/ ${fmt(v)}`} />
+                <Area type="monotone" dataKey="ventas" stroke="#4f46e5" fill="url(#ventasGrad)" strokeWidth={2} />
+                <Bar dataKey="gastos" fill="#fb7185" radius={[4, 4, 0, 0]} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Top Productos */}
-        <div className="card" style={{ padding: '20px 22px' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.2px' }}>Top productos</div>
-          <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}>Por ingreso acumulado</div>
-
+        <div className="rounded-xl bg-white p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-800">Top productos</h3>
+          <p className="mb-4 text-xs text-slate-500">Por ingreso acumulado</p>
           {topProductos.length === 0 ? (
-            <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>
-              Sin ventas registradas
-            </div>
+            <p className="py-6 text-center text-sm text-slate-400">Sin datos de productos aún.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="space-y-3">
               {topProductos.map((p, i) => {
-                const maxVal = parseFloat(topProductos[0]?.total_ingresos || 1);
-                const pct = ((parseFloat(p.total_ingresos) / maxVal) * 100).toFixed(0);
-                const COLORS = ['var(--navy-600)', 'var(--navy-400)', 'var(--navy-300)', 'var(--amber-500)', 'var(--amber-400)'];
+                const pct = topProductos[0]?.total_ingresos ? (Number(p.total_ingresos) / Number(topProductos[0].total_ingresos)) * 100 : 0;
+                const colors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444'];
                 return (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 5 }}>
-                      <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
-                        {p.Producto?.nombre}
-                      </span>
-                      <span style={{ fontWeight: 600, color: 'var(--navy-600)', flexShrink: 0 }}>
-                        S/ {fmt(p.total_ingresos)}
-                      </span>
+                  <div key={p.producto_id || p.nombre || i}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="max-w-[65%] truncate font-medium text-slate-700">{p.nombre}</span>
+                      <span className="font-semibold text-indigo-700">S/ {fmt(p.total_ingresos)}</span>
                     </div>
-                    <div style={{ height: 5, background: 'hsl(var(--muted))', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: COLORS[i], borderRadius: 3, transition: 'width 0.6s ease' }} />
+                    <div className="h-1.5 overflow-hidden rounded bg-slate-100">
+                      <div className="h-full rounded" style={{ width: `${pct}%`, background: colors[i] }} />
                     </div>
                   </div>
                 );
@@ -214,66 +160,46 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {/* Alertas */}
-        <div className="card" style={{ padding: '20px 22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 600 }}>Alertas recientes</div>
-            {alertas.length > 0 && (
-              <span className="badge badge-danger">{alertas.length} sin leer</span>
-            )}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="rounded-xl bg-white p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-800">Alertas recientes</h3>
+            <button className="rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Ver todas</button>
           </div>
-
           {alertas.length === 0 ? (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '24px 0', gap: 8,
-            }}>
-              <CheckCircleIcon />
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--sage-600)' }}>Todo en orden</div>
-              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>No hay alertas pendientes</div>
+            <div className="rounded-lg bg-emerald-50 p-4 text-emerald-700">
+              <p className="font-semibold">Todo en orden</p>
+              <p className="text-sm">No hay alertas pendientes</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {alertas.map(a => <AlertRow key={a.id} alerta={a} />)}
+            <div className="space-y-2">
+              {alertas.map((a) => <AlertItem key={a.id} alerta={a} />)}
             </div>
           )}
         </div>
 
-        {/* Margen Visual */}
-        <div className="card" style={{ padding: '20px 22px' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Salud financiera del mes</div>
-          <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 20 }}>
-            Ratio gastos / ventas
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {[
-              { label: 'Ventas', value: resumen?.ventas_mes || 0, color: 'var(--navy-500)', max: resumen?.ventas_mes || 1 },
-              { label: 'Gastos', value: resumen?.gastos_mes || 0, color: '#E97060', max: resumen?.ventas_mes || 1 },
-              { label: 'Utilidad', value: Math.max(0, utilidad), color: 'var(--sage-500)', max: resumen?.ventas_mes || 1 },
-            ].map(item => {
-              const pct = Math.min(100, ((item.value / item.max) * 100)).toFixed(1);
+        <div className="rounded-xl bg-white p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-800">Salud financiera del mes</h3>
+          <p className="mb-4 text-xs text-slate-500">Comparativo de indicadores clave</p>
+          <div className="space-y-4">
+            {serieFinanciera.map((item) => {
+              const pct = (Math.abs(item.value) / maxRef) * 100;
               return (
                 <div key={item.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>{item.label}</span>
-                    <span style={{ fontWeight: 600 }}>S/ {fmt(item.value)}</span>
+                  <div className="mb-1 flex items-center justify-between text-sm">
+                    <span className="text-slate-500">{item.label}</span>
+                    <span className="font-semibold">S/ {fmt(item.value)}</span>
                   </div>
-                  <div style={{ height: 8, background: 'hsl(var(--muted))', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: item.color, borderRadius: 4, transition: 'width 0.8s ease' }} />
+                  <div className="h-2 overflow-hidden rounded bg-slate-100">
+                    <div className={`h-full ${item.color}`} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
             })}
           </div>
-
-          <div style={{ marginTop: 20, padding: '12px 16px', background: 'hsl(var(--muted))', borderRadius: 8 }}>
-            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 2 }}>Margen neto</div>
-            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px', color: utilidad >= 0 ? 'var(--sage-600)' : 'var(--coral-500)' }}>
-              {margen}%
-            </div>
+          <div className="mt-5 rounded-lg bg-slate-50 p-4">
+            <p className="text-xs text-slate-500">Margen neto</p>
+            <p className={`text-2xl font-semibold ${utilidad >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{margen}%</p>
           </div>
         </div>
       </div>
@@ -281,53 +207,22 @@ export default function Dashboard() {
   );
 }
 
-/* ——— Sub-components ——— */
+function AlertItem({ alerta }) {
+  const type = alerta.tipo;
+  const cfg = type === 'stock_bajo'
+    ? { color: 'bg-red-500', badge: 'text-red-700 bg-red-100', label: 'Stock bajo' }
+    : type === 'ventas_bajas'
+      ? { color: 'bg-amber-500', badge: 'text-amber-700 bg-amber-100', label: 'Ventas bajas' }
+      : type === 'gastos_altos'
+        ? { color: 'bg-violet-500', badge: 'text-violet-700 bg-violet-100', label: 'Gastos altos' }
+        : { color: 'bg-slate-500', badge: 'text-slate-700 bg-slate-100', label: 'Alerta' };
 
-function StatCard({ label, value, delta, up, sub, subDanger, deltaLabel, color, accent, icon }) {
   return (
-    <div className="stat-card">
-      <div className="stat-card-accent" style={{ background: accent }} />
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div className="stat-card-icon" style={{ background: `color-mix(in srgb, ${accent} 12%, transparent)` }}>
-          <span style={{ color, width: 20, height: 20 }}>{icon}</span>
-        </div>
-      </div>
-      <div className="stat-label">{label}</div>
-      <div className="stat-value" style={{ color }}>{value}</div>
-      {delta !== null && delta !== undefined && (
-        <span className={`stat-trend ${up ? 'up' : 'down'}`}>
-          {up ? '↑' : '↓'} {deltaLabel || `${Math.abs(delta).toFixed(1)}%`}
-        </span>
-      )}
-      {sub && (
-        <div style={{ fontSize: 12, marginTop: 6, color: subDanger ? 'var(--coral-500)' : 'hsl(var(--muted-foreground))' }}>
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const ALERT_TYPES = {
-  stock_bajo:   { bg: 'var(--coral-50)',  color: 'var(--coral-500)', label: 'Stock bajo' },
-  ventas_bajas: { bg: 'var(--amber-50)',  color: 'var(--amber-700)', label: 'Ventas bajas' },
-  default:      { bg: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', label: 'Alerta' },
-};
-
-function AlertRow({ alerta }) {
-  const cfg = ALERT_TYPES[alerta.tipo] || ALERT_TYPES.default;
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 10,
-      padding: '10px 12px', borderRadius: 8,
-      background: cfg.bg,
-    }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, marginTop: 5, flexShrink: 0 }} />
+    <div className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
+      <div className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${cfg.color}`} />
       <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
-          {cfg.label}
-        </div>
-        <div style={{ fontSize: 13, color: 'hsl(var(--foreground))', lineHeight: 1.5 }}>{alerta.mensaje}</div>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${cfg.badge}`}>{cfg.label}</span>
+        <p className="mt-1 text-sm text-slate-700">{alerta.mensaje}</p>
       </div>
     </div>
   );
@@ -335,67 +230,25 @@ function AlertRow({ alerta }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="mx-auto max-w-[1280px]">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 16 }}>
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="skeleton" style={{ height: 110, borderRadius: 12 }} />
+    <div className="mx-auto max-w-[1280px] space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-[110px] rounded-xl bg-slate-200/70" />
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
-        <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="h-[280px] rounded-xl bg-slate-200/70 xl:col-span-2" />
+        <div className="h-[280px] rounded-xl bg-slate-200/70" />
       </div>
     </div>
   );
 }
 
-/* ——— Icons ——— */
-function KpiIconVentas() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 14l4-5 3 3 4-5 3 4"/>
-    </svg>
-  );
-}
-function KpiIconGastos() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="5" width="16" height="12" rx="2"/>
-      <path d="M14 5V4a2 2 0 00-2-2H8a2 2 0 00-2 2v1"/>
-      <path d="M10 11v2M10 9v.5"/>
-    </svg>
-  );
-}
-function KpiIconUtilidad() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="10" cy="10" r="8"/>
-      <path d="M10 6v2.5M10 11.5V14"/>
-      <path d="M8 8.5c0-1 .9-2 2-2s2 .9 2 2-1 1.5-2 1.5-2 .5-2 1.5.9 2 2 2 2-.9 2-2"/>
-    </svg>
-  );
-}
-function KpiIconProductos() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 5.5l7-3.5 7 3.5v9l-7 3.5-7-3.5v-9z"/>
-      <path d="M10 2v13M3 5.5l7 3.5 7-3.5"/>
-    </svg>
-  );
-}
 function RefreshIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1.5 7A5.5 5.5 0 0112 4M12.5 7A5.5 5.5 0 012 10"/>
-      <path d="M10.5 3.5L12 4.5V3M1.5 11.5v-1.5L3 11"/>
-    </svg>
-  );
-}
-function CheckCircleIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--sage-400)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="16" cy="16" r="13"/>
-      <path d="M10 16l4 4 8-8"/>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', marginRight: 6, verticalAlign: '-2px' }}>
+      <path d="M12 7a5 5 0 10-1.46 3.54" />
+      <path d="M12 3v4h-4" />
     </svg>
   );
 }
@@ -403,11 +256,11 @@ function CheckCircleIcon() {
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Buenos días';
-  if (h < 18) return 'Buenas tardes';
+  if (h < 19) return 'Buenas tardes';
   return 'Buenas noches';
 }
 
-function firstName(usuario) {
-  if (!usuario?.nombre) return '';
-  return usuario.nombre.split(' ')[0];
+function firstName(user) {
+  if (!user?.nombre) return 'usuario';
+  return user.nombre.split(' ')[0];
 }
