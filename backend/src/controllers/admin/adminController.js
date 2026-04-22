@@ -57,10 +57,6 @@ const requireFields = (obj, fields) => {
   return missing.length ? `Campos requeridos: ${missing.join(', ')}` : null;
 };
 
-const sanitizeSearchTerm = (value = '') => {
-  return String(value).trim().slice(0, 120).replace(/[\\%_]/g, '');
-};
-
 const dashboard = async (_req, res) => {
   try {
     const now = new Date();
@@ -131,15 +127,14 @@ const listarEmpresas = async (req, res) => {
   try {
     const { page, pageSize, offset } = parsePagination(req);
     const { q, estado } = req.query;
-    const safeQuery = sanitizeSearchTerm(q);
     const where = {};
 
     if (estado) where.estado = estado;
-    if (safeQuery) {
+    if (q) {
       where[Op.or] = [
-        { nombre: { [Op.iLike]: `%${safeQuery}%` } },
-        { email: { [Op.iLike]: `%${safeQuery}%` } },
-        { ruc: { [Op.iLike]: `%${safeQuery}%` } }
+        { nombre: { [Op.iLike]: `%${q}%` } },
+        { email: { [Op.iLike]: `%${q}%` } },
+        { ruc: { [Op.iLike]: `%${q}%` } }
       ];
     }
 
