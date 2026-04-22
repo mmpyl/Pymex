@@ -15,6 +15,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
       await api.post('/auth/admin/login', form);
       navigate('/admin');
@@ -26,7 +27,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
       <Card className="w-full max-w-md border-slate-200 shadow-xl">
         <CardHeader>
           <CardTitle>Login Staff</CardTitle>
@@ -36,29 +37,29 @@ export default function AdminLogin() {
         </CardHeader>
 
         <CardContent>
-          <form className="space-y-4" onSubmit={submit}>
+          <form onSubmit={submit} className="space-y-4">
             <Input
-              id="staff-email"
+              id="admin-email"
               type="email"
               label="Email"
               placeholder="staff@email.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
               disabled={loading}
+              required
             />
             <Input
-              id="staff-password"
+              id="admin-password"
               type="password"
               label="Contraseña"
               placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
               disabled={loading}
+              required
             />
 
-            {error && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+            {error && <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Ingresando...' : 'Ingresar'}
@@ -66,9 +67,9 @@ export default function AdminLogin() {
           </form>
         </CardContent>
 
-        <CardFooter className="text-sm text-slate-500">
+        <CardFooter className="border-t border-slate-200 pt-5 text-sm text-slate-500">
           ¿Eres cliente empresa?{' '}
-          <Link className="ml-1 font-semibold text-indigo-600 hover:text-indigo-500" to="/empresa/login">
+          <Link to="/empresa/login" className="ml-1 font-semibold text-indigo-600 hover:text-indigo-500">
             Ir a login empresa
           </Link>
         </CardFooter>
