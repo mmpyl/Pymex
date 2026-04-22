@@ -103,7 +103,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+    <div className="mx-auto max-w-[1280px]">
       {/* Page Header */}
       <div className="page-header">
         <div className="page-header-left">
@@ -335,7 +335,7 @@ function AlertRow({ alerta }) {
 
 function DashboardSkeleton() {
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+    <div className="mx-auto max-w-[1280px]">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 16 }}>
         {[...Array(4)].map((_, i) => (
           <div key={i} className="skeleton" style={{ height: 110, borderRadius: 12 }} />

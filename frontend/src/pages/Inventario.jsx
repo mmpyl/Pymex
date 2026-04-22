@@ -36,7 +36,7 @@ const Inventario = () => {
     const productosBajoStock = productos.filter(p => p.stock <= p.stock_minimo);
 
     return (
-        <div style={styles.container}>
+        <div className="flex-1 p-6">
             <div style={styles.header}>
                 <h1 style={styles.titulo}>Inventario</h1>
                 <button style={styles.btnPrimario} onClick={() => setMostrarForm(!mostrarForm)}>
