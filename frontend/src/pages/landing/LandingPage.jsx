@@ -36,6 +36,13 @@ const features = [
   'Panel Super Admin',
 ];
 
+const features = [
+  'Dashboard en tiempo real',
+  'Facturación electrónica',
+  'Predicciones de demanda',
+  'Panel Super Admin',
+];
+
 const LandingPage = () => {
   return (
     <div className="mx-auto max-w-6xl px-6 py-14">
