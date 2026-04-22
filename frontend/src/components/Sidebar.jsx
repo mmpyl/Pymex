@@ -1,8 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useAccessControl } from '../../hooks/useAccessControl';
-import { useState, useEffect, useRef } from 'react';
-import api from '../../api/axios';
+import { useAuth } from '../context/AuthContext';
+import { useAccessControl } from '../hooks/useAccessControl';
+import { useState, useEffect } from 'react';
+import api from '../api/axios';
 
 const NAV_SECTIONS = [
   {

@@ -117,7 +117,7 @@ const Facturacion = () => {
   const ventaSeleccionada = ventas.find((v) => String(v.id) === String(form.venta_id));
 
   return (
-    <div style={styles.container}>
+    <div className="flex-1 p-6">
       <div style={styles.header}>
         <div>
           <h1 style={styles.titulo}>Facturación Electrónica</h1>
