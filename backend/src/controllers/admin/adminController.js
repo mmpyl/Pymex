@@ -1,6 +1,6 @@
 // backend/src/controllers/admin/adminController.js
 
-const { Op, fn, col, literal } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const {
   sequelize,
   Empresa,
@@ -57,6 +57,10 @@ const requireFields = (obj, fields) => {
   return missing.length ? `Campos requeridos: ${missing.join(', ')}` : null;
 };
 
+const sanitizeSearchTerm = (value = '') => {
+  return String(value).trim().slice(0, 120).replace(/[\\%_]/g, '');
+};
+
 const dashboard = async (_req, res) => {
   try {
     const now = new Date();
@@ -94,7 +98,7 @@ const dashboard = async (_req, res) => {
         attributes: ['plan_id', [fn('COUNT', col('plan_id')), 'cantidad']],
         include: [{ model: Plan, attributes: ['nombre', 'codigo'] }],
         group: ['plan_id', 'Plan.id'],
-        order: [[literal('cantidad'), 'DESC']],
+        order: [[fn('COUNT', col('plan_id')), 'DESC']],
         limit: 5
       }),
       Pago.count({ where: { estado: { [Op.in]: ['pendiente', 'vencido'] } } })
@@ -127,14 +131,15 @@ const listarEmpresas = async (req, res) => {
   try {
     const { page, pageSize, offset } = parsePagination(req);
     const { q, estado } = req.query;
+    const safeQuery = sanitizeSearchTerm(q);
     const where = {};
 
     if (estado) where.estado = estado;
-    if (q) {
+    if (safeQuery) {
       where[Op.or] = [
-        { nombre: { [Op.iLike]: `%${q}%` } },
-        { email: { [Op.iLike]: `%${q}%` } },
-        { ruc: { [Op.iLike]: `%${q}%` } }
+        { nombre: { [Op.iLike]: `%${safeQuery}%` } },
+        { email: { [Op.iLike]: `%${safeQuery}%` } },
+        { ruc: { [Op.iLike]: `%${safeQuery}%` } }
       ];
     }
 
