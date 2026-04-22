@@ -12,30 +12,27 @@ const menu = [
 ];
 
 const AdminLayout = ({ children }) => (
-  <div style={{ display: 'flex', minHeight: '100vh', background: '#0b1020', color: '#e5e7eb' }}>
-    <aside style={{ width: 280, padding: 20, borderRight: '1px solid rgba(148,163,184,0.2)' }}>
-      <h2 style={{ marginTop: 0, marginBottom: 24 }}>Super Admin</h2>
-      <nav style={{ display: 'grid', gap: 8 }}>
+  <div className="flex min-h-screen bg-slate-900 text-slate-200">
+    <aside className="w-[280px] p-5 border-r border-slate-600/20">
+      <h2 className="mt-0 mb-6">Super Admin</h2>
+      <nav className="grid gap-2">
         {menu.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            style={({ isActive }) => ({
-              padding: '10px 12px',
-              borderRadius: 8,
-              textDecoration: 'none',
-              color: '#e5e7eb',
-              background: isActive ? 'rgba(59,130,246,0.25)' : 'transparent',
-              transition: 'background 0.2s'
-            })}
+            className={({ isActive }) => 
+              `px-3 py-2.5 rounded-lg no-underline text-slate-200 transition-colors duration-200 ${
+                isActive ? 'bg-blue-500/25' : 'bg-transparent hover:bg-slate-800'
+              }`
+            }
           >
             {item.label}
           </NavLink>
         ))}
       </nav>
     </aside>
-    <main style={{ flex: 1, overflow: 'auto' }}>
-      <div style={{ padding: 24 }}>{children}</div>
+    <main className="flex-1 overflow-auto">
+      <div className="p-6">{children}</div>
     </main>
   </div>
 );

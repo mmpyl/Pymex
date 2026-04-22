@@ -1,5 +1,5 @@
 const LandingLayout = ({ children }) => (
-  <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%)' }}>
+  <div className="min-h-screen bg-gradient-to-b from-slate-50 to-indigo-50">
     {children}
   </div>
 );

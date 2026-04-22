@@ -37,7 +37,7 @@ import {
   NotAuthorizedPage
 } from './routeConfig';
 
-const Loader = () => <div style={{ padding: 24 }}>Cargando módulo...</div>;
+const Loader = () => <div className="p-6">Cargando módulo...</div>;
 
 const AppRouter = () => (
   <AppProviders>
