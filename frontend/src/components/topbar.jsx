@@ -23,28 +23,28 @@ export default function Topbar({ onToggleSidebar, pathname }) {
   const meta = PAGE_META[pathname] || { title: 'SaPyme', desc: '' };
 
   return (
-    <header className="topbar">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center px-4 gap-4">
       {/* Hamburger */}
       <button
         onClick={onToggleSidebar}
-        className="topbar-icon-btn"
+        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
         aria-label="Alternar menú"
       >
         <HamburgerIcon />
       </button>
 
       {/* Page info */}
-      <div className="topbar-breadcrumb">
-        <div className="page-title">{meta.title}</div>
-        {meta.desc && <div className="page-subtitle">{meta.desc}</div>}
+      <div className="flex-1 min-w-0">
+        <div className="text-base font-semibold text-gray-900 dark:text-white">{meta.title}</div>
+        {meta.desc && <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{meta.desc}</div>}
       </div>
 
       {/* Actions */}
-      <div className="topbar-actions">
+      <div className="flex items-center gap-2">
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="topbar-icon-btn"
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="Cambiar tema"
           title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
         >
@@ -54,24 +54,15 @@ export default function Topbar({ onToggleSidebar, pathname }) {
         {/* Alerts */}
         <button
           onClick={() => navigate('/alertas')}
-          className="topbar-icon-btn"
+          className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="Alertas"
         >
           <BellIcon />
-          <span className="notif-dot" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
         </button>
 
         {/* Version badge */}
-        <span style={{
-          fontSize: 11,
-          fontWeight: 700,
-          padding: '4px 8px',
-          background: 'var(--amber-50)',
-          color: 'var(--amber-700)',
-          border: '1px solid var(--amber-200)',
-          borderRadius: 6,
-          letterSpacing: '0.04em',
-        }}>
+        <span className="text-[11px] font-bold px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700 rounded-md tracking-wide">
           BETA
         </span>
       </div>
