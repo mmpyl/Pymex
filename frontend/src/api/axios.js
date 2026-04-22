@@ -25,15 +25,6 @@ const getRetryAfterDelay = (error) => {
 };
 
 api.interceptors.request.use((config) => {
-  const url = config.url || '';
-  const isAdminReq = url.startsWith('/admin') || url.startsWith('/payments');
-
-  const tokenKey = isAdminReq ? 'admin_token' : 'token';
-  const token = localStorage.getItem(tokenKey);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   if (!config.headers['x-request-id']) {
     config.headers['x-request-id'] = crypto.randomUUID();
   }
@@ -64,16 +55,11 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      const wasAdmin = Boolean(localStorage.getItem('admin_token'));
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('usuario');
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_usuario');
-
       const currentPath = window.location.pathname;
+      const isAdminArea = currentPath.startsWith('/admin') || currentPath.startsWith('/staff');
+
       if (!currentPath.includes('/login')) {
-        window.location.href = wasAdmin ? '/staff/login' : '/empresa/login';
+        window.location.href = isAdminArea ? '/staff/login' : '/empresa/login';
       }
 
       error.userMessage = 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';

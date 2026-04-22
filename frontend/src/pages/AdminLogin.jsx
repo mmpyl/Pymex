@@ -11,9 +11,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     try {
-      const { data } = await api.post('/auth/admin/login', form);
-      localStorage.setItem('admin_token', data.token);
-      localStorage.setItem('admin_usuario', JSON.stringify(data.admin));
+      await api.post('/auth/admin/login', form);
       navigate('/admin');
     } catch (err) {
       setError(err.response?.data?.error || 'No se pudo iniciar sesión staff');
