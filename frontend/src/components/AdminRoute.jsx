@@ -27,15 +27,15 @@ const AdminRoute = ({ children }) => {
     };
   }, []);
 
-  if (loading) return <div className='loading'>Cargando...</div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-700">Cargando...</div>;
   if (!admin) return <Navigate to='/staff/login' replace />;
 
   const rolesPermitidos = ['super_admin', 'admin', 'moderador', 'soporte'];
   if (!rolesPermitidos.includes(admin.rol)) {
     return (
-      <div style={{ padding: 24 }}>
-        <h2>Acceso restringido</h2>
-        <p>Tu rol actual no tiene permisos para el panel administrativo.</p>
+      <div className="p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">Acceso restringido</h2>
+        <p className="text-gray-600">Tu rol actual no tiene permisos para el panel administrativo.</p>
       </div>
     );
   }

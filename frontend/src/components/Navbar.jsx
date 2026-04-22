@@ -9,73 +9,35 @@ const Navbar = ({ onToggleSidebar }) => {
   const toggleTheme = useUIStore((s) => s.toggleTheme);
 
   return (
-    <header style={styles.navbar}>
-      <div style={styles.left}>
+    <header className="flex justify-between items-center px-5 py-3.5 bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="flex items-center gap-3">
         {onToggleSidebar && (
-          <button onClick={onToggleSidebar} style={styles.iconBtn} aria-label="Toggle sidebar">
+          <button 
+            onClick={onToggleSidebar} 
+            className="w-[34px] h-[34px] flex items-center justify-center border border-gray-300 rounded-lg bg-white cursor-pointer text-base hover:bg-gray-50 transition-colors" 
+            aria-label="Toggle sidebar"
+          >
             ☰
           </button>
         )}
-        <strong>SaPyme SaaS</strong>
+        <strong className="text-gray-800">SaPyme SaaS</strong>
       </div>
-      <div style={styles.right}>
+      <div className="flex items-center gap-2.5 text-gray-600">
         <button
           onClick={toggleTheme}
-          style={styles.themeBtn}
+          className="border border-gray-200 rounded-full px-2.5 py-1 bg-white cursor-pointer text-base leading-none hover:bg-gray-50 transition-colors"
           title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           aria-label="Cambiar tema"
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
-        <span style={styles.badge}>Beta</span>
-        <span style={{ color: '#334155', fontSize: 14 }}>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">Beta</span>
+        <span className="text-gray-600 text-sm">
           {usuario?.nombre || 'Usuario'}
         </span>
       </div>
     </header>
   );
-};
-
-const styles = {
-  navbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '14px 20px',
-    background: '#ffffff',
-    borderBottom: '1px solid #e2e8f0',
-    position: 'sticky',
-    top: 0,
-    zIndex: 20
-  },
-  left: { display: 'flex', alignItems: 'center', gap: 12 },
-  right: { display: 'flex', alignItems: 'center', gap: 10, color: '#334155' },
-  iconBtn: {
-    border: '1px solid #cbd5e1',
-    borderRadius: 8,
-    background: '#fff',
-    width: 34,
-    height: 34,
-    cursor: 'pointer',
-    fontSize: 16
-  },
-  themeBtn: {
-    border: '1px solid #e2e8f0',
-    borderRadius: 999,
-    padding: '5px 10px',
-    background: '#fff',
-    cursor: 'pointer',
-    fontSize: 16,
-    lineHeight: 1
-  },
-  badge: {
-    fontSize: 12,
-    padding: '2px 8px',
-    borderRadius: 999,
-    background: '#dbeafe',
-    color: '#1e3a8a',
-    fontWeight: 700
-  }
 };
 
 export default Navbar;
