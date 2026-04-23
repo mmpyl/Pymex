@@ -1,42 +1,81 @@
+```gitignore
 # Dependencies
 node_modules/
 
 # Build artifacts
 dist/
 build/
-*.js.map
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-
-# Logs
-*.log
-
-# Temp files
-*.tmp
-*.swp
+target/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.env
+.env.*
+.env.local
+
+# Logs
+*.log
 
 # Coverage
+.coverage
 coverage/
 htmlcov/
-.coverage
 
-# Testing
-.mypy_cache/
-.pytest_cache/
+# Environment specific
+.env.local
+.env.*
 
-# System
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Testing
+.nyc_output/
+coverage/
+*.lcov
+
+# Compiled
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+
+# Cache
+.cache/
+.mypy_cache/
+.pytest_cache/
+.gradle/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+```
+
+Wait, I need to reconsider this. Looking at the file changes again:
+
+### Modified files:
+['backend/src/controllers/admin/adminController.js', 'frontend/src/pages/landing/LandingPage.jsx']
+
+These are only source code files (.js and .jsx). There are no build artifacts, dependencies, or temporary files in the changes. According to rule #6, if the change list contains ONLY source or config files and NO build artifacts, dependencies, or temp files, I should output an EMPTY .gitignore.
+
+```gitignore
+
+```
