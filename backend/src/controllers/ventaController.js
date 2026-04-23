@@ -4,9 +4,11 @@
 //   - Removed all duplicate variable declarations and unreachable code
 //   - Stock validation uses atomic decrement with WHERE stock >= cantidad
 //   - Single clean flow with proper transaction rollback
+//   - ✅ MIGRADO: Publicación de eventos de dominio
 
 const { Op } = require('sequelize');
 const coreModels = require('../domains/core/models');
+const { eventBus } = require('../domains/eventBus');
 
 const { Venta, DetalleVenta, Producto, Cliente, sequelize } = coreModels;
 
@@ -101,6 +103,18 @@ const crear = async (req, res) => {
     }
 
     await t.commit();
+    
+    // ✅ PUBLICAR EVENTO DE DOMINIO: Otros dominios pueden reaccionar a esta venta
+    eventBus.publish('SALE_COMPLETED', {
+      ventaId: venta.id,
+      empresaId: req.usuario.empresa_id,
+      usuarioId: req.usuario.id,
+      total: venta.total,
+      fecha: venta.fecha ? venta.fecha.toISOString() : new Date().toISOString(),
+      metodo_pago: venta.metodo_pago,
+      itemsCount: items.length
+    }, 'CORE');
+    
     return res.status(201).json({ mensaje: 'Venta registrada', venta_id: venta.id, total });
   } catch (error) {
     await t.rollback();
