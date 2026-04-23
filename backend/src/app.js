@@ -105,9 +105,18 @@ app.use(cookieParser());
 app.use(auditMiddleware);
 
 // ─── 10. Health check ─────────────────────────────────────────────────────────
-app.get('/health', (_req, res) =>
-  res.json({ estado: 'ok', version: '2.0', service: 'backend', fecha: new Date().toISOString() })
-);
+const { getRedisStatus } = require('./middleware/auth');
+
+app.get('/health', (_req, res) => {
+  const redisStatus = getRedisStatus();
+  res.json({ 
+    estado: 'ok', 
+    version: '2.0', 
+    service: 'backend', 
+    fecha: new Date().toISOString(),
+    redis: redisStatus
+  });
+});
 app.get('/', (_req, res) => res.json({ mensaje: 'SaaS PYMES API OK' }));
 
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────

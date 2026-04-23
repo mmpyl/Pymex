@@ -53,6 +53,27 @@ setInterval(() => {
   }
 }, 15 * 60 * 1000);
 
+// ─── MODO ESTRICTO PARA PRODUCCIÓN ────────────────────────────────────────────
+// En producción, SI Redis falla, se debe rechazar la operación de revocación
+// en lugar de hacer fallback a memoria (que no funciona en multi-instancia).
+const STRICT_MODE = process.env.NODE_ENV === 'production';
+
+let redisConnectionFailed = false;
+
+// Registrar cuando Redis falla para monitoreo
+if (typeof redisClient !== 'undefined' && redisClient) {
+  redisClient.redis?.on('error', (err) => {
+    redisConnectionFailed = true;
+    if (STRICT_MODE) {
+      console.error('[CRÍTICO] Redis falló en producción. La revocación de tokens puede no funcionar correctamente en todas las instancias.');
+    }
+  });
+  
+  redisClient.redis?.on('connect', () => {
+    redisConnectionFailed = false;
+  });
+}
+
 // ─── Helpers con soporte Redis ────────────────────────────────────────────────
 
 // Verificar si un token está en la blacklist (Redis o memoria)
@@ -87,6 +108,10 @@ const revokeToken = async (jti, expiresAtMs) => {
       return;
     } catch (error) {
       console.error('[Auth] Error revocando token en Redis, usando fallback:', error.message);
+      // En producción, alertar que el fallback a memoria no es seguro en multi-instancia
+      if (STRICT_MODE) {
+        console.error('[CRÍTICO] Fallback a memoria activado en producción. El logout puede no funcionar en todas las instancias.');
+      }
       // Fallback a memoria si Redis falla
     }
   }
@@ -94,6 +119,13 @@ const revokeToken = async (jti, expiresAtMs) => {
   // Fallback a memoria
   revokeTokenMemory(jti, expiresAtMs);
 };
+
+// Función para verificar estado de Redis (útil para health checks)
+const getRedisStatus = () => ({
+  useRedis,
+  redisConnectionFailed,
+  fallbackActive: !useRedis || redisConnectionFailed
+});
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const parseBearer = (req) => {
@@ -165,5 +197,6 @@ module.exports = {
   verificarTokenAdmin,
   revokeToken,
   isBlacklisted,
-  parseBearer
+  parseBearer,
+  getRedisStatus
 };

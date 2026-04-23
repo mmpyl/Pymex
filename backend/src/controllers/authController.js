@@ -237,19 +237,26 @@ const perfil = async (req, res) => {
   }
 };
 
-// ─── BOOTSTRAP SUPER ADMIN ────────────────────────────────────────────────────
+// ─── BOOTSTRAP SUPER ADMIN — SOLO DESARROLLO ──────────────────────────────────
 const bootstrapSuperAdmin = async (req, res) => {
-  if (process.env.BOOTSTRAP_DISABLED === 'true') {
-    return res.status(404).json({ error: 'Ruta no encontrada' });
+  // ⚠️ CRÍTICO: En producción debe estar SIEMPRE deshabilitado
+  if (process.env.NODE_ENV === 'production' || process.env.BOOTSTRAP_DISABLED === 'true') {
+    return res.status(404).json({ 
+      error: 'Endpoint no disponible en producción. Contacta al administrador del sistema.' 
+    });
   }
 
   const bootstrapSecret = process.env.BOOTSTRAP_SUPER_ADMIN_SECRET;
   if (!bootstrapSecret) {
-    return res.status(503).json({ error: 'BOOTSTRAP_SUPER_ADMIN_SECRET no configurado' });
+    return res.status(503).json({ 
+      error: 'BOOTSTRAP_SUPER_ADMIN_SECRET no configurado. Este endpoint es solo para desarrollo inicial.' 
+    });
   }
 
   const { secret, nombre, email, password } = req.body;
   if (secret !== bootstrapSecret) {
+    // Log de intento fallido para auditoría
+    console.warn('[AUDIT] Intento fallido de bootstrap super admin desde IP:', req.ip);
     return res.status(403).json({ error: 'Secret inválido para bootstrap super admin' });
   }
   if (!nombre || !email || !password) {
@@ -270,8 +277,13 @@ const bootstrapSuperAdmin = async (req, res) => {
     }, { transaction: t });
 
     await t.commit();
+    
+    // Log de éxito para auditoría
+    console.log('[AUDIT] Super admin creado exitosamente:', email);
+    
     return res.status(201).json({
-      mensaje:     'Super admin creado. Establece BOOTSTRAP_DISABLED=true en producción.',
+      mensaje:     'Super admin creado. ESTABLECE BOOTSTRAP_DISABLED=true INMEDIATAMENTE.',
+      advertencia: 'Este endpoint será deshabilitado en el próximo reinicio si BOOTSTRAP_DISABLED=true',
       super_admin: { id: admin.id, nombre: admin.nombre, email: admin.email, rol: admin.rol }
     });
   } catch (error) {
