@@ -2,8 +2,14 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Empresa, Usuario, Rol, Plan, Suscripcion, sequelize } = require('../models');
-const UsuarioAdmin = require('../models/UsuarioAdmin');
+const authModels = require('../domains/auth/models');
+const coreModels = require('../domains/core/models');
+const billingModels = require('../domains/billing/models');
+
+const { Empresa, sequelize } = coreModels;
+const { Usuario, Rol } = authModels;
+const { Plan, Suscripcion } = billingModels;
+const UsuarioAdmin = require('../domains/auth/models/UsuarioAdmin');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const generarTokenEmpresa = (usuario) =>

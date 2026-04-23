@@ -6,7 +6,9 @@
 //   - Single clean flow with proper transaction rollback
 
 const { Op } = require('sequelize');
-const { Venta, DetalleVenta, Producto, Cliente, sequelize } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Venta, DetalleVenta, Producto, Cliente, sequelize } = coreModels;
 
 const listar = async (req, res) => {
   try {

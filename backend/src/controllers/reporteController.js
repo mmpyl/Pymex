@@ -2,7 +2,9 @@
 // FIX: se añade manejo consistente de errores en todos los handlers,
 // incluyendo el caso donde el stream PDF ya empezó cuando ocurre un error.
 
-const { Venta, DetalleVenta, Gasto, Producto, sequelize } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Venta, DetalleVenta, Gasto, Producto, sequelize } = coreModels;
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');

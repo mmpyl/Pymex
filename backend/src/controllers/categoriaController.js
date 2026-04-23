@@ -1,4 +1,6 @@
-const { Categoria } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Categoria } = coreModels;
 
 const listar = async (req, res) => {
   try {
