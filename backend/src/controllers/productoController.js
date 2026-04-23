@@ -1,4 +1,6 @@
-const { Producto } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Producto } = coreModels;
 
 const listar = async (req, res) => {
     try {

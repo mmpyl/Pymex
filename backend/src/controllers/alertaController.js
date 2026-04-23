@@ -1,4 +1,6 @@
-const { Alerta, Producto, Venta, sequelize } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Alerta, Producto, Venta, sequelize } = coreModels;
 const { Op } = require('sequelize');
 
 // Genera alertas automáticas y las guarda en BD

@@ -9,7 +9,11 @@ const bcrypt  = require('bcryptjs');
 const { verificarToken }  = require('../middleware/auth');
 const { verificarRol }    = require('../middleware/roles');
 const { checkLimit }      = require('../middleware/featureGate');
-const { Usuario, Suscripcion, Plan } = require('../models');
+const authModels = require('../domains/auth/models');
+const billingModels = require('../domains/billing/models');
+
+const { Usuario } = authModels;
+const { Suscripcion, Plan } = billingModels;
 
 router.use(verificarToken);
 

@@ -1,4 +1,6 @@
-const { Venta, Gasto, Producto, DetalleVenta, sequelize } = require('../models');
+const coreModels = require('../domains/core/models');
+
+const { Venta, Gasto, Producto, DetalleVenta, sequelize } = coreModels;
 const { Op } = require('sequelize');
 
 const resumen = async (req, res) => {

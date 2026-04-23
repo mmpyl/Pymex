@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const router = require('express').Router();
-const { PaymentEvent } = require('../models');
+const billingModels = require('../domains/billing/models');
+
+const { PaymentEvent } = billingModels;
 const { applyPaymentAndReactivate } = require('../services/billingService');
 
 const verifyStripeSignature = (payload, signature, secret) => {

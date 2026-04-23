@@ -2,7 +2,9 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { verificarToken } = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
-const { Usuario, Rol, Permiso, RolPermiso } = require('../models');
+const authModels = require('../domains/auth/models');
+
+const { Usuario, Rol, Permiso, RolPermiso } = authModels;
 
 router.use(verificarToken);
 
