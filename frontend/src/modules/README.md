@@ -8,3 +8,8 @@ Cada módulo debe tener:
 - `pages/`
 - `schemas/` (Zod)
 - `hooks/`
+
+## Estado actual
+
+- `catalogo/`: implementado con `api`, `hooks`, `schemas`, `components` y `pages` para `clientes`, `proveedores`, `categorias` y `productos`.
+- Próximos módulos a migrar: ventas, inventario, gastos, reportes y predicciones.
