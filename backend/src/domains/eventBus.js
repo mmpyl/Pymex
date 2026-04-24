@@ -34,6 +34,7 @@
  */
 
 const EventEmitter = require('events');
+const { DOMAIN_BOUNDARIES } = require('./domainBoundaries');
 
 class DomainEventBus extends EventEmitter {
   constructor() {
@@ -113,7 +114,6 @@ class DomainEventBus extends EventEmitter {
    * @returns {boolean}
    */
   canConsumeEvent(subscriberDomain, eventRecord) {
-    const { DOMAIN_BOUNDARIES } = require('../domainBoundaries');
     const domainConfig = DOMAIN_BOUNDARIES[subscriberDomain.toUpperCase()];
     
     if (!domainConfig) {
