@@ -1,12 +1,1 @@
-```
-# Environment files
-.env
-.env.local
-.env.*
-
-# Docker
-docker-compose.override.yml
-
-# Documentation
-DEPLOY_LOCAL.md
-```
+Nothing should be ignored based on the provided file changes. The only modified file is a source code file (`backend/src/domains/eventBus.js`), which should not be added to .gitignore.
