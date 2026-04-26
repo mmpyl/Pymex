@@ -1,4 +1,5 @@
 const coreModels = require('../domains/core/models');
+const { eventBus } = require('../domains/eventBus');
 
 const { Producto, MovimientoInventario, sequelize } = coreModels;
 const { Op } = require('sequelize');
@@ -50,6 +51,28 @@ const registrarMovimiento = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
+
+        // Publicar evento STOCK_UPDATED
+        eventBus.publish('STOCK_UPDATED', {
+            producto_id,
+            empresa_id: req.usuario.empresa_id,
+            tipo,
+            cantidad,
+            stock_anterior: producto.stock,
+            stock_nuevo: nuevoStock,
+            movimiento_id: movimiento.id
+        }, 'CORE');
+
+        // Verificar si alcanzó stock mínimo y publicar STOCK_LOW
+        if (nuevoStock <= producto.stock_minimo) {
+            eventBus.publish('STOCK_LOW', {
+                producto_id,
+                empresa_id: req.usuario.empresa_id,
+                stock_actual: nuevoStock,
+                stock_minimo: producto.stock_minimo
+            }, 'CORE');
+        }
+
         res.status(201).json({ movimiento, stock_actual: nuevoStock });
     } catch (error) {
         await t.rollback();
