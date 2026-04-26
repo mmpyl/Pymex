@@ -1,21 +1,15 @@
 // backend/src/controllers/admin/adminController.js
 
 const { Op, fn, col, literal } = require('sequelize');
-const {
-  sequelize,
-  Empresa,
-  Usuario,
-  Plan,
-  Feature,
-  PlanFeature,
-  PlanLimit,
-  Suscripcion,
-  FeatureOverride,
-  Pago,
-  AuditoriaAdmin,
-  Rubro,
-  EmpresaRubro
-} = require('../../models');
+const coreModels = require('../../domains/core/models');
+const authModels = require('../../domains/auth/models');
+const billingModels = require('../../domains/billing/models');
+
+// Extraer modelos de cada dominio
+const { sequelize, Empresa, Rubro, EmpresaRubro } = coreModels;
+const { Usuario, AuditoriaAdmin } = authModels;
+const { Plan, Feature, PlanFeature, PlanLimit, Suscripcion, FeatureOverride, Pago } = billingModels;
+
 const { clearFeatureCache, getEffectiveFeaturesForEmpresa } = require('../../services/featureGateService');
 const { runBillingCollection, applyPaymentAndReactivate } = require('../../services/billingService');
 const { createCheckoutForPago } = require('../../services/paymentGatewayService');
