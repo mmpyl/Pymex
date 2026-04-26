@@ -1,4 +1,5 @@
 const coreModels = require('../domains/core/models');
+const eventBus = require('../domains/eventBus');
 
 const { Categoria } = coreModels;
 
@@ -20,6 +21,15 @@ const crear = async (req, res) => {
       ...req.body,
       empresa_id: req.usuario.empresa_id
     });
+    
+    // Publicar evento para otros dominios
+    eventBus.publish('CATEGORY_CREATED', {
+      categoriaId: categoria.id,
+      empresa_id: categoria.empresa_id,
+      nombre: categoria.nombre,
+      timestamp: new Date()
+    }, 'CORE');
+    
     res.status(201).json(categoria);
   } catch (error) {
     res.status(400).json({ error: error.message });

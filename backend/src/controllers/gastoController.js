@@ -1,4 +1,5 @@
 const coreModels = require('../domains/core/models');
+const eventBus = require('../domains/eventBus');
 
 const { Gasto } = coreModels;
 
@@ -21,6 +22,16 @@ const crear = async (req, res) => {
             empresa_id: req.usuario.empresa_id,
             usuario_id: req.usuario.id
         });
+        
+        // Publicar evento para BILLING (tracking de gastos)
+        eventBus.publish('EXPENSE_CREATED', {
+            gastoId: gasto.id,
+            empresa_id: gasto.empresa_id,
+            monto: gasto.monto,
+            categoria: gasto.categoria,
+            timestamp: new Date()
+        }, 'CORE');
+        
         res.status(201).json(gasto);
     } catch (error) {
         res.status(400).json({ error: error.message });

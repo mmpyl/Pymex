@@ -9,11 +9,15 @@
 // con las de este archivo.
 
 const { Op, fn, col, literal } = require('sequelize');
-const {
-  sequelize, Empresa, Plan, Suscripcion,
-  FeatureOverride, Pago, AuditoriaAdmin
-} = require('../../models');
-const { clearFeatureCache } = require('../../services/featureGateService');
+const coreModels = require('../../domains/core/models');
+const billingModels = require('../../domains/billing/models');
+const authModels = require('../../domains/auth/models');
+
+// Extraer modelos de cada dominio
+const { sequelize, Empresa } = coreModels;
+const { Plan, Suscripcion, FeatureOverride, Pago, AuditoriaAdmin } = billingModels;
+const { UsuarioAdmin } = authModels;
+
 const ESTADOS_SUSCRIPCION = ['activa', 'cancelada', 'suspendida', 'trial'];
 const ESTADOS_PAGO        = ['pagado', 'pendiente', 'vencido'];
 
