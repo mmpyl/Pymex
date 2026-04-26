@@ -2,8 +2,12 @@
 // FIX: Feature.findOne({ where: { estado: 'activo' } }) en lugar de { estado: true }
 // porque Feature.estado ahora es STRING (no BOOLEAN), consistente con el modelo corregido.
 // También se corrige el campo en getSuscripcionActiva para usar fecha_inicio (no periodo_inicio).
+// MIGRACIÓN: Imports separados por dominio (billingModels)
 
-const { Feature, FeatureOverride, Suscripcion, PlanFeature, PlanLimit } = require('../models');
+const billingModels = require('../domains/billing/models');
+const eventBus = require('../domains/eventBus');
+
+const { Feature, FeatureOverride, Suscripcion, PlanFeature, PlanLimit } = billingModels;
 
 const CACHE_TTL_MS = 30 * 1000; // 30 segundos
 const featureCache = new Map();
@@ -20,6 +24,25 @@ const getCached = (cache, key) => {
 const setCached = (cache, key, value) => {
   cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
 };
+
+// Suscribirse a eventos para invalidar caché cuando cambie la suscripción
+eventBus.subscribe('SUBSCRIPTION_CHANGED', (data) => {
+  if (data && data.empresa_id) {
+    clearFeatureCache(data.empresa_id);
+  }
+});
+
+eventBus.subscribe('SUBSCRIPTION_ACTIVATED', (data) => {
+  if (data && data.empresa_id) {
+    clearFeatureCache(data.empresa_id);
+  }
+});
+
+eventBus.subscribe('PAYMENT_COMPLETED', (data) => {
+  if (data && data.empresa_id) {
+    clearFeatureCache(data.empresa_id);
+  }
+});
 
 // ─── Suscripción activa ────────────────────────────────────────────────────────
 const getSuscripcionActiva = async (empresaId) => {

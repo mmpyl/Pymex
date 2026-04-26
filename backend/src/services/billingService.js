@@ -1,12 +1,19 @@
-// backend/src/services/billingService.js — versión corregida
+// backend/src/services/billingService.js — versión corregida y migrada a dominios
 // FIX: Suscripcion v3 no tiene 'estado: activa' para reactivar → se actualiza a 'activa'.
 // FIX: Pago v3 usa 'creado_en' como timestamp (no 'fecha_creacion').
 // FIX: El campo de búsqueda de pagos vencidos es fecha_vencimiento (correcto en v3).
 // FIX: runBillingCollection suspende suscripciones por empresa_id, no por suscripcion_id.
 // AÑADE: emailService para notificar a usuarios afectados.
+// MIGRACIÓN: Imports separados por dominio (billingModels, coreModels)
 
-const { Op }    = require('sequelize');
-const { Empresa, Suscripcion, Pago, sequelize } = require('../models');
+const { Op } = require('sequelize');
+const billingModels = require('../domains/billing/models');
+const coreModels = require('../domains/core/models');
+const eventBus = require('../domains/eventBus');
+
+const { Suscripcion, Pago } = billingModels;
+const { Empresa } = coreModels;
+const { sequelize } = billingModels; // sequelize compartido
 
 const sanitizePositiveInt = (value, fallback, { min = 1, max = 365 } = {}) => {
   const parsed = Number(value);
@@ -51,6 +58,17 @@ const applyPaymentAndReactivate = async (pagoId, referencia = null, txExternal =
     );
 
     if (ownTx) await tx.commit();
+    
+    // Publicar evento PAYMENT_COMPLETED
+    eventBus.publish('PAYMENT_COMPLETED', {
+      pago_id: pago.id,
+      empresa_id: pago.empresa_id,
+      suscripcion_id: pago.suscripcion_id,
+      monto: pago.monto,
+      moneda: pago.moneda,
+      referencia: pago.referencia
+    }, 'BILLING');
+    
     return pago;
   } catch (error) {
     if (ownTx) await tx.rollback();
@@ -119,11 +137,21 @@ const runBillingCollection = async () => {
 
     await tx.commit();
 
+    // Publicar evento SUBSCRIPTION_SUSPENDED para las empresas afectadas
+    if (affectedEmpresas.length) {
+      eventBus.publish('SUBSCRIPTION_SUSPENDED', {
+        empresa_ids: affectedEmpresas,
+        motivo: 'pago_vencido',
+        grace_days: BILLING_GRACE_DAYS
+      }, 'BILLING');
+    }
+
     // Intentar enviar emails de notificación (no bloquea si falla)
     if (affectedEmpresas.length) {
       try {
         const { emailPagoVencido } = require('./emailService');
-        const { Usuario }          = require('../models');
+        const authModels = require('../domains/auth/models');
+        const { Usuario } = authModels;
         for (const empresaId of affectedEmpresas) {
           const admin = await Usuario.findOne({
             where: { empresa_id: empresaId, rol_id: 1, estado: 'activo' }
