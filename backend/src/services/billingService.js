@@ -168,16 +168,19 @@ const runBillingCollection = async () => {
           );
         }
 
-        await tx.commit();
-
-        // Publicar evento SUBSCRIPTION_SUSPENDED para las empresas afectadas
+        // OUTBOX PATTERN CRÍTICO: Publicar evento DENTRO de la transacción
+        // Si el proceso muere antes del commit, el evento NO se persiste
+        // Si el proceso muere después del commit pero antes de emitir, 
+        // el outbox garantiza que el evento se entregue al reiniciar
         if (affectedEmpresas.length) {
-          eventBus.publish('SUBSCRIPTION_SUSPENDED', {
+          await eventBus.publish('SUBSCRIPTION_SUSPENDED', {
             empresa_ids: affectedEmpresas,
             motivo: 'pago_vencido',
             grace_days: BILLING_GRACE_DAYS
-          }, 'BILLING');
+          }, 'BILLING', tx); // <-- Pasar la transacción para atomicidad
         }
+
+        await tx.commit();
 
         // Intentar enviar emails de notificación (no bloquea si falla)
         if (affectedEmpresas.length) {
