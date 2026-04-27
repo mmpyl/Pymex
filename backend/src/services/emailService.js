@@ -3,53 +3,13 @@
 // Configura las variables de entorno de EMAIL_* para activarlo.
 // Si no están configuradas, los emails se loguean en consola (útil para desarrollo).
 // MIGRACIÓN: Este servicio NO importa modelos directamente, solo escucha eventos del eventBus
+// REFACTOR: Las suscripciones al eventBus se realizan explícitamente mediante initialize()
 
 const nodemailer = require('nodemailer');
-const eventBus = require('../domains/eventBus');
 
-// Suscribirse a eventos para enviar emails automáticamente
-// El emailService es un consumidor pasivo de eventos, no inicia acciones
-
-// USER_REGISTERED → email de bienvenida
-eventBus.subscribe('USER_REGISTERED', async (data) => {
-  if (data && data.email && data.nombre) {
-    await emailBienvenida({
-      nombre: data.nombre,
-      email: data.email,
-      empresa: data.empresa || 'Tu empresa',
-      trialDias: data.trialDias || 14,
-      trialExpira: data.trialExpira
-    });
-  }
-});
-
-// SALE_COMPLETED → email de confirmación de venta
-eventBus.subscribe('SALE_COMPLETED', async (data) => {
-  if (data && data.cliente_email && data.cliente_nombre) {
-    // Implementar email de confirmación de venta si es necesario
-    console.log(`[emailService] Venta completada para ${data.cliente_email}`);
-  }
-});
-
-// PAYMENT_COMPLETED → recibo de pago
-eventBus.subscribe('PAYMENT_COMPLETED', async (data) => {
-  // El billingService ya maneja el email de pago confirmado
-  // Aquí podríamos agregar lógica adicional si es necesario
-  console.log(`[emailService] Pago completado #${data.pago_id}`);
-});
-
-// STOCK_LOW → alerta de inventario
-eventBus.subscribe('STOCK_LOW', async (data) => {
-  if (data && data.producto_nombre) {
-    console.log(`[emailService] Alerta stock bajo: ${data.producto_nombre}`);
-    // Aquí se podría implementar el envío de email de alerta de stock
-  }
-});
-
-// SUBSCRIPTION_SUSPENDED → notificación de suspensión
-eventBus.subscribe('SUBSCRIPTION_SUSPENDED', async (data) => {
-  console.log(`[emailService] Suscripción suspendida para empresa(s): ${data.empresa_ids?.length}`);
-});
+// ─── Estado de inicialización ─────────────────────────────────────────────────
+let _initialized = false;
+let _transporter = null;
 
 // ─── Configuración del transporter ───────────────────────────────────────────
 const crearTransporter = () => {
@@ -71,13 +31,12 @@ const crearTransporter = () => {
   });
 };
 
-const transporter = crearTransporter();
 const FROM = process.env.EMAIL_FROM || '"SaPyme" <noreply@sapyme.pe>';
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
 
 // ─── Helper interno ───────────────────────────────────────────────────────────
 const enviar = async ({ to, subject, html }) => {
-  if (!transporter) {
+  if (!_transporter) {
     // Modo desarrollo: muestra en consola
     console.log('\n── EMAIL (modo consola) ──────────────────');
     console.log(`Para:    ${to}`);
@@ -87,7 +46,7 @@ const enviar = async ({ to, subject, html }) => {
   }
 
   try {
-    const info = await transporter.sendMail({ from: FROM, to, subject, html });
+    const info = await _transporter.sendMail({ from: FROM, to, subject, html });
     console.log(`[email] Enviado a ${to} → ${info.messageId}`);
     return info;
   } catch (err) {
@@ -95,6 +54,69 @@ const enviar = async ({ to, subject, html }) => {
     console.error(`[email] Error enviando a ${to}:`, err.message);
     return null;
   }
+};
+
+// ─── Inicialización explícita de suscripciones al eventBus ─────────────────────
+/**
+ * Inicializa el servicio de email:
+ * 1. Crea el transporter de nodemailer
+ * 2. Suscribe los handlers a eventos del eventBus
+ * 
+ * Debe llamarse explícitamente en el punto de arranque de la aplicación.
+ * Es idempotente: solo inicializa una vez.
+ */
+const initialize = () => {
+  if (_initialized) {
+    return;
+  }
+
+  // Crear transporter
+  _transporter = crearTransporter();
+
+  const eventBus = require('../domains/eventBus');
+
+  // USER_REGISTERED → email de bienvenida
+  eventBus.subscribe('USER_REGISTERED', async (data) => {
+    if (data && data.email && data.nombre) {
+      await emailBienvenida({
+        nombre: data.nombre,
+        email: data.email,
+        empresa: data.empresa || 'Tu empresa',
+        trialDias: data.trialDias || 14,
+        trialExpira: data.trialExpira
+      });
+    }
+  });
+
+  // SALE_COMPLETED → email de confirmación de venta
+  eventBus.subscribe('SALE_COMPLETED', async (data) => {
+    if (data && data.cliente_email && data.cliente_nombre) {
+      // Implementar email de confirmación de venta si es necesario
+      console.log(`[emailService] Venta completada para ${data.cliente_email}`);
+    }
+  });
+
+  // PAYMENT_COMPLETED → recibo de pago
+  eventBus.subscribe('PAYMENT_COMPLETED', async (data) => {
+    // El billingService ya maneja el email de pago confirmado
+    // Aquí podríamos agregar lógica adicional si es necesario
+    console.log(`[emailService] Pago completado #${data.pago_id}`);
+  });
+
+  // STOCK_LOW → alerta de inventario
+  eventBus.subscribe('STOCK_LOW', async (data) => {
+    if (data && data.producto_nombre) {
+      console.log(`[emailService] Alerta stock bajo: ${data.producto_nombre}`);
+      // Aquí se podría implementar el envío de email de alerta de stock
+    }
+  });
+
+  // SUBSCRIPTION_SUSPENDED → notificación de suspensión
+  eventBus.subscribe('SUBSCRIPTION_SUSPENDED', async (data) => {
+    console.log(`[emailService] Suscripción suspendida para empresa(s): ${data.empresa_ids?.length}`);
+  });
+
+  _initialized = true;
 };
 
 // ─── Plantilla base ───────────────────────────────────────────────────────────
@@ -279,5 +301,7 @@ module.exports = {
   emailTrialExpirando,
   emailPagoVencido,
   emailPagoConfirmado,
-  emailReporteCobranza
+  emailReporteCobranza,
+  initialize,
+  isInitialized: () => _initialized
 };
