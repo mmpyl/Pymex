@@ -9,6 +9,262 @@ const { verificarTokenEmpresa, verificarTokenAdmin, revokeToken } = require('../
 const { validateSchema } = require('../middleware/schema');
 const { validate } = require('../middleware/validation');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Autenticación y autorización de usuarios
+ */
+
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Registrar una nueva empresa y usuario administrador
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - empresa_nombre
+ *               - empresa_email
+ *               - nombre
+ *               - email
+ *               - password
+ *             properties:
+ *               empresa_nombre:
+ *                 type: string
+ *                 example: "Mi Empresa S.A."
+ *               empresa_email:
+ *                 type: string
+ *                 format: email
+ *                 example: "contacto@miempresa.com"
+ *               nombre:
+ *                 type: string
+ *                 example: "Juan Pérez"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "juan@miempresa.com"
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: "password123"
+ *     responses:
+ *       201:
+ *         description: Empresa y usuario registrados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: "Empresa y usuario creados exitosamente"
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT de autenticación
+ *       400:
+ *         description: Error en validación de datos
+ *       409:
+ *         description: Email ya registrado
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Iniciar sesión de usuario
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "juan@miempresa.com"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT de autenticación
+ *                 usuario:
+ *                   $ref: '#/components/schemas/Usuario'
+ *       401:
+ *         description: Credenciales inválidas
+ */
+
+/**
+ * @swagger
+ * /auth/profile:
+ *   get:
+ *     summary: Obtener perfil del usuario autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Usuario'
+ *       401:
+ *         description: No autorizado
+ */
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cerrar sesión de usuario
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: "Sesión cerrada correctamente"
+ *       401:
+ *         description: No autorizado
+ */
+
+/**
+ * @swagger
+ * /auth/admin/login:
+ *   post:
+ *     summary: Iniciar sesión como administrador
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "admin@sapyme.com"
+ *               password:
+ *                 type: string
+ *                 example: "adminpass123"
+ *     responses:
+ *       200:
+ *         description: Login de administrador exitoso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT de administrador
+ *       401:
+ *         description: Credenciales inválidas
+ */
+
+/**
+ * @swagger
+ * /auth/admin/profile:
+ *   get:
+ *     summary: Obtener perfil del administrador autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil del administrador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   example: "admin@sapyme.com"
+ *                 rol:
+ *                   type: string
+ *                   example: "super_admin"
+ *       401:
+ *         description: No autorizado
+ */
+
+/**
+ * @swagger
+ * /auth/bootstrap-super-admin:
+ *   post:
+ *     summary: Crear el primer super administrador (solo desarrollo)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - secret
+ *               - nombre
+ *               - email
+ *               - password
+ *             properties:
+ *               secret:
+ *                 type: string
+ *                 description: Secret de configuración para bootstrap
+ *                 example: "my-secret-key"
+ *               nombre:
+ *                 type: string
+ *                 example: "Super Admin"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "superadmin@sapyme.com"
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: "password123"
+ *     responses:
+ *       201:
+ *         description: Super administrador creado exitosamente
+ *       400:
+ *         description: Error en validación o secret inválido
+ *       403:
+ *         description: Bootstrap deshabilitado en producción
+ */
+
 // Reglas de validación reutilizables
 const emailValido = check('email')
   .isEmail()
