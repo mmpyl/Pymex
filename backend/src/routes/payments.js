@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const router = require('express').Router();
 const billingModels = require('../domains/billing/models');
+const { idempotencyMiddleware } = require('../middleware/idempotency');
 
 const { PaymentEvent } = billingModels;
 const { applyPaymentAndReactivate } = require('../services/billingService');
@@ -13,7 +14,7 @@ const verifyStripeSignature = (payload, signature, secret) => {
   return signature.includes(expected);
 };
 
-router.post('/webhook/stripe', async (req, res) => {
+router.post('/webhook/stripe', idempotencyMiddleware, async (req, res) => {
   try {
     const payload = JSON.stringify(req.body);
     const signature = req.headers['stripe-signature'];
