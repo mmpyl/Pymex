@@ -1,4 +1,4 @@
-// backend/src/app.js — versión producción consolidada (sin conflictos de merge)
+// backend/src/app.js — versión mejorada con validación y manejo de errores
 const express      = require('express');
 const cors         = require('cors');
 const helmet       = require('helmet');
@@ -8,7 +8,14 @@ const cookieParser = require('cookie-parser');
 const crypto       = require('crypto');
 require('dotenv').config();
 
+// Validar variables de entorno ANTES de iniciar
+require('./config/envValidator');
+
 const { auditMiddleware } = require('./middleware/audit');
+const { errorHandler, handleUnhandledRejections } = require('./middleware/errorHandler');
+
+// Inicializar manejo de promesas no manejadas
+handleUnhandledRejections();
 
 const app = express();
 
