@@ -4,7 +4,9 @@
 // FIX: Empresa.findByPk incluye plan_id en attributes para no lanzar error
 // cuando se busca plan por codigo de fallback.
 
-const { Empresa, Feature, Plan, PlanFeature, RubroFeature, FeatureOverride } = require('../models');
+const { Empresa, Feature, Plan, PlanFeature, RubroFeature, FeatureOverride } = require('../domains/core/models');
+const billingModels = require('../domains/billing/models');
+const { Plan: PlanBilling } = billingModels;
 
 const resolveFeatureAccess = async (empresaId, featureCode) => {
   // FIX: estado STRING 'activo'

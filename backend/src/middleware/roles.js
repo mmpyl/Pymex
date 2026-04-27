@@ -1,4 +1,4 @@
-const { Usuario, Rol, Permiso } = require('../models');
+const { Usuario, Rol, Permiso } = require('../domains/auth/models');
 const eventBus = require('../domains/eventBus');
 
 // Normalización de nombres (quita acentos, minúsculas, trim)

@@ -1,4 +1,4 @@
-const { Usuario, Rol } = require('../models');
+const { Usuario, Rol } = require('../domains/auth/models');
 
 const normalize = (value = '') => value
   .toString()
