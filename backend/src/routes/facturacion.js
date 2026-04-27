@@ -4,8 +4,10 @@
 //   - Fallback a DB local en /comprobantes (con flag ALLOW_EMPTY_COMPROBANTES_FALLBACK)
 //   - Validaciones serie, RUC, DNI, nota de crédito
 //   - Timeouts configurables
+//   - Circuit Breaker para prevenir bloqueo del thread principal y timeouts en cascada
 const router = require('express').Router();
 const axios  = require('axios');
+const CircuitBreaker = require('opossum');
 const { verificarToken } = require('../middleware/auth');
 
 const { Venta, Producto, DetalleVenta, Cliente, Comprobante } = require('../models');
@@ -13,6 +15,47 @@ const { Venta, Producto, DetalleVenta, Cliente, Comprobante } = require('../mode
 const FACT_URL = process.env.FACTURACION_SERVICE_URL || 'http://localhost:9000/api';
 const FACT_TIMEOUT_MS = Number(process.env.FACTURACION_TIMEOUT_MS || 15000);
 const ALLOW_EMPTY_COMPROBANTES_FALLBACK = String(process.env.ALLOW_EMPTY_COMPROBANTES_FALLBACK || 'false') === 'true';
+
+// ─── Circuit Breaker para Facturación Service ─────────────────────────────────
+// Previene bloqueo del thread principal y timeouts en cascada
+const factCircuit = new CircuitBreaker(async (method, url, data, config) => {
+  const response = await axios[method](url, data, config);
+  return response.data;
+}, {
+  timeout: FACT_TIMEOUT_MS, // Si no responde en este tiempo, abre el circuito
+  errorThresholdPercentage: 50, // Abre si >50% de errores en ventana
+  resetTimeout: 30000 // Intenta cerrar después de 30s
+});
+
+// Fallback cuando el circuito está abierto o falla
+factCircuit.fallback((method, url, data, config) => ({
+  status: 'degraded',
+  message: 'Facturación service unavailable - operating in degraded mode',
+  circuit_state: 'open',
+  timestamp: new Date().toISOString()
+}));
+
+// Logging de eventos del circuit breaker
+factCircuit.on('open', () => {
+  console.warn('⚠️ Facturación Circuit Breaker OPENED - service unavailable');
+});
+
+factCircuit.on('close', () => {
+  console.info('✅ Facturación Circuit Breaker CLOSED - service recovered');
+});
+
+factCircuit.on('halfOpen', () => {
+  console.info('🔄 Facturación Circuit Breaker HALF-OPEN - testing service');
+});
+
+factCircuit.on('fallback', (result) => {
+  console.warn('🔁 Facturación Circuit Breaker FALLBACK triggered:', result.message);
+});
+
+// Helper para llamadas con circuit breaker
+const factRequest = async (method, endpoint, data = null, config = {}) => {
+  return factCircuit.fire(method, endpoint, data, config);
+};
 
 router.use(verificarToken);
 
@@ -77,7 +120,7 @@ router.post('/factura/:venta_id', async (req, res) => {
       items: buildItems(venta.DetalleVentas)
     };
 
-    const { data } = await axios.post(`${FACT_URL}/facturas/emitir`, payload, axiosHeaders(req));
+    const { data } = await factRequest('post', `${FACT_URL}/facturas/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
@@ -111,7 +154,7 @@ router.post('/boleta/:venta_id', async (req, res) => {
       items: buildItems(venta.DetalleVentas)
     };
 
-    const { data } = await axios.post(`${FACT_URL}/boletas/emitir`, payload, axiosHeaders(req));
+    const { data } = await factRequest('post', `${FACT_URL}/boletas/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
@@ -127,7 +170,7 @@ router.post('/nota-credito', async (req, res) => {
       return res.status(400).json({ error: 'Debe enviar items para la nota de crédito' });
 
     const payload = { ...req.body, empresa_id: req.usuario.empresa_id };
-    const { data } = await axios.post(`${FACT_URL}/notas-credito/emitir`, payload, axiosHeaders(req));
+    const { data } = await factRequest('post', `${FACT_URL}/notas-credito/emitir`, payload, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return responderError(res, error);
@@ -147,10 +190,7 @@ router.get('/comprobantes', async (req, res) => {
   } catch (dbError) {
     console.error('⚠️ Error consultando comprobantes en DB local:', dbError.message);
     try {
-      const { data } = await axios.get(
-        `${FACT_URL}/comprobantes/empresa/${req.usuario.empresa_id}`,
-        axiosHeaders(req)
-      );
+      const data = await factRequest('get', `${FACT_URL}/comprobantes/empresa/${req.usuario.empresa_id}`, null, axiosHeaders(req));
       return res.json(data);
     } catch (msError) {
       console.error('⚠️ Error consultando comprobantes en microservicio:', msError.message);
@@ -168,7 +208,7 @@ router.get('/pdf/:id/:tipo', async (req, res) => {
       return res.status(400).json({ error: 'Tipo no soportado para PDF. Usa: factura, boleta' });
 
     const url      = `${FACT_URL}/${req.params.tipo}s/${req.params.id}/pdf`;
-    const response = await axios.get(url, { responseType: 'arraybuffer', ...axiosHeaders(req) });
+    const response = await factRequest('get', url, null, { responseType: 'arraybuffer', ...axiosHeaders(req) });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=comprobante_${req.params.id}.pdf`);
@@ -181,7 +221,7 @@ router.get('/pdf/:id/:tipo', async (req, res) => {
 // ─── GET /api/facturacion/health ──────────────────────────────────────────────
 router.get('/health', async (req, res) => {
   try {
-    const { data } = await axios.get(`${FACT_URL}/health`, axiosHeaders(req));
+    const data = await factRequest('get', `${FACT_URL}/health`, null, axiosHeaders(req));
     return res.json(data);
   } catch (error) {
     return res.status(502).json({ error: 'Servicio de facturación no disponible', trace_id: req.requestId });
