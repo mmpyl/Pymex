@@ -44,6 +44,34 @@ eventBus.subscribe('PAYMENT_COMPLETED', (data) => {
   }
 });
 
+// Suscribirse a eventos para invalidar caché cuando cambien features
+eventBus.subscribe('FEATURE_CHANGED', (data) => {
+  if (data && data.tipo === 'empresa_override' && data.empresa_id) {
+    // Invalidar caché para empresa específica
+    clearFeatureCache(data.empresa_id);
+    console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (empresa) para empresa ${data.empresa_id}`);
+  } else if (data && data.tipo === 'plan_feature' && data.plan_id) {
+    // Para cambios en plan_feature, necesitamos invalidar caché de todas las empresas con ese plan
+    // Esto se podría optimizar consultando qué empresas tienen ese plan
+    invalidateCacheByPattern('feature:*');
+    console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (plan ${data.plan_id})`);
+  }
+});
+
+// Función genérica para invalidar caché por patrón
+const invalidateCacheByPattern = (pattern) => {
+  for (const key of featureCache.keys()) {
+    if (key.includes(pattern)) {
+      featureCache.delete(key);
+    }
+  }
+  for (const key of limitCache.keys()) {
+    if (key.includes(pattern)) {
+      limitCache.delete(key);
+    }
+  }
+};
+
 // ─── Suscripción activa ────────────────────────────────────────────────────────
 const getSuscripcionActiva = async (empresaId) => {
   return Suscripcion.findOne({
@@ -174,5 +202,6 @@ module.exports = {
   hasFeature,
   getPlanLimit,
   getEffectiveFeaturesForEmpresa,
-  clearFeatureCache
+  clearFeatureCache,
+  invalidateCacheByPattern
 };

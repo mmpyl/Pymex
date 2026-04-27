@@ -42,6 +42,14 @@ router.put('/roles/:rolId/permisos', checkPermission('usuarios_gestionar'), asyn
       await RolPermiso.bulkCreate(permisos.map((permisoId) => ({ rol_id: rolId, permiso_id: permisoId })));
     }
 
+    // Publicar evento para invalidar caché de roles
+    const eventBus = require('../domains/eventBus');
+    eventBus.publish('ROLE_CHANGED', { 
+      rol_id: rolId, 
+      empresa_id: req.usuario.empresa_id,
+      permisos_actualizados: permisos 
+    }, 'rbac');
+
     res.json({ mensaje: 'Permisos del rol actualizados', rol_id: rolId, permisos });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -107,6 +115,14 @@ router.put('/usuarios/:id/rol', checkPermission('usuarios_gestionar'), async (re
 
     usuario.rol_id = rol_id;
     await usuario.save();
+
+    // Publicar evento para invalidar caché de roles cuando cambia el rol de un usuario
+    const eventBus = require('../domains/eventBus');
+    eventBus.publish('USER_ROLE_UPDATED', { 
+      usuario_id: usuario.id, 
+      empresa_id: req.usuario.empresa_id,
+      nuevo_rol_id: rol_id 
+    }, 'rbac');
 
     res.json({ mensaje: 'Rol actualizado', usuario_id: usuario.id, rol_id: usuario.rol_id });
   } catch (error) {
