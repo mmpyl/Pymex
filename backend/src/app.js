@@ -153,14 +153,16 @@ app.use('/api/admin',       require('./routes/admin'));
 app.use('/api/payments',    require('./routes/payments'));
 
 // ─── 12. 404 ──────────────────────────────────────────────────────────────────
-app.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
+app.use((_req, res) => {
+  const { NotFoundError } = require('./middleware/errorHandler');
+  return res.status(404).json({ 
+    error: 'Ruta no encontrada', 
+    code: 'NOT_FOUND',
+    request_id: _req.requestId
+  });
+});
 
 // ─── 13. Error handler global ─────────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
-app.use((err, _req, res, _next) => {
-  console.error('[error]', err.message);
-  const msg = process.env.NODE_ENV === 'production' ? 'Error interno del servidor' : err.message;
-  return res.status(err.status || 500).json({ error: msg });
-});
+app.use(errorHandler);
 
 module.exports = app;
