@@ -53,7 +53,7 @@ app.use(cors({
   },
   credentials:    true,
   methods:        ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'Stripe-Signature', 'x-api-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'Stripe-Signature', 'x-api-key', 'x-request-id']
 }));
 
 // ─── 5. Rate limits ───────────────────────────────────────────────────────────
