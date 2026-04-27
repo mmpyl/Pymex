@@ -9,8 +9,8 @@
 // 1. CÓMO IMPORTAR MODELOS DESDE LOS NUEVOS DOMINIOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ❌ ANTES (código legacy):
-const { Usuario, Empresa, Venta } = require('../models');
+// ❌ ANTES (código legacy - YA NO FUNCIONA):
+// const { Usuario, Empresa, Venta } = require('../models');  // ELIMINADO
 
 // ✅ AHORA (usando dominios):
 const authModels = require('../domains/auth/models');
