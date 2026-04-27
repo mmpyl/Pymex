@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: saas_pymes
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD no configurada. Usa un archivo .env o exporta la variable.}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123_secure_local_2024}
     ports:
       - "5432:5432"
     volumes:
@@ -31,8 +31,8 @@ services:
       DB_PORT: 5432
       DB_NAME: saas_pymes
       DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD no configurada}
-      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET no configurada. Genera un secreto seguro mínimo 256 caracteres.}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-admin123_secure_local_2024}
+      JWT_SECRET: ${JWT_SECRET:-jwt_secret_default_dev_only}
       JWT_EXPIRES: ${JWT_EXPIRES:-8h}
       ML_SERVICE_URL: http://ml_service:8000/api
       FACTURACION_SERVICE_URL: http://facturacion_service:9000/api
@@ -80,7 +80,7 @@ services:
       DB_PORT: 5432
       DB_NAME: saas_pymes
       DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD no configurada}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-admin123_secure_local_2024}
     ports:
       - "8000:8000"
     depends_on:
@@ -109,7 +109,7 @@ services:
       DB_PORT: 5432
       DB_NAME: saas_pymes
       DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD no configurada}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-admin123_secure_local_2024}
       STORAGE_XML: storage/xml/
       STORAGE_CDR: storage/cdr/
       STORAGE_PDF: storage/pdf/

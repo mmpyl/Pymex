@@ -1,0 +1,225 @@
+name: pymex
+services:
+  backend:
+    build:
+      context: C:\laragon\www\Pymex\backend
+      dockerfile: Dockerfile
+    container_name: sapyme_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+      redis:
+        condition: service_healthy
+        required: true
+    environment:
+      BOOTSTRAP_DISABLED: "true"
+      BOOTSTRAP_SUPER_ADMIN_SECRET: bootstrap_super_admin_secret_seguro_para_desarrollo_local_2024
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+      DB_HOST: postgres
+      DB_NAME: saas_pymes
+      DB_PASSWORD: admin123_secure_local_2024
+      DB_PORT: "5432"
+      DB_USER: postgres
+      EMAIL_FROM: noreply@sapyme.local
+      FACTURACION_SERVICE_URL: http://facturacion_service:9000/api
+      FACTURACION_TIMEOUT_MS: "15000"
+      JWT_EXPIRES: 8h
+      JWT_SECRET: jwt_secret_super_seguro_para_desarrollo_local_2024_muy_largo_64_chars_minimo_este_es_ejemplo
+      ML_SERVICE_API_KEY: ml_service_api_key_desarrollo_local_2024_seguro
+      ML_SERVICE_URL: http://ml_service:8000/api
+      NODE_ENV: development
+      PORT: "3000"
+      RATE_LIMIT_MAX: "150"
+      RATE_LIMIT_WINDOW_MS: "900000"
+      REDIS_DB: "0"
+      REDIS_HOST: redis
+      REDIS_PASSWORD: redis_secure_pass_2024
+      REDIS_PORT: "6379"
+      REQUIRE_HTTPS: "false"
+      SMTP_HOST: ""
+      SMTP_PASS: ""
+      SMTP_PORT: "587"
+      SMTP_USER: ""
+      STRIPE_PUBLISHABLE_KEY: ""
+      STRIPE_SECRET_KEY: ""
+      STRIPE_WEBHOOK_SECRET: ""
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://localhost:3000/health || exit 1
+      timeout: 5s
+      interval: 15s
+      retries: 3
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 3000
+        published: "3000"
+        protocol: tcp
+    restart: unless-stopped
+  facturacion_service:
+    build:
+      context: C:\laragon\www\Pymex\facturacion-service
+      dockerfile: Dockerfile
+    container_name: sapyme_facturacion
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      APP_ENV: development
+      APP_PORT: "9000"
+      CERT_PASSWORD: ""
+      CERT_PATH: storage/certs/certificado.pfx
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+      DB_HOST: postgres
+      DB_NAME: saas_pymes
+      DB_PASSWORD: admin123_secure_local_2024
+      DB_PORT: "5432"
+      DB_USER: postgres
+      STORAGE_CDR: storage/cdr/
+      STORAGE_PDF: storage/pdf/
+      STORAGE_XML: storage/xml/
+      SUNAT_PASSWORD: moddatos
+      SUNAT_RUC: "20123456789"
+      SUNAT_USER: MODDATOS
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://localhost:9000/ || exit 1
+      timeout: 5s
+      interval: 15s
+      retries: 3
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 9000
+        published: "9000"
+        protocol: tcp
+    restart: unless-stopped
+  frontend:
+    build:
+      context: C:\laragon\www\Pymex\frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    container_name: sapyme_frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+        required: true
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "5173"
+        protocol: tcp
+    restart: unless-stopped
+  ml_service:
+    build:
+      context: C:\laragon\www\Pymex\ml_service
+      dockerfile: Dockerfile
+    container_name: sapyme_ml
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      DB_HOST: postgres
+      DB_NAME: saas_pymes
+      DB_PASSWORD: admin123_secure_local_2024
+      DB_PORT: "5432"
+      DB_USER: postgres
+      PORT: "8000"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://localhost:8000/ || exit 1
+      timeout: 5s
+      interval: 15s
+      retries: 3
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: unless-stopped
+  postgres:
+    container_name: sapyme_postgres
+    environment:
+      POSTGRES_DB: saas_pymes
+      POSTGRES_PASSWORD: admin123_secure_local_2024
+      POSTGRES_USER: postgres
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d saas_pymes
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: postgres:16-alpine
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: pg_data
+        target: /var/lib/postgresql/data
+        volume: {}
+      - type: bind
+        source: C:\laragon\www\Pymex\database\database.sql
+        target: /docker-entrypoint-initdb.d/01-init.sql
+        read_only: true
+        bind: {}
+  redis:
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - redis_secure_pass_2024
+    container_name: sapyme_redis
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: redis:7-alpine
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 6379
+        published: "6379"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
+        volume: {}
+networks:
+  default:
+    name: pymex_default
+volumes:
+  pg_data:
+    name: pymex_pg_data
+  redis_data:
+    name: pymex_redis_data
+VALIDO  
