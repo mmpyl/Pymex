@@ -40,6 +40,15 @@ const recommendedEnvVars = {
 };
 
 const validateEnv = () => {
+  // Saltar validación en entorno de tests
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      missingRequired: [],
+      missingRecommended: [],
+      warnings: []
+    };
+  }
+
   const missingRequired = [];
   const missingRecommended = [];
   const warnings = [];
