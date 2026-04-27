@@ -2,6 +2,7 @@
 // Validador de variables de entorno críticas al inicio del servidor
 // Previene fallos en runtime por configuración incompleta
 
+const logger = require('../utils/logger');
 const requiredEnvVars = {
   // Base de datos
   DB_HOST: 'Host de la base de datos PostgreSQL',
@@ -77,6 +78,7 @@ const validateEnv = () => {
 
   // Reportar resultados
   if (missingRequired.length > 0) {
+    logger.error('Variables de entorno requeridas faltantes', { component: 'envValidator', event: 'validation_error', missing: missingRequired });
     console.error('\n❌ ERROR: Variables de entorno requeridas faltantes:\n');
     missingRequired.forEach(msg => console.error(`  • ${msg}`));
     console.error('\nPor favor configura estas variables antes de iniciar el servidor.\n');
@@ -85,17 +87,20 @@ const validateEnv = () => {
 
   if (warnings.length > 0) {
     console.warn('\n⚠️ ADVERTENCIAS DE CONFIGURACIÓN:\n');
+    logger.warn('Advertencias de configuración', { component: 'envValidator', event: 'validation_warning', warnings });
     warnings.forEach(warn => console.warn(`  ${warn}`));
     console.warn('');
   }
 
   if (missingRecommended.length > 0 && process.env.NODE_ENV === 'development') {
     console.log('\n💡 SUGERENCIA: Las siguientes variables de entorno no están configuradas (opcionales):\n');
+    logger.info('Variables de entorno opcionales no configuradas', { component: 'envValidator', event: 'validation_info', missing: missingRecommended });
     missingRecommended.forEach(msg => console.log(`  • ${msg}`));
     console.log('');
   }
 
   console.log('✅ Validación de variables de entorno completada exitosamente\n');
+  logger.info('Validación de variables de entorno completada exitosamente', { component: 'envValidator', event: 'validation_success' });
   
   return {
     missingRequired,

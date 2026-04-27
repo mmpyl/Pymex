@@ -3,13 +3,15 @@ const express      = require('express');
 const cors         = require('cors');
 const helmet       = require('helmet');
 const rateLimit    = require('express-rate-limit');
-const morgan       = require('morgan');
 const cookieParser = require('cookie-parser');
 const crypto       = require('crypto');
 require('dotenv').config();
 
 // Validar variables de entorno ANTES de iniciar
 require('./config/envValidator');
+
+// Importar logger estructurado
+const logger = require('./utils/logger');
 
 const { auditMiddleware } = require('./middleware/audit');
 const { errorHandler, handleUnhandledRejections } = require('./middleware/errorHandler');
@@ -74,29 +76,14 @@ app.use('/api/auth/login', limiterAuth);
 app.use('/api/auth/register', limiterAuth);
 app.use('/api/auth', limiterGlobal);
 
-// ─── 6. Logging ───────────────────────────────────────────────────────────────
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// ─── 6. Logging estructurado con Winston (reemplaza Morgan) ──────────────────
+app.use(logger.expressMiddleware());
 
 // ─── 7. Request ID + structured log ──────────────────────────────────────────
 app.use((req, res, next) => {
   const requestId = req.headers['x-request-id'] || crypto.randomUUID();
   req.requestId   = requestId;
   res.setHeader('x-request-id', requestId);
-
-  if (process.env.NODE_ENV === 'production') {
-    const start = Date.now();
-    res.on('finish', () => {
-      console.log(JSON.stringify({
-        timestamp:   new Date().toISOString(),
-        request_id:  requestId,
-        method:      req.method,
-        path:        req.originalUrl,
-        status:      res.statusCode,
-        duration_ms: Date.now() - start,
-        ip:          req.ip
-      }));
-    });
-  }
 
   return next();
 });
