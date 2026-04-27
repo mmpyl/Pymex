@@ -63,15 +63,24 @@ const crear = asyncHandler(async (req, res) => {
 
       if (updatedRows === 0) {
         // Either product not found or insufficient stock
-        const producto = await Producto.findOne({
+        // NOTE: We intentionally do NOT query the product here to avoid revealing
+        // current stock levels in error messages (information disclosure vulnerability).
+        // Instead, we return a generic message that doesn't expose internal state.
+        await t.rollback();
+        
+        // Check if product exists (without exposing stock info)
+        const productoExists = await Producto.findOne({
           where: { id: item.producto_id, empresa_id: req.usuario.empresa_id },
+          attributes: ['id'], // Only fetch ID to confirm existence
           transaction: t
         });
-        await t.rollback();
-        if (!producto) {
+        
+        if (!productoExists) {
           throw new NotFoundError(`Producto ${item.producto_id} no encontrado`);
         }
-        throw new ConflictError(`Stock insuficiente para "${producto.nombre}". Disponible: ${producto.stock}, requerido: ${cantidad}`);
+        
+        // Generic message that doesn't reveal current stock level
+        throw new ConflictError(`Stock insuficiente para el producto ${item.producto_id}`);
       }
 
       total += cantidad * precioUnitario;
