@@ -7,7 +7,7 @@ const { verificarToken } = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
 const { checkLimit }      = require('../middleware/featureGate');
 const { validate }        = require('../middleware/validation');
-const { Venta }           = require('../models');
+const { Venta }           = require('../domains/core/models');
 const { Op }              = require('sequelize');
 
 router.use(verificarToken);

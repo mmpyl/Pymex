@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { verificarApiKey } = require('../middleware/apiKey');
-const { Comprobante } = require('../models');
+const { Comprobante } = require('../domains/billing/models');
 
 router.use(verificarApiKey);
 

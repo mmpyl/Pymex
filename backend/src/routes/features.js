@@ -8,10 +8,8 @@ const router = require('express').Router();
 const { verificarToken } = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
 const { resolveFeatureAccess } = require('../middleware/checkFeature');
-const {
-  Feature, Plan, Rubro, Empresa,
-  PlanFeature, RubroFeature, FeatureOverride
-} = require('../models');
+const { Rubro, Empresa } = require('../domains/core/models');
+const { Feature, Plan, PlanFeature, RubroFeature, FeatureOverride } = require('../domains/billing/models');
 
 router.use(verificarToken);
 

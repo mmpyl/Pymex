@@ -12,11 +12,9 @@ const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
 const { verificarToken } = require('../middleware/auth');
 const { checkSuperAdmin } = require('../middleware/superAdmin');
-const {
-  Empresa, Plan, PlanLimit, Rubro, Feature,
-  PlanFeature, RubroFeature, FeatureOverride,
-  Suscripcion, Pago, Usuario, Rol, AuditLog
-} = require('../models');
+const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
+const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
+const { Usuario, Rol } = require('../domains/auth/models');
 
 router.use(verificarToken, checkSuperAdmin);
 
