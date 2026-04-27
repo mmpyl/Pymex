@@ -1,4 +1,4 @@
-const { AuditLog } = require('../models');
+const { AuditLog } = require('../domains/core/models');
 
 const auditMiddleware = (req, res, next) => {
   const inicio = Date.now();

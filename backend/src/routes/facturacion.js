@@ -10,7 +10,8 @@ const axios  = require('axios');
 const CircuitBreaker = require('opossum');
 const { verificarToken } = require('../middleware/auth');
 
-const { Venta, Producto, DetalleVenta, Cliente, Comprobante } = require('../models');
+const { Venta, Producto, DetalleVenta, Cliente } = require('../domains/core/models');
+const { Comprobante } = require('../domains/billing/models');
 
 const FACT_URL = process.env.FACTURACION_SERVICE_URL || 'http://localhost:9000/api';
 const FACT_TIMEOUT_MS = Number(process.env.FACTURACION_TIMEOUT_MS || 15000);

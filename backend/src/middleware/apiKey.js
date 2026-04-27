@@ -1,4 +1,4 @@
-const { ApiKey } = require('../models');
+const { ApiKey } = require('../domains/core/models');
 
 const verificarApiKey = async (req, res, next) => {
   try {
