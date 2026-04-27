@@ -1,0 +1,21 @@
+module.exports = {
+  testEnvironment: 'node',
+  coverageDirectory: 'coverage',
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/**/*.test.js',
+    '!src/config/swagger.js',
+    '!src/domains/MIGRATION_GUIDE.js'
+  ],
+  testMatch: ['**/__tests__/**/*.test.js', '**/*.test.js'],
+  verbose: true,
+  forceExit: true,
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  moduleNameMapper: {
+    '^../../config/database$': '<rootDir>/src/config/database.js',
+    '^../config/database$': '<rootDir>/src/config/database.js'
+  },
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.js']
+};
