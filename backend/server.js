@@ -1,6 +1,8 @@
 const app = require('./src/app');
 const { sequelize } = require('./src/models');
 require('dotenv').config();
+// Validar variables de entorno críticas antes de iniciar
+require('./src/config/envValidator');
 
 const PORT = process.env.PORT || 3000;
 
