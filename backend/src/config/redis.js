@@ -1,5 +1,6 @@
 // backend/src/config/redis.js — Cliente Redis para blacklist de tokens
 const Redis = require('ioredis');
+const logger = require('../utils/logger');
 
 // Configuración desde variables de entorno
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
@@ -24,16 +25,16 @@ const redis = new Redis({
 
 // Manejar eventos de conexión
 redis.on('connect', () => {
-  console.log('[Redis] Conectado exitosamente');
+  logger.info('[Redis] Conectado exitosamente', { component: 'redis', event: 'connect' });
 });
 
 redis.on('error', (err) => {
-  console.error('[Redis] Error de conexión:', err.message);
+  logger.error('[Redis] Error de conexión', { component: 'redis', event: 'error', error: err.message });
   // En producción, considerar alertas o fallback a memoria local
 });
 
 redis.on('close', () => {
-  console.warn('[Redis] Conexión cerrada');
+  logger.warn('[Redis] Conexión cerrada', { component: 'redis', event: 'close' });
 });
 
 // Función para verificar si un token está en la blacklist
@@ -43,7 +44,7 @@ const isBlacklisted = async (jti) => {
     const result = await redis.get(`blacklist:${jti}`);
     return result === 'revoked';
   } catch (error) {
-    console.error('[Redis] Error verificando blacklist:', error.message);
+    logger.error('[Redis] Error verificando blacklist', { component: 'redis', event: 'blacklist_check', error: error.message });
     // Fallback: asumir que no está revocado para no bloquear usuarios legítimos
     return false;
   }
@@ -55,7 +56,7 @@ const revokeToken = async (jti, ttlSeconds) => {
   try {
     await redis.setex(`blacklist:${jti}`, ttlSeconds, 'revoked');
   } catch (error) {
-    console.error('[Redis] Error revocando token:', error.message);
+    logger.error('[Redis] Error revocando token', { component: 'redis', event: 'revoke_token', error: error.message });
   }
 };
 
@@ -65,7 +66,7 @@ const removeFromBlacklist = async (jti) => {
   try {
     await redis.del(`blacklist:${jti}`);
   } catch (error) {
-    console.error('[Redis] Error removiendo de blacklist:', error.message);
+    logger.error('[Redis] Error removiendo de blacklist', { component: 'redis', event: 'remove_blacklist', error: error.message });
   }
 };
 
@@ -75,7 +76,7 @@ const checkConnection = async () => {
     await redis.ping();
     return true;
   } catch (error) {
-    console.warn('[Redis] No disponible, usando fallback en memoria');
+    logger.warn('[Redis] No disponible, usando fallback en memoria', { component: 'redis', event: 'connection_check' });
     return false;
   }
 };
