@@ -50,6 +50,15 @@ router.put('/planes/:planId/features/:featureId', checkPermission('usuarios_gest
       feature_id: Number(req.params.featureId),
       activo
     });
+    
+    // Publicar evento para invalidar caché de features para empresas con este plan
+    const eventBus = require('../domains/eventBus');
+    eventBus.publish('FEATURE_CHANGED', { 
+      feature_id: Number(req.params.featureId),
+      plan_id: Number(req.params.planId),
+      tipo: 'plan_feature'
+    }, 'features');
+    
     return res.json({ mensaje: 'Feature de plan actualizada', activo });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -81,6 +90,15 @@ router.put('/empresas/:empresaId/features/:featureId', checkPermission('usuarios
       activo,
       motivo: req.body.motivo || null
     });
+    
+    // Publicar evento para invalidar caché de features para esta empresa específica
+    const eventBus = require('../domains/eventBus');
+    eventBus.publish('FEATURE_CHANGED', { 
+      feature_id: Number(req.params.featureId),
+      empresa_id: Number(req.params.empresaId),
+      tipo: 'empresa_override'
+    }, 'features');
+    
     return res.json({ mensaje: 'Override por empresa actualizado', activo });
   } catch (error) {
     return res.status(500).json({ error: error.message });
