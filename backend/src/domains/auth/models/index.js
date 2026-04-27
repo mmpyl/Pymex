@@ -19,6 +19,7 @@ const Permiso      = require('./Permiso');
 const RolPermiso   = require('./RolPermiso');
 const UsuarioAdmin = require('./UsuarioAdmin');
 const RevokedToken = require('./RevokedToken');
+const AuditoriaAdmin = require('./AuditoriaAdmin');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // RELACIONES DENTRO DEL DOMINIO AUTH
@@ -59,7 +60,9 @@ module.exports = {
   // Administración
   UsuarioAdmin,
   // Seguridad de sesiones
-  RevokedToken
+  RevokedToken,
+  // Auditoría
+  AuditoriaAdmin
 };
 
 // Alias para compatibilidad con código legacy
