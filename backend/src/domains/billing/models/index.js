@@ -22,6 +22,7 @@ const FeatureOverride = require('./FeatureOverride');
 const Pago            = require('./Pago');
 const PaymentEvent    = require('./PaymentEvent');
 const Comprobante     = require('./Comprobante');
+const DomainEvent     = require('./DomainEvent'); // Outbox pattern para eventos persistentes
 
 // Nota: SeriesComprobante no existe como modelo separado en la estructura actual
 // Se maneja dentro del contexto de comprobantes
@@ -77,7 +78,9 @@ module.exports = {
   Pago,
   PaymentEvent,
   // Facturación
-  Comprobante
+  Comprobante,
+  // Outbox pattern para eventos persistentes
+  DomainEvent
 };
 
 // Alias para compatibilidad con código legacy
