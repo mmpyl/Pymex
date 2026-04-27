@@ -6,6 +6,7 @@ const authModels = require('../domains/auth/models');
 const coreModels = require('../domains/core/models');
 const billingModels = require('../domains/billing/models');
 const { eventBus } = require('../domains/eventBus');
+const { asyncHandler, ValidationError, ConflictError, AuthenticationError, AuthorizationError, NotFoundError, ServiceUnavailableError } = require('../middleware/errorHandler');
 
 const { Empresa, sequelize } = coreModels;
 const { Usuario, Rol } = authModels;
@@ -40,21 +41,20 @@ const generarTokenAdmin = (admin) =>
     { expiresIn: process.env.JWT_EXPIRES || '8h' }
   );
 
-// ─── REGISTER ─────────────────────────────────────────────────────────────────
-const register = async (req, res) => {
+const register = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { empresa_nombre, empresa_email, empresa_ruc, nombre, email, password } = req.body;
 
     if (!empresa_nombre || !empresa_email || !nombre || !email || !password) {
       await t.rollback();
-      return res.status(400).json({ error: 'Faltan campos obligatorios para el registro' });
+      throw new ValidationError('Faltan campos obligatorios para el registro');
     }
 
     const existente = await Empresa.findOne({ where: { email: empresa_email }, transaction: t });
     if (existente) {
       await t.rollback();
-      return res.status(409).json({ error: 'Ya existe una empresa registrada con ese email' });
+      throw new ConflictError('Ya existe una empresa registrada con ese email');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -113,25 +113,25 @@ const register = async (req, res) => {
     });
   } catch (error) {
     await t.rollback();
-    return res.status(500).json({ error: error.message });
+    throw error;
   }
-};
+});
 
 // ─── START TRIAL ──────────────────────────────────────────────────────────────
-const startTrial = async (req, res) => {
+const startTrial = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { empresa_nombre, empresa_email, empresa_ruc, nombre, email, password, dias_trial = 14 } = req.body;
 
     if (!empresa_nombre || !empresa_email || !nombre || !email || !password) {
       await t.rollback();
-      return res.status(400).json({ error: 'Faltan campos obligatorios para iniciar trial' });
+      throw new ValidationError('Faltan campos obligatorios para iniciar trial');
     }
 
     const empresaExistente = await Empresa.findOne({ where: { email: empresa_email }, transaction: t });
     if (empresaExistente) {
       await t.rollback();
-      return res.status(409).json({ error: 'Ya existe una empresa registrada con ese email' });
+      throw new ConflictError('Ya existe una empresa registrada con ese email');
     }
 
     let planUsado = await Plan.findOne({ where: { codigo: 'trial', estado: 'activo' }, transaction: t });
@@ -140,7 +140,7 @@ const startTrial = async (req, res) => {
     }
     if (!planUsado) {
       await t.rollback();
-      return res.status(503).json({ error: 'El servicio no está disponible en este momento. Contacta a soporte.' });
+      throw new ServiceUnavailableError('El servicio no está disponible en este momento. Contacta a soporte.');
     }
 
     const empresa = await Empresa.create({
@@ -183,113 +183,107 @@ const startTrial = async (req, res) => {
     });
   } catch (error) {
     await t.rollback();
-    return res.status(500).json({ error: error.message });
+    throw error;
   }
-};
+});
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
-    }
-
-    const usuario = await Usuario.findOne({
-      where:   { email, estado: 'activo' },
-      include: [{ model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] }]
-    });
-
-    if (!usuario) return res.status(401).json({ error: 'Credenciales inválidas' });
-
-    const coincide = await bcrypt.compare(password, usuario.password);
-    if (!coincide) return res.status(401).json({ error: 'Credenciales inválidas' });
-
-    const aviso = usuario.Empresa?.estado === 'suspendido'
-      ? 'Tu empresa está suspendida. Contacta al soporte.'
-      : null;
-
-    const token = generarTokenEmpresa(usuario);
-    return res.json({
-      token,
-      aviso,
-      usuario: {
-        id:         usuario.id,
-        empresa_id: usuario.empresa_id,
-        rol_id:     usuario.rol_id,
-        nombre:     usuario.nombre,
-        email:      usuario.email,
-        empresa:    usuario.Empresa
-      }
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new ValidationError('Email y contraseña son obligatorios');
   }
-};
+
+  const usuario = await Usuario.findOne({
+    where:   { email, estado: 'activo' },
+    include: [{ model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] }]
+  });
+
+  if (!usuario) {
+    throw new AuthenticationError('Credenciales inválidas');
+  }
+
+  const coincide = await bcrypt.compare(password, usuario.password);
+  if (!coincide) {
+    throw new AuthenticationError('Credenciales inválidas');
+  }
+
+  const aviso = usuario.Empresa?.estado === 'suspendido'
+    ? 'Tu empresa está suspendida. Contacta al soporte.'
+    : null;
+
+  const token = generarTokenEmpresa(usuario);
+  return res.json({
+    token,
+    aviso,
+    usuario: {
+      id:         usuario.id,
+      empresa_id: usuario.empresa_id,
+      rol_id:     usuario.rol_id,
+      nombre:     usuario.nombre,
+      email:      usuario.email,
+      empresa:    usuario.Empresa
+    }
+  });
+});
 
 // ─── LOGIN ADMIN ──────────────────────────────────────────────────────────────
-const loginAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
-    }
-
-    const admin = await UsuarioAdmin.findOne({ where: { email, estado: 'activo' } });
-    if (!admin) return res.status(401).json({ error: 'Credenciales admin inválidas' });
-
-    const coincide = await bcrypt.compare(password, admin.password);
-    if (!coincide) return res.status(401).json({ error: 'Credenciales admin inválidas' });
-
-    const token = generarTokenAdmin(admin);
-    return res.json({
-      token,
-      admin: { id: admin.id, nombre: admin.nombre, email: admin.email, rol: admin.rol }
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+const loginAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new ValidationError('Email y contraseña son obligatorios');
   }
-};
+
+  const admin = await UsuarioAdmin.findOne({ where: { email, estado: 'activo' } });
+  if (!admin) {
+    throw new AuthenticationError('Credenciales admin inválidas');
+  }
+
+  const coincide = await bcrypt.compare(password, admin.password);
+  if (!coincide) {
+    throw new AuthenticationError('Credenciales admin inválidas');
+  }
+
+  const token = generarTokenAdmin(admin);
+  return res.json({
+    token,
+    admin: { id: admin.id, nombre: admin.nombre, email: admin.email, rol: admin.rol }
+  });
+});
 
 // ─── PERFIL ───────────────────────────────────────────────────────────────────
-const perfil = async (req, res) => {
-  try {
-    const usuario = await Usuario.findOne({
-      where:      { id: req.usuario.id, empresa_id: req.usuario.empresa_id },
-      attributes: ['id', 'empresa_id', 'rol_id', 'nombre', 'email', 'estado'],
-      include:    [{ model: Empresa, attributes: ['id', 'nombre', 'plan', 'estado'] }]
-    });
-    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
-    return res.json(usuario);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+const perfil = asyncHandler(async (req, res) => {
+  const usuario = await Usuario.findOne({
+    where:      { id: req.usuario.id, empresa_id: req.usuario.empresa_id },
+    attributes: ['id', 'empresa_id', 'rol_id', 'nombre', 'email', 'estado'],
+    include:    [{ model: Empresa, attributes: ['id', 'nombre', 'plan', 'estado'] }]
+  });
+  if (!usuario) {
+    throw new NotFoundError('Usuario no encontrado');
   }
-};
+  return res.json(usuario);
+});
 
 // ─── BOOTSTRAP SUPER ADMIN — SOLO DESARROLLO ──────────────────────────────────
-const bootstrapSuperAdmin = async (req, res) => {
+const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
   // ⚠️ CRÍTICO: En producción debe estar SIEMPRE deshabilitado
   if (process.env.NODE_ENV === 'production' || process.env.BOOTSTRAP_DISABLED === 'true') {
-    return res.status(404).json({ 
-      error: 'Endpoint no disponible en producción. Contacta al administrador del sistema.' 
-    });
+    throw new NotFoundError('Endpoint no disponible en producción. Contacta al administrador del sistema.');
   }
 
   const bootstrapSecret = process.env.BOOTSTRAP_SUPER_ADMIN_SECRET;
   if (!bootstrapSecret) {
-    return res.status(503).json({ 
-      error: 'BOOTSTRAP_SUPER_ADMIN_SECRET no configurado. Este endpoint es solo para desarrollo inicial.' 
-    });
+    throw new ServiceUnavailableError('BOOTSTRAP_SUPER_ADMIN_SECRET no configurado. Este endpoint es solo para desarrollo inicial.');
   }
 
   const { secret, nombre, email, password } = req.body;
   if (secret !== bootstrapSecret) {
     // Log de intento fallido para auditoría
     console.warn('[AUDIT] Intento fallido de bootstrap super admin desde IP:', req.ip);
-    return res.status(403).json({ error: 'Secret inválido para bootstrap super admin' });
+    throw new AuthorizationError('Secret inválido para bootstrap super admin');
   }
   if (!nombre || !email || !password) {
-    return res.status(400).json({ error: 'nombre, email y password son obligatorios' });
+    throw new ValidationError('nombre, email y password son obligatorios');
   }
 
   const t = await sequelize.transaction();
@@ -297,7 +291,7 @@ const bootstrapSuperAdmin = async (req, res) => {
     const existente = await UsuarioAdmin.findOne({ where: { email }, transaction: t });
     if (existente) {
       await t.rollback();
-      return res.status(409).json({ error: 'Ya existe un admin con ese email' });
+      throw new ConflictError('Ya existe un admin con ese email');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -317,8 +311,8 @@ const bootstrapSuperAdmin = async (req, res) => {
     });
   } catch (error) {
     await t.rollback();
-    return res.status(500).json({ error: error.message });
+    throw error;
   }
-};
+});
 
 module.exports = { register, startTrial, login, loginAdmin, perfil, bootstrapSuperAdmin };

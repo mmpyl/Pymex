@@ -5,37 +5,35 @@
 //   - Stock validation uses atomic decrement with WHERE stock >= cantidad
 //   - Single clean flow with proper transaction rollback
 //   - ✅ MIGRADO: Publicación de eventos de dominio
+//   - ✅ MIGRADO: Manejo consistente de errores con AppError
 
 const { Op } = require('sequelize');
 const coreModels = require('../domains/core/models');
 const { eventBus } = require('../domains/eventBus');
+const { asyncHandler, ValidationError, NotFoundError, ConflictError } = require('../middleware/errorHandler');
 
 const { Venta, DetalleVenta, Producto, Cliente, sequelize } = coreModels;
 
-const listar = async (req, res) => {
-  try {
-    const ventas = await Venta.findAll({
-      where: { empresa_id: req.usuario.empresa_id },
-      include: [
-        { model: DetalleVenta, include: [{ model: Producto, attributes: ['nombre'] }] },
-        { model: Cliente, attributes: ['nombre'] }
-      ],
-      order: [['fecha', 'DESC']]
-    });
-    return res.json(ventas);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
+const listar = asyncHandler(async (req, res) => {
+  const ventas = await Venta.findAll({
+    where: { empresa_id: req.usuario.empresa_id },
+    include: [
+      { model: DetalleVenta, include: [{ model: Producto, attributes: ['nombre'] }] },
+      { model: Cliente, attributes: ['nombre'] }
+    ],
+    order: [['fecha', 'DESC']]
+  });
+  return res.json(ventas);
+});
 
-const crear = async (req, res) => {
+const crear = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { cliente_id, metodo_pago, notas, items } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       await t.rollback();
-      return res.status(400).json({ error: 'La venta requiere al menos un item' });
+      throw new ValidationError('La venta requiere al menos un item');
     }
 
     let total = 0;
@@ -47,7 +45,7 @@ const crear = async (req, res) => {
 
       if (!cantidad || cantidad <= 0 || !precioUnitario || precioUnitario <= 0) {
         await t.rollback();
-        return res.status(400).json({ error: 'Cantidad y precio_unitario deben ser mayores a 0' });
+        throw new ValidationError('Cantidad y precio_unitario deben ser mayores a 0');
       }
 
       // Lock the product row and validate stock atomically
@@ -71,11 +69,9 @@ const crear = async (req, res) => {
         });
         await t.rollback();
         if (!producto) {
-          return res.status(404).json({ error: `Producto ${item.producto_id} no encontrado` });
+          throw new NotFoundError(`Producto ${item.producto_id} no encontrado`);
         }
-        return res.status(409).json({
-          error: `Stock insuficiente para "${producto.nombre}". Disponible: ${producto.stock}, requerido: ${cantidad}`
-        });
+        throw new ConflictError(`Stock insuficiente para "${producto.nombre}". Disponible: ${producto.stock}, requerido: ${cantidad}`);
       }
 
       total += cantidad * precioUnitario;
@@ -118,8 +114,8 @@ const crear = async (req, res) => {
     return res.status(201).json({ mensaje: 'Venta registrada', venta_id: venta.id, total });
   } catch (error) {
     await t.rollback();
-    return res.status(400).json({ error: error.message });
+    throw error;
   }
-};
+});
 
 module.exports = { listar, crear };
