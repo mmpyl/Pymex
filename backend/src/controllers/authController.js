@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const authModels = require('../domains/auth/models');
 const coreModels = require('../domains/core/models');
 const billingModels = require('../domains/billing/models');
+const { eventBus } = require('../domains/eventBus');
 
 const { Empresa, sequelize } = coreModels;
 const { Usuario, Rol } = authModels;
@@ -92,6 +93,16 @@ const register = async (req, res) => {
     }
 
     await t.commit();
+
+    // ✅ PUBLICAR EVENTO: Email de bienvenida y notificaciones
+    eventBus.publish('USER_REGISTERED', {
+      userId: usuario.id,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      empresaId: empresa.id,
+      fecha: new Date().toISOString()
+    }, 'AUTH');
+
     return res.status(201).json({
       mensaje:  'Registro completado',
       empresa:  { id: empresa.id, nombre: empresa.nombre, email: empresa.email },
@@ -153,6 +164,18 @@ const startTrial = async (req, res) => {
     }, { transaction: t });
 
     await t.commit();
+
+    // ✅ PUBLICAR EVENTO: Trial iniciado - notificar sistema
+    eventBus.publish('TRIAL_STARTED', {
+      userId: usuario.id,
+      empresaId: empresa.id,
+      email: empresa.email,
+      planCodigo: planUsado.codigo,
+      diasTrial: dias_trial,
+      fechaFin: fin,
+      fecha: new Date().toISOString()
+    }, 'AUTH');
+
     return res.status(201).json({
       mensaje: 'Trial iniciado',
       empresa: { id: empresa.id, nombre: empresa.nombre, fecha_fin_trial: fin },
