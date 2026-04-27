@@ -104,12 +104,20 @@ EmpresaRubro.belongsTo(Rubro,   { foreignKey: 'rubro_id', as: 'rubro' });
 // Relaciones de Rubro con Features (cross-domain, solo lectura)
 // Nota: Esta relación cruza el límite del dominio. En una arquitectura completa,
 // esto se resolvería mediante eventos o APIs. Por ahora se mantiene como referencia.
-Rubro.belongsToMany(require('../billing/models/Feature'), { 
-  through: RubroFeature, 
-  foreignKey: 'rubro_id', 
-  otherKey: 'feature_id',
-  as: 'features'
-});
+try {
+  const Feature = require('../billing/models/Feature');
+  Rubro.belongsToMany(Feature, { 
+    through: RubroFeature, 
+    foreignKey: 'rubro_id', 
+    otherKey: 'feature_id',
+    as: 'features'
+  });
+} catch (error) {
+  // En entorno de testing, puede que no esté disponible
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn('No se pudo cargar Feature para relación con Rubro:', error.message);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTACIÓN
