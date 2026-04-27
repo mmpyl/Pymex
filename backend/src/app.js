@@ -5,6 +5,7 @@ const helmet       = require('helmet');
 const rateLimit    = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const crypto       = require('crypto');
+const swaggerUi    = require('swagger-ui-express');
 require('dotenv').config();
 
 // Validar variables de entorno ANTES de iniciar
@@ -12,6 +13,9 @@ require('./config/envValidator');
 
 // Importar logger estructurado
 const logger = require('./utils/logger');
+
+// Importar configuración de Swagger
+const swaggerSpec = require('./config/swagger');
 
 const { auditMiddleware } = require('./middleware/audit');
 const { errorHandler, handleUnhandledRejections } = require('./middleware/errorHandler');
@@ -112,6 +116,13 @@ app.get('/health', (_req, res) => {
   });
 });
 app.get('/', (_req, res) => res.json({ mensaje: 'SaaS PYMES API OK' }));
+
+// ─── 10.1 Documentación Swagger/OpenAPI ──────────────────────────────────────
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'SaPyme API Docs'
+}));
 
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────
 // Nota: limiterAuth ya se aplica en la sección 5 para /api/auth/login y /api/auth/register
