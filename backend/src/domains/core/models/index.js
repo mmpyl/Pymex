@@ -8,6 +8,9 @@
  * - Solo los modelos del dominio CORE deben importarse aquí
  * - Las relaciones entre modelos del mismo dominio están permitidas
  * - NO se permiten relaciones directas con modelos de otros dominios
+ * 
+ * NOTA: Las relaciones cross-domain (como Rubro ↔ Feature) deben establecerse
+ * en un punto de inicialización explícito, no durante la carga del módulo.
  */
 
 const sequelize = require('../../config/database');
@@ -101,23 +104,43 @@ EmpresaRubro.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
 Rubro.hasMany(EmpresaRubro,     { foreignKey: 'rubro_id', as: 'empresaRubros' });
 EmpresaRubro.belongsTo(Rubro,   { foreignKey: 'rubro_id', as: 'rubro' });
 
-// Relaciones de Rubro con Features (cross-domain, solo lectura)
-// Nota: Esta relación cruza el límite del dominio. En una arquitectura completa,
-// esto se resolvería mediante eventos o APIs. Por ahora se mantiene como referencia.
-try {
-  const Feature = require('../billing/models/Feature');
-  Rubro.belongsToMany(Feature, { 
-    through: RubroFeature, 
-    foreignKey: 'rubro_id', 
-    otherKey: 'feature_id',
-    as: 'features'
-  });
-} catch (error) {
-  // En entorno de testing, puede que no esté disponible
-  if (process.env.NODE_ENV !== 'test') {
-    console.warn('No se pudo cargar Feature para relación con Rubro:', error.message);
+// ═══════════════════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN DE RELACIONES CROSS-DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Inicializa las relaciones cross-domain entre Rubro (CORE) y Feature (BILLING).
+ * Esta función debe llamarse explícitamente en el punto de arranque de la aplicación.
+ * Es idempotente: solo establece las relaciones una vez.
+ * 
+ * Esto respeta el principio de fronteras de dominio al evitar imports directos
+ * durante la carga del módulo.
+ */
+let _crossDomainRelationsInitialized = false;
+
+const initializeCrossDomainRelations = () => {
+  if (_crossDomainRelationsInitialized) {
+    return;
   }
-}
+
+  try {
+    const Feature = require('../billing/models/Feature');
+    
+    Rubro.belongsToMany(Feature, { 
+      through: RubroFeature, 
+      foreignKey: 'rubro_id', 
+      otherKey: 'feature_id',
+      as: 'features'
+    });
+    
+    _crossDomainRelationsInitialized = true;
+  } catch (error) {
+    // En entorno de testing o cuando billing no está disponible, continuar sin error
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('No se pudo cargar Feature para relación con Rubro:', error.message);
+    }
+  }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTACIÓN
@@ -143,7 +166,10 @@ module.exports = {
   // Clasificación
   Rubro,
   RubroFeature,
-  EmpresaRubro
+  EmpresaRubro,
+  // Inicialización
+  initializeCrossDomainRelations,
+  areCrossDomainRelationsInitialized: () => _crossDomainRelationsInitialized
 };
 
 // Alias para compatibilidad con código legacy

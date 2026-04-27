@@ -1,17 +1,20 @@
 // backend/src/services/featureGateService.js
+// Servicio centralizado para feature gating con caché y soporte multi-dominio.
 // FIX: Feature.findOne({ where: { estado: 'activo' } }) en lugar de { estado: true }
 // porque Feature.estado ahora es STRING (no BOOLEAN), consistente con el modelo corregido.
 // También se corrige el campo en getSuscripcionActiva para usar fecha_inicio (no periodo_inicio).
 // MIGRACIÓN: Imports separados por dominio (billingModels)
+// REFACTOR: Las suscripciones al eventBus se realizan explícitamente mediante initialize()
 
 const billingModels = require('../domains/billing/models');
-const eventBus = require('../domains/eventBus');
 
 const { Feature, FeatureOverride, Suscripcion, PlanFeature, PlanLimit } = billingModels;
 
 const CACHE_TTL_MS = 30 * 1000; // 30 segundos
 const featureCache = new Map();
 const limitCache   = new Map();
+
+let _initialized = false;
 
 // ─── Cache helpers ─────────────────────────────────────────────────────────────
 const getCached = (cache, key) => {
@@ -25,38 +28,53 @@ const setCached = (cache, key, value) => {
   cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
 };
 
-// Suscribirse a eventos para invalidar caché cuando cambie la suscripción
-eventBus.subscribe('SUBSCRIPTION_CHANGED', (data) => {
-  if (data && data.empresa_id) {
-    clearFeatureCache(data.empresa_id);
+// ─── Inicialización explícita de suscripciones al eventBus ─────────────────────
+/**
+ * Inicializa las suscripciones al eventBus para invalidación de caché.
+ * Debe llamarse explícitamente en el punto de arranque de la aplicación.
+ * Es idempotente: solo suscribe una vez.
+ */
+const initialize = () => {
+  if (_initialized) {
+    return;
   }
-});
 
-eventBus.subscribe('SUBSCRIPTION_ACTIVATED', (data) => {
-  if (data && data.empresa_id) {
-    clearFeatureCache(data.empresa_id);
-  }
-});
+  const eventBus = require('../domains/eventBus');
 
-eventBus.subscribe('PAYMENT_COMPLETED', (data) => {
-  if (data && data.empresa_id) {
-    clearFeatureCache(data.empresa_id);
-  }
-});
+  // Suscribirse a eventos para invalidar caché cuando cambie la suscripción
+  eventBus.subscribe('SUBSCRIPTION_CHANGED', (data) => {
+    if (data && data.empresa_id) {
+      clearFeatureCache(data.empresa_id);
+    }
+  });
 
-// Suscribirse a eventos para invalidar caché cuando cambien features
-eventBus.subscribe('FEATURE_CHANGED', (data) => {
-  if (data && data.tipo === 'empresa_override' && data.empresa_id) {
-    // Invalidar caché para empresa específica
-    clearFeatureCache(data.empresa_id);
-    console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (empresa) para empresa ${data.empresa_id}`);
-  } else if (data && data.tipo === 'plan_feature' && data.plan_id) {
-    // Para cambios en plan_feature, necesitamos invalidar caché de todas las empresas con ese plan
-    // Esto se podría optimizar consultando qué empresas tienen ese plan
-    invalidateCacheByPattern('feature:*');
-    console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (plan ${data.plan_id})`);
-  }
-});
+  eventBus.subscribe('SUBSCRIPTION_ACTIVATED', (data) => {
+    if (data && data.empresa_id) {
+      clearFeatureCache(data.empresa_id);
+    }
+  });
+
+  eventBus.subscribe('PAYMENT_COMPLETED', (data) => {
+    if (data && data.empresa_id) {
+      clearFeatureCache(data.empresa_id);
+    }
+  });
+
+  // Suscribirse a eventos para invalidar caché cuando cambien features
+  eventBus.subscribe('FEATURE_CHANGED', (data) => {
+    if (data && data.tipo === 'empresa_override' && data.empresa_id) {
+      // Invalidar caché para empresa específica
+      clearFeatureCache(data.empresa_id);
+      console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (empresa) para empresa ${data.empresa_id}`);
+    } else if (data && data.tipo === 'plan_feature' && data.plan_id) {
+      // Para cambios en plan_feature, necesitamos invalidar caché de todas las empresas con ese plan
+      invalidateCacheByPattern('feature:*');
+      console.log(`[FeatureGate Cache] Caché invalidada por FEATURE_CHANGED (plan ${data.plan_id})`);
+    }
+  });
+
+  _initialized = true;
+};
 
 // Función genérica para invalidar caché por patrón
 const invalidateCacheByPattern = (pattern) => {
@@ -84,6 +102,72 @@ const getSuscripcionActiva = async (empresaId) => {
 const LEGACY_FEATURES = new Set(['ventas', 'inventario', 'reportes', 'alertas', 'dashboard']);
 
 const isLegacyFeatureEnabled = (featureCode) => LEGACY_FEATURES.has(featureCode);
+
+// ─── resolveFeatureAccess (para uso en middleware) ────────────────────────────
+/**
+ * Resuelve el acceso a un feature para una empresa.
+ * Retorna un objeto con { active: boolean, source: string, featureId: number|null }
+ * Esta función es usada por el middleware checkFeature.js
+ */
+const resolveFeatureAccess = async (empresaId, featureCode) => {
+  // Buscar feature activo
+  const feature = await Feature.findOne({
+    where: { codigo: featureCode, estado: 'activo' }
+  });
+
+  if (!feature) {
+    return { active: false, source: 'feature_disabled_or_missing', featureId: null };
+  }
+
+  // 1. Override por empresa (máxima prioridad)
+  const override = await FeatureOverride.findOne({
+    where: { empresa_id: empresaId, feature_id: feature.id }
+  });
+  if (override) {
+    return { active: Boolean(override.activo), source: 'feature_override', featureId: feature.id };
+  }
+
+  // 2. Feature por rubro (solo si existe relación RubroFeature)
+  try {
+    const coreModels = require('../domains/core/models');
+    const { RubroFeature } = coreModels;
+    
+    // Obtener empresa para verificar rubro_id
+    const { Empresa } = coreModels;
+    const empresa = await Empresa.findByPk(empresaId, {
+      attributes: ['id', 'rubro_id']
+    });
+
+    if (empresa && empresa.rubro_id) {
+      const rubroFeature = await RubroFeature.findOne({
+        where: { rubro_id: empresa.rubro_id, feature_id: feature.id }
+      });
+      if (rubroFeature) {
+        return { active: Boolean(rubroFeature.activo), source: 'rubro_feature', featureId: feature.id };
+      }
+    }
+  } catch (error) {
+    // Si no hay modelos core disponibles, continuar sin esta verificación
+  }
+
+  // 3. Plan activo de la empresa
+  const suscripcion = await getSuscripcionActiva(empresaId);
+  if (suscripcion) {
+    const planFeature = await PlanFeature.findOne({
+      where: { plan_id: suscripcion.plan_id, feature_id: feature.id, activo: true }
+    });
+    if (planFeature) {
+      return { active: true, source: 'plan_feature', featureId: feature.id };
+    }
+  }
+
+  // 4. Fallback a legacy features
+  if (isLegacyFeatureEnabled(featureCode)) {
+    return { active: true, source: 'legacy_fallback', featureId: feature.id };
+  }
+
+  return { active: false, source: 'no_mapping', featureId: feature.id };
+};
 
 // ─── hasFeature ───────────────────────────────────────────────────────────────
 const hasFeature = async (empresaId, featureCode) => {
@@ -203,5 +287,8 @@ module.exports = {
   getPlanLimit,
   getEffectiveFeaturesForEmpresa,
   clearFeatureCache,
-  invalidateCacheByPattern
+  invalidateCacheByPattern,
+  resolveFeatureAccess,
+  initialize,
+  isInitialized: () => _initialized
 };
