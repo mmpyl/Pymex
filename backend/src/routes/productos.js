@@ -4,7 +4,7 @@ const { listar, crear, actualizar, eliminar } = require('../controllers/producto
 
 const { verificarToken } = require('../middleware/auth');
 const { checkFeature, checkLimit } = require('../middleware/featureGate');
-const { Producto } = require('../models');
+const { Producto } = require('../domains/core/models');
 
 /**
  * @swagger

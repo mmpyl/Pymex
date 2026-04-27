@@ -9,7 +9,8 @@ const router = require('express').Router();
 const crypto = require('crypto');
 const { verificarToken } = require('../middleware/auth');
 const { idempotencyMiddleware } = require('../middleware/idempotency');
-const { Suscripcion, Empresa, Pago } = require('../models');
+const { Empresa } = require('../domains/core/models');
+const { Suscripcion, Pago } = require('../domains/billing/models');
 
 router.use(verificarToken);
 

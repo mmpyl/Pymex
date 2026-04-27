@@ -8,7 +8,8 @@ const router = require('express').Router();
 const { Op, fn, col } = require('sequelize');
 const { verificarToken } = require('../middleware/auth');
 const { verificarRol } = require('../middleware/roles');
-const { Empresa, Usuario, Suscripcion, Plan, ApiKey, AuditLog, Pago } = require('../models');
+const { Empresa, Usuario, ApiKey, AuditLog } = require('../domains/core/models');
+const { Suscripcion, Plan, Pago } = require('../domains/billing/models');
 
 router.use(verificarToken, verificarRol('admin', 'super_admin'));
 
