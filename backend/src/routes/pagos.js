@@ -8,6 +8,7 @@
 const router = require('express').Router();
 const crypto = require('crypto');
 const { verificarToken } = require('../middleware/auth');
+const { idempotencyMiddleware } = require('../middleware/idempotency');
 const { Suscripcion, Empresa, Pago } = require('../models');
 
 router.use(verificarToken);
@@ -61,7 +62,7 @@ router.post('/checkout', async (req, res) => {
 });
 
 // POST /api/pagos/webhook — webhook mock para desarrollo
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', idempotencyMiddleware, async (req, res) => {
   try {
     const { referencia, status } = req.body;
 
