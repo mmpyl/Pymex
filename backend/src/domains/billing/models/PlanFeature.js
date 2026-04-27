@@ -1,6 +1,6 @@
 // backend/src/models/PlanFeature.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const PlanFeature = sequelize.define('PlanFeature', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

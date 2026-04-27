@@ -11,7 +11,7 @@
  * - Este dominio es principalmente de LECTURA sobre datos históricos del dominio CORE
  */
 
-const sequelize = require('../../config/database');
+const sequelize = require('../../../config/database');
 
 // Importación de modelos del dominio ML
 // Nota: El modelo Prediccion ya existe en la base de datos

@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const RolPermiso = sequelize.define('RolPermiso', {
   rol_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },

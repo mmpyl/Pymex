@@ -5,7 +5,7 @@
 //   - estado: pendiente | pagado | vencido (no 'pagado' como default)
 //   - sin campo 'metodo' ni 'registrado_por' (los del modelo viejo)
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const Pago = sequelize.define('Pago', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

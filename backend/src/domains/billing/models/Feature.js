@@ -5,7 +5,7 @@
 //   - timestamps creado_en / actualizado_en
 //   - codigo VARCHAR(80) para cubrir códigos largos
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const Feature = sequelize.define('Feature', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

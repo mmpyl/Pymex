@@ -10,7 +10,7 @@
  * - NO se permiten relaciones directas con modelos de otros dominios
  */
 
-const sequelize = require('../../config/database');
+const sequelize = require('../../../config/database');
 
 // Importación de modelos del dominio AUTH
 const Usuario      = require('./Usuario');

@@ -1,6 +1,6 @@
 // backend/src/models/FeatureOverride.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const FeatureOverride = sequelize.define('FeatureOverride', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

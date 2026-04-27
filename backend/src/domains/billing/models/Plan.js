@@ -1,7 +1,7 @@
 // backend/src/models/Plan.js
 // FIX: tableName corregido a 'planes' (el SQL v3 crea la tabla como 'planes', no 'plans')
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const Plan = sequelize.define('Plan', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

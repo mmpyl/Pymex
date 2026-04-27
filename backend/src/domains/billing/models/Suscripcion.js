@@ -6,7 +6,7 @@
 //   - auto_renovacion BOOLEAN
 //   - timestamps creado_en / actualizado_en
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../../../config/database');
 
 const Suscripcion = sequelize.define('Suscripcion', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

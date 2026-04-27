@@ -13,7 +13,7 @@
  * en un punto de inicialización explícito, no durante la carga del módulo.
  */
 
-const sequelize = require('../../config/database');
+const sequelize = require('../../../config/database');
 
 // Importación de modelos del dominio CORE
 const Empresa              = require('./Empresa');
