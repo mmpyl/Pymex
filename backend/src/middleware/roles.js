@@ -1,4 +1,5 @@
 const { Usuario, Rol, Permiso } = require('../models');
+const eventBus = require('../domains/eventBus');
 
 // Normalización de nombres (quita acentos, minúsculas, trim)
 const normalizar = (valor = '') =>
@@ -43,6 +44,28 @@ const invalidarCacheRoles = () => {
   rolesMapDB = null; 
   rolesMapTTL = 0; 
 };
+
+// Suscribirse a eventos para invalidar caché cuando cambien roles o permisos
+eventBus.subscribe('ROLE_CHANGED', (data) => {
+  if (data && data.empresa_id) {
+    invalidarCacheRoles();
+    console.log(`[Roles Cache] Caché invalidada por ROLE_CHANGED para empresa ${data.empresa_id}`);
+  }
+});
+
+eventBus.subscribe('PERMISSION_CHANGED', (data) => {
+  if (data && data.empresa_id) {
+    invalidarCacheRoles();
+    console.log(`[Roles Cache] Caché invalidada por PERMISSION_CHANGED para empresa ${data.empresa_id}`);
+  }
+});
+
+eventBus.subscribe('USER_ROLE_UPDATED', (data) => {
+  if (data && data.empresa_id) {
+    invalidarCacheRoles();
+    console.log(`[Roles Cache] Caché invalidada por USER_ROLE_UPDATED para empresa ${data.empresa_id}`);
+  }
+});
 
 // Cache de usuario con rol + permisos por request
 const getUsuarioConRolYPermisos = async (req) => {
