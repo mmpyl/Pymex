@@ -7,6 +7,9 @@ RUN npm install --omit=dev
 
 COPY . .
 
+# Crear directorio de logs para evitar fallos en Winston
+RUN mkdir -p logs
+
 ENV NODE_ENV=production
 EXPOSE 3000
 
