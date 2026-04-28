@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
-export default function AdminLogin() {
+export default function EmpresaLogin() {
   const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -27,7 +29,7 @@ export default function AdminLogin() {
     }
   };
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateEmail(form.email)) {
@@ -35,52 +37,61 @@ export default function AdminLogin() {
       return;
     }
 
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
-      await api.post('/auth/admin/login', form);
-      navigate('/admin');
+      const { data } = await api.post('/auth/empresa/login', form);
+      login(data, form.remember);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'No se pudo iniciar sesión staff');
+      setError(err.response?.data?.error || 'Credenciales inválidas');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-slate-200 shadow-xl">
-        <CardHeader>
-          <CardTitle>Login Staff</CardTitle>
-          <CardDescription>
-            Acceso para administradores, moderadores y otros perfiles internos.
-          </CardDescription>
+        <CardHeader className="space-y-1 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold tracking-tight text-white">
+              EP
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Acceso Empresas</CardTitle>
+              <CardDescription>Ingresa tus credenciales para continuar.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={submit} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <Input
-              id="admin-email"
+              id="empresa-email"
               type="email"
               label="Email"
-              placeholder="staff@email.com"
+              placeholder="tu@empresa.com"
               value={form.email}
               onChange={handleEmailChange}
               error={emailError}
-              disabled={loading}
+              autoComplete="email"
               required
               autoFocus
+              disabled={loading}
             />
+
             <Input
-              id="admin-password"
+              id="empresa-password"
               type="password"
               label="Contraseña"
               placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              disabled={loading}
+              autoComplete="current-password"
               required
+              disabled={loading}
               showPasswordToggle
             />
 
@@ -104,24 +115,56 @@ export default function AdminLogin() {
             </div>
 
             {error && (
-              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
                 {error}
-              </p>
+              </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Ingresando...' : 'Ingresar'}
+            <Button type="submit" className="h-11 w-full" disabled={loading}>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <SpinnerIcon />
+                  Ingresando...
+                </span>
+              ) : (
+                'Iniciar sesión'
+              )}
             </Button>
           </form>
         </CardContent>
 
-        <CardFooter className="border-t border-slate-200 pt-5 text-sm text-slate-500">
-          ¿Eres cliente empresa?{' '}
-          <Link to="/empresa/login" className="ml-1 font-semibold text-indigo-600 hover:text-indigo-500">
-            Ir a login empresa
-          </Link>
+        <CardFooter className="flex-col gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500">
+          <p>
+            ¿No tienes cuenta?{' '}
+            <Link className="font-semibold text-indigo-600 hover:text-indigo-500" to="/register">
+              Regístrate gratis
+            </Link>
+          </p>
+          <p>
+            ¿Eres parte del staff?{' '}
+            <Link className="font-semibold text-slate-700 hover:text-slate-600" to="/staff/login">
+              Acceso staff
+            </Link>
+          </p>
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" className="opacity-25" />
+      <path d="M21 12a9 9 0 0 0-9-9" className="opacity-90" />
+    </svg>
   );
 }

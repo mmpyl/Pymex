@@ -1,1 +1,1 @@
-(frontend/src/pages/Register.jsx is a source file, and there are no build artifacts, dependencies, or temporary files in the changes, so no .gitignore rules are needed)
+Nothing needs to be added to .gitignore since the changes only include source code files (.jsx, .js) and no build artifacts, dependencies, or temporary files.
