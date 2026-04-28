@@ -53,7 +53,7 @@ const registrarMovimiento = async (req, res) => {
         await t.commit();
 
         // Publicar evento STOCK_UPDATED
-        eventBus.publish('STOCK_UPDATED', {
+        await eventBus.publish('STOCK_UPDATED', {
             producto_id,
             empresa_id: req.usuario.empresa_id,
             tipo,
