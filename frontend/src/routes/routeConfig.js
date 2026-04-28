@@ -34,5 +34,8 @@ export const AdminMetricasPage = lazy(() => import('../pages/admin/MetricasPage'
 export const UsuariosRBACPage = lazy(() => import('../modules/rbac/pages/UsuariosRBACPage'));
 export const RolesPermisosPage = lazy(() => import('../modules/rbac/pages/RolesPermisosPage'));
 
+// Admin - Pagos (Stripe Webhooks)
+export const AdminPaymentEventsPage = lazy(() => import('../modules/admin/payments/pages/PaymentEventsPage'));
+
 // Error pages
 export const NotAuthorizedPage = lazy(() => import('../pages/saas/NotAuthorized'));
