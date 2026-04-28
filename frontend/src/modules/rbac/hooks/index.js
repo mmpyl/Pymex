@@ -1,0 +1,1 @@
+export { useRBAC } from './useRBAC';
