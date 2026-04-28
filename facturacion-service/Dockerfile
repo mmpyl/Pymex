@@ -9,7 +9,7 @@ FROM php:8.2-cli
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libzip-dev libpq-dev unzip \
+    libzip-dev libpq-dev unzip wget \
     && docker-php-ext-install pdo pdo_pgsql zip \
     && rm -rf /var/lib/apt/lists/*
 

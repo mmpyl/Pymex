@@ -5,7 +5,7 @@
  * de eventos de pagos del backend.
  */
 
-import apiClient from '../../../services/apiClient';
+import apiClient from '../../../../services/apiClient';
 
 const BASE_URL = '/api/payments';
 

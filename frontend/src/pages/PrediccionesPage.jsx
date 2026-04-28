@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import api from '../../api/axios';
+import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { useAccessControl } from '../../hooks/useAccessControl';
+import { useAuth } from '../context/AuthContext';
+import { useAccessControl } from '../hooks/useAccessControl';
 
 const riesgoConfig = {
   critico: { color: 'text-red-700', bg: 'bg-red-100', label: '🔴 Crítico' },
