@@ -75,9 +75,19 @@ const limiterAuth = rateLimit({
   message: { error: 'Demasiados intentos de autenticación. Espera 15 minutos.' }
 });
 
+// Límite ultra-estricto para bootstrap-super-admin (3 intentos / hora) - solo desarrollo
+const limiterBootstrap = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max:      3,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { error: 'Demasiados intentos de bootstrap. Espera 1 hora.' }
+});
+
 // Aplicar limiterAuth ANTES que limiterGlobal para endpoints críticos
 app.use('/api/auth/login', limiterAuth);
 app.use('/api/auth/register', limiterAuth);
+app.use('/api/auth/bootstrap-super-admin', limiterBootstrap);
 app.use('/api/auth', limiterGlobal);
 
 // ─── 6. Logging estructurado con Winston (reemplaza Morgan) ──────────────────
