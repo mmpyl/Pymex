@@ -1,1 +1,30 @@
-Nothing needs to be added to .gitignore since only a JavaScript source file was modified and no build artifacts, dependencies, or temporary files were detected in the changes.
+```
+# Dependencies
+node_modules/
+
+# TypeScript/JavaScript build artifacts
+*.d.ts
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build directories
+dist/
+build/
+target/
+```
