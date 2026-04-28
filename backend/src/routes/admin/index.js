@@ -68,6 +68,15 @@ router.post('/features',
   ctrl.crearFeature
 );
 
+// ─── Features por Rubro ───────────────────────────────────────────────────────
+router.get('/rubros/features', ctrl.listarRubrosFeatures);
+router.put('/rubros/:rubroId/features/:featureId',
+  validateSchema({
+    activo: { required: true, type: 'boolean' }
+  }),
+  ctrl.actualizarRubroFeature
+);
+
 // ─── Feature overrides por empresa ────────────────────────────────────────────
 router.post('/empresas/:id/features',
   validateSchema({
@@ -106,6 +115,7 @@ router.post('/pagos/:id/marcar-pagado', ctrl.marcarPagoPagado);
 // ─── Billing, Auditoría y Métricas ────────────────────────────────────────────
 router.post('/billing/run-collection', ctrl.ejecutarCobranza);
 router.get('/auditoria',               ctrl.listarAuditoria);
+router.get('/audit/health',            ctrl.auditHealth);
 router.get('/metricas',                ctrl.metricasSaas);
 
 module.exports = router;

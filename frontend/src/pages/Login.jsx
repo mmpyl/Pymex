@@ -7,20 +7,42 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    setForm({ ...form, email });
+    if (email && !validateEmail(email)) {
+      setEmailError('Ingresa un email válido');
+    } else {
+      setEmailError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateEmail(form.email)) {
+      setEmailError('Ingresa un email válido');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
       const { data } = await api.post('/auth/login', form);
-      login(data);
+      login(data, form.remember);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Credenciales inválidas');
@@ -91,7 +113,8 @@ export default function Login() {
                 label="Email"
                 placeholder="tu@empresa.com"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={handleEmailChange}
+                error={emailError}
                 autoComplete="email"
                 required
                 autoFocus
@@ -108,10 +131,30 @@ export default function Login() {
                 autoComplete="current-password"
                 required
                 disabled={loading}
+                showPasswordToggle
               />
 
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.remember}
+                    onChange={(e) => setForm({ ...form, remember: e.target.checked })}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    disabled={loading}
+                  />
+                  <span className="text-sm text-slate-600">Recordarme</span>
+                </label>
+                <Link 
+                  to="/recuperar-password" 
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+
               {error && (
-                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
                   {error}
                 </div>
               )}

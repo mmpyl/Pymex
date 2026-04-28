@@ -8,6 +8,13 @@ const REDIS_PORT = process.env.REDIS_PORT || 6379;
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || null;
 const REDIS_DB = parseInt(process.env.REDIS_DB, 10) || 0;
 
+// Estado de la conexión
+let connectionStatus = {
+  connected: false,
+  lastError: null,
+  checkedAt: null
+};
+
 // Crear cliente Redis
 const redis = new Redis({
   host: REDIS_HOST,
@@ -25,15 +32,20 @@ const redis = new Redis({
 
 // Manejar eventos de conexión
 redis.on('connect', () => {
+  connectionStatus.connected = true;
+  connectionStatus.lastError = null;
   logger.info('[Redis] Conectado exitosamente', { component: 'redis', event: 'connect' });
 });
 
 redis.on('error', (err) => {
+  connectionStatus.connected = false;
+  connectionStatus.lastError = err.message;
   logger.error('[Redis] Error de conexión', { component: 'redis', event: 'error', error: err.message });
   // En producción, considerar alertas o fallback a memoria local
 });
 
 redis.on('close', () => {
+  connectionStatus.connected = false;
   logger.warn('[Redis] Conexión cerrada', { component: 'redis', event: 'close' });
 });
 
@@ -74,17 +86,29 @@ const removeFromBlacklist = async (jti) => {
 const checkConnection = async () => {
   try {
     await redis.ping();
+    connectionStatus.connected = true;
+    connectionStatus.checkedAt = new Date().toISOString();
     return true;
   } catch (error) {
+    connectionStatus.connected = false;
+    connectionStatus.lastError = error.message;
+    connectionStatus.checkedAt = new Date().toISOString();
     logger.warn('[Redis] No disponible, usando fallback en memoria', { component: 'redis', event: 'connection_check' });
     return false;
   }
 };
+
+// Obtener estado actual de la conexión
+const getConnectionStatus = () => ({
+  ...connectionStatus,
+  checkedAt: connectionStatus.checkedAt || null
+});
 
 module.exports = {
   redis,
   isBlacklisted,
   revokeToken,
   removeFromBlacklist,
-  checkConnection
+  checkConnection,
+  getConnectionStatus
 };

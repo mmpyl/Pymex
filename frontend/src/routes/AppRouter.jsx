@@ -33,6 +33,9 @@ import {
   AdminSuscripcionesPage,
   AdminAuditoriaPage,
   AdminMetricasPage,
+  UsuariosRBACPage,
+  RolesPermisosPage,
+  AdminPaymentEventsPage,
   NotAuthorizedPage
 } from './routeConfig';
 
@@ -89,6 +92,13 @@ const AppRouter = () => (
         <Route path="/admin/suscripciones" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></AdminRoute>} />
         <Route path="/admin/auditoria" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></AdminRoute>} />
         <Route path="/admin/metricas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></AdminRoute>} />
+
+        {/* RBAC - Gestión de Roles y Permisos */}
+        <Route path="/admin/rbac/usuarios" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><UsuariosRBACPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/admin/rbac/roles" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><RolesPermisosPage /></AdminLayout></RoleRoute></AdminRoute>} />
+
+        {/* Admin - Pagos (Stripe Webhooks) */}
+        <Route path="/admin/payments/events" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPaymentEventsPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
         <Route path="/403" element={<NotAuthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

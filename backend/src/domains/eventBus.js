@@ -54,6 +54,18 @@ class DomainEventBus extends EventEmitter {
     this.maxLogSize = 1000;
     this.outboxEnabled = true; // Habilitar outbox por defecto
     this.workerId = `worker_${process.pid}_${Date.now()}`;
+    
+    // Estado del modo degradado
+    this.degradedMode = false;
+    this.degradedReason = null;
+    this.degradedSince = null;
+    
+    // Configuración de comportamiento en fallos
+    this.strictMode = process.env.EVENTBUS_STRICT_MODE === 'true'; // Si es true, lanza error en fallo de persistencia
+    
+    // Métricas de fallos
+    this.outboxFailures = 0;
+    this.lastFailureTime = null;
   }
 
   /**
@@ -65,8 +77,11 @@ class DomainEventBus extends EventEmitter {
    * @param {object} payload - Datos del evento
    * @param {string} sourceDomain - Dominio que publica el evento
    * @param {object} transaction - Transacción opcional (para atomicidad)
+   * @param {boolean} requirePersistence - Si es true, lanza error si falla la persistencia (default: false)
+   * @returns {Promise<object>} El registro del evento publicado
+   * @throws {Error} Si requirePersistence es true y falla la persistencia, o en strictMode
    */
-  async publish(event, payload, sourceDomain, transaction = null) {
+  async publish(event, payload, sourceDomain, transaction = null, requirePersistence = false) {
     const eventRecord = {
       id: this.generateEventId(),
       event,
@@ -82,10 +97,13 @@ class DomainEventBus extends EventEmitter {
     if (this.outboxEnabled) {
       try {
         await this.persistToOutbox(event, payload, sourceDomain, transaction);
+        
+        // Si estábamos en modo degradado, recuperar estado normal
+        if (this.degradedMode) {
+          this._exitDegradedMode('Persistencia restaurada exitosamente');
+        }
       } catch (error) {
-        console.error(`[EventBus] Error persistiendo evento ${event}:`, error);
-        // Si falla la persistencia, aún emitimos el evento pero logueamos el error
-        // En producción, esto debería ser manejado más robustamente
+        this._handleOutboxFailure(error, event, payload, sourceDomain, requirePersistence);
       }
     }
 
@@ -95,9 +113,107 @@ class DomainEventBus extends EventEmitter {
     // También emitir con prefijo de dominio para listeners específicos
     this.emit(`${sourceDomain}:${event}`, eventRecord);
 
-    console.log(`[EventBus] Publicado: ${event} desde ${sourceDomain}`);
+    console.log(`[EventBus] Publicado: ${event} desde ${sourceDomain}${this.degradedMode ? ' (MODO DEGRADADO)' : ''}`);
     
     return eventRecord;
+  }
+
+  /**
+   * Maneja fallos de persistencia en el outbox
+   * @private
+   */
+  _handleOutboxFailure(error, eventType, payload, sourceDomain, requirePersistence) {
+    this.outboxFailures++;
+    this.lastFailureTime = new Date();
+
+    // Determinar tipo de error
+    const isCriticalError = this._isCriticalDatabaseError(error);
+    
+    // Entrar en modo degradado si es error crítico
+    if (isCriticalError && !this.degradedMode) {
+      this._enterDegradedMode(error.message);
+    }
+
+    const errorMsg = `[EventBus] Error persistiendo evento ${eventType}: ${error.message}`;
+    
+    // En modo estricto o si se requiere persistencia, lanzar error
+    if (this.strictMode || requirePersistence) {
+      console.error(errorMsg);
+      const publishError = new Error(`Outbox persistence failed for event ${eventType}`);
+      publishError.code = 'OUTBOX_PERSISTENCE_FAILED';
+      publishError.originalError = error;
+      publishError.degradedMode = this.degradedMode;
+      throw publishError;
+    }
+
+    // Modo degradado: loguear pero continuar
+    console.warn(`${errorMsg} - Continuando en MODO DEGRADADO (evento NO persistido)`);
+    console.warn(`[EventBus] DETECCIÓN TEMPRANA: La tabla domain_events puede no existir o la DB está caída`);
+  }
+
+  /**
+   * Determina si un error de base de datos es crítico (tabla no existe, conexión caída, etc.)
+   * @private
+   */
+  _isCriticalDatabaseError(error) {
+    const criticalErrors = [
+      'ER_NO_SUCH_TABLE',
+      'TABLE_NOT_EXIST',
+      'ECONNREFUSED',
+      'ETIMEDOUT',
+      'CONNECTION_LOST',
+      'POOL_TIMEOUT',
+      'ER_DBACCESS_DENIED_ERROR',
+      'ER_ACCESS_DENIED_ERROR'
+    ];
+    
+    const errorCode = error.code || error.parent?.code || '';
+    const errorMessage = (error.message || '').toLowerCase();
+    
+    return criticalErrors.some(code => 
+      errorCode.includes(code) || 
+      errorMessage.includes(code.toLowerCase()) ||
+      errorMessage.includes('table') && errorMessage.includes('not exist')
+    );
+  }
+
+  /**
+   * Entra en modo degradado
+   * @private
+   */
+  _enterDegradedMode(reason) {
+    this.degradedMode = true;
+    this.degradedReason = reason;
+    this.degradedSince = new Date();
+    
+    console.error('='.repeat(80));
+    console.error('[EventBus] ⚠️  ENTRANDO EN MODO DEGRADADO');
+    console.error(`[EventBus] Razón: ${reason}`);
+    console.error('[EventBus] Los eventos se emitirán en memoria SIN persistencia');
+    console.error('[EventBus] ⚠️  ADVERTENCIA: Los eventos se PERDERÁN al reiniciar el proceso');
+    console.error('='.repeat(80));
+  }
+
+  /**
+   * Sale del modo degradado
+   * @private
+   */
+  _exitDegradedMode(reason) {
+    if (!this.degradedMode) return;
+    
+    const duration = Date.now() - this.degradedSince.getTime();
+    const durationSecs = Math.round(duration / 1000);
+    
+    console.log('='.repeat(80));
+    console.log('[EventBus] ✅ SALIENDO DE MODO DEGRADADO');
+    console.log(`[EventBus] Razón: ${reason}`);
+    console.log(`[EventBus] Duración del modo degradado: ${durationSecs}s`);
+    console.log(`[EventBus] Fallos acumulados: ${this.outboxFailures}`);
+    console.log('='.repeat(80));
+    
+    this.degradedMode = false;
+    this.degradedReason = null;
+    this.degradedSince = null;
   }
 
   /**
@@ -293,6 +409,62 @@ class DomainEventBus extends EventEmitter {
   }
 
   /**
+   * Obtiene el estado actual del modo degradado
+   * @returns {object} Estado del modo degradado
+   */
+  getDegradedStatus() {
+    return {
+      degradedMode: this.degradedMode,
+      degradedReason: this.degradedReason,
+      degradedSince: this.degradedSince,
+      outboxFailures: this.outboxFailures,
+      lastFailureTime: this.lastFailureTime,
+      outboxEnabled: this.outboxEnabled,
+      strictMode: this.strictMode
+    };
+  }
+
+  /**
+   * Habilita el modo estricto (lanza errores en fallos de persistencia)
+   */
+  enableStrictMode() {
+    this.strictMode = true;
+    console.log('[EventBus] Modo estricto habilitado - los fallos de persistencia lanzarán errores');
+  }
+
+  /**
+   * Deshabilita el modo estricto (continúa en modo degradado)
+   */
+  disableStrictMode() {
+    this.strictMode = false;
+    console.log('[EventBus] Modo estricto deshabilitado - los fallos de persistencia entrarán en modo degradado');
+  }
+
+  /**
+   * Resetea las métricas de fallos
+   */
+  resetFailureMetrics() {
+    this.outboxFailures = 0;
+    this.lastFailureTime = null;
+    console.log('[EventBus] Métricas de fallos reseteadas');
+  }
+
+  /**
+   * Fuerza la entrada en modo degradado manualmente
+   * @param {string} reason - Razón del modo degradado
+   */
+  forceDegradedMode(reason) {
+    this._enterDegradedMode(reason);
+  }
+
+  /**
+   * Fuerza la salida del modo degradado manualmente
+   */
+  exitDegradedMode() {
+    this._exitDegradedMode('Forzado manualmente');
+  }
+
+  /**
    * Suscribe un listener a un evento
    * @param {string} event - Nombre del evento
    * @param {Function} listener - Función callback
@@ -388,7 +560,8 @@ const eventBus = new DomainEventBus();
 module.exports = {
   DomainEventBus,
   eventBus,
-  publish: (event, payload, sourceDomain, transaction) => eventBus.publish(event, payload, sourceDomain, transaction),
+  publish: (event, payload, sourceDomain, transaction, requirePersistence) => 
+    eventBus.publish(event, payload, sourceDomain, transaction, requirePersistence),
   subscribe: (event, listener, subscriberDomain) => eventBus.subscribe(event, listener, subscriberDomain),
   // Funciones para Outbox Pattern
   processPendingEvents: (limit) => eventBus.processPendingEvents(limit),
@@ -396,5 +569,12 @@ module.exports = {
   retryFailedEvent: (eventId) => eventBus.retryFailedEvent(eventId),
   cleanupOldEvents: (daysToKeep) => eventBus.cleanupOldEvents(daysToKeep),
   disableOutbox: () => eventBus.disableOutbox(),
-  enableOutbox: () => eventBus.enableOutbox()
+  enableOutbox: () => eventBus.enableOutbox(),
+  // Funciones para modo degradado
+  getDegradedStatus: () => eventBus.getDegradedStatus(),
+  enableStrictMode: () => eventBus.enableStrictMode(),
+  disableStrictMode: () => eventBus.disableStrictMode(),
+  resetFailureMetrics: () => eventBus.resetFailureMetrics(),
+  forceDegradedMode: (reason) => eventBus.forceDegradedMode(reason),
+  exitDegradedMode: () => eventBus.exitDegradedMode()
 };

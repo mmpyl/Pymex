@@ -7,7 +7,18 @@ const normalize = (value = '') => value
   .toLowerCase()
   .trim();
 
-const checkSuperAdmin = async (req, res, next) => {
+/**
+ * Middleware para verificar rol Super Admin en usuarios de empresa.
+ * 
+ * IMPORTANTE: Este middleware verifica el rol en la tabla de usuarios de EMPRESA,
+ * NO debe usarse para rutas del panel admin (/api/admin/*).
+ * 
+ * Para rutas del panel admin que usan tokens de tipo 'admin' (tabla usuarios_admin),
+ * usar directamente verificarTokenAdmin desde middleware/auth.js
+ * 
+ * @deprecated Para nuevas rutas de super admin, considerar migrar a tokens admin dedicados
+ */
+const checkSuperAdminRol = async (req, res, next) => {
   try {
     const userId = req.usuario?.id;
     if (!userId) return res.status(401).json({ error: 'Token inválido' });
@@ -32,4 +43,7 @@ const checkSuperAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { checkSuperAdmin };
+// Alias para compatibilidad con código existente
+const checkSuperAdmin = checkSuperAdminRol;
+
+module.exports = { checkSuperAdminRol, checkSuperAdmin };

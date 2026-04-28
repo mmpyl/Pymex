@@ -6,7 +6,7 @@ const authModels = require('../../domains/auth/models');
 const billingModels = require('../../domains/billing/models');
 
 // Extraer modelos de cada dominio
-const { sequelize, Empresa, Rubro, EmpresaRubro } = coreModels;
+const { sequelize, Empresa, Rubro, EmpresaRubro, RubroFeature } = coreModels;
 const { Usuario, AuditoriaAdmin } = authModels;
 const { Plan, Feature, PlanFeature, PlanLimit, Suscripcion, FeatureOverride, Pago } = billingModels;
 
@@ -258,6 +258,72 @@ const listarRubros = async (_req, res) => {
   try {
     const rubros = await Rubro.findAll({ order: [['nombre', 'ASC']] });
     return res.json(rubros);
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
+const listarRubrosFeatures = async (_req, res) => {
+  try {
+    const [rubros, features] = await Promise.all([
+      Rubro.findAll({ order: [['nombre', 'ASC']] }),
+      Feature.findAll({ where: { estado: 'activo' }, order: [['codigo', 'ASC']] })
+    ]);
+
+    // Obtener todas las relaciones RubroFeature existentes
+    const rubroFeatures = await RubroFeature.findAll();
+    const rubroFeatureMap = new Map();
+    rubroFeatures.forEach(rf => {
+      const key = `${rf.rubro_id}-${rf.feature_id}`;
+      rubroFeatureMap.set(key, rf.activo);
+    });
+
+    // Construir respuesta con estado de cada feature por rubro
+    const result = rubros.map(rubro => ({
+      ...rubro.toJSON(),
+      features: features.map(feature => ({
+        ...feature.toJSON(),
+        activo: rubroFeatureMap.get(`${rubro.id}-${feature.id}`) ?? false
+      }))
+    }));
+
+    return res.json(result);
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
+const actualizarRubroFeature = async (req, res) => {
+  try {
+    const rubroId = Number(req.params.rubroId);
+    const featureId = Number(req.params.featureId);
+    const { activo } = req.body;
+
+    // Verificar que el rubro existe
+    const rubro = await Rubro.findByPk(rubroId);
+    if (!rubro) {
+      return res.status(404).json({ error: 'Rubro no encontrado' });
+    }
+
+    // Verificar que el feature existe
+    const feature = await Feature.findByPk(featureId);
+    if (!feature) {
+      return res.status(404).json({ error: 'Feature no encontrado' });
+    }
+
+    // Crear o actualizar la relación RubroFeature
+    const [rubroFeature, created] = await RubroFeature.findOrCreate({
+      where: { rubro_id: rubroId, feature_id: featureId },
+      defaults: { activo }
+    });
+
+    if (!created) {
+      await rubroFeature.update({ activo });
+    }
+
+    await audit(req, 'actualizar_rubro_feature', 'rubro_feature', rubroFeature.id, { rubro_id: rubroId, feature_id: featureId, activo });
+    
+    return res.json({ mensaje: 'Feature de rubro actualizado', rubro_id: rubroId, feature_id: featureId, activo });
   } catch (error) {
     return err500(res, error);
   }
@@ -622,6 +688,57 @@ const listarAuditoria = async (req, res) => {
   }
 };
 
+const auditHealth = async (req, res) => {
+  try {
+    const { action } = req.query;
+    
+    if (action === 'reset') {
+      // Resetear el contador eliminando todos los logs de auditoría
+      const deleted = await AuditoriaAdmin.destroy({ where: {}, truncate: true });
+      await audit(req, 'reset_audit_logs', 'auditoria', null, { registros_eliminados: deleted });
+      return res.json({ message: 'Logs de auditoría reseteados', registros_eliminados: deleted });
+    }
+    
+    // Obtener estado de salud por defecto
+    const totalLogs = await AuditoriaAdmin.count();
+    const logsLast24h = await AuditoriaAdmin.count({
+      where: {
+        creado_en: { [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      }
+    });
+    const logsLast7d = await AuditoriaAdmin.count({
+      where: {
+        creado_en: { [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }
+    });
+    
+    // Determinar estado de salud
+    let healthStatus = 'healthy';
+    let healthMessage = 'Sistema de auditoría operando normalmente';
+    
+    if (totalLogs > 100000) {
+      healthStatus = 'warning';
+      healthMessage = 'Alto volumen de logs considerados (>100k)';
+    }
+    
+    if (totalLogs > 500000) {
+      healthStatus = 'critical';
+      healthMessage = 'Volumen crítico de logs (>500k). Considere archivar o resetear.';
+    }
+    
+    return res.json({
+      total_logs: totalLogs,
+      logs_24h: logsLast24h,
+      logs_7d: logsLast7d,
+      health_status: healthStatus,
+      health_message: healthMessage,
+      last_updated: new Date().toISOString()
+    });
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
 const metricasSaas = async (_req, res) => {
   try {
     const now = new Date();
@@ -666,6 +783,8 @@ module.exports = {
   listarUsuariosEmpresa,
   actualizarUsuario,
   listarRubros,
+  listarRubrosFeatures,
+  actualizarRubroFeature,
   crearRubro,
   actualizarRubro,
   asignarRubrosEmpresa,
@@ -687,5 +806,6 @@ module.exports = {
   generarCheckoutPago,
   marcarPagoPagado,
   listarAuditoria,
+  auditHealth,
   metricasSaas
 };

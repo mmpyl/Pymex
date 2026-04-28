@@ -75,9 +75,19 @@ const limiterAuth = rateLimit({
   message: { error: 'Demasiados intentos de autenticación. Espera 15 minutos.' }
 });
 
+// Límite ultra-estricto para bootstrap-super-admin (3 intentos / hora) - solo desarrollo
+const limiterBootstrap = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max:      3,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { error: 'Demasiados intentos de bootstrap. Espera 1 hora.' }
+});
+
 // Aplicar limiterAuth ANTES que limiterGlobal para endpoints críticos
 app.use('/api/auth/login', limiterAuth);
 app.use('/api/auth/register', limiterAuth);
+app.use('/api/auth/bootstrap-super-admin', limiterBootstrap);
 app.use('/api/auth', limiterGlobal);
 
 // ─── 6. Logging estructurado con Winston (reemplaza Morgan) ──────────────────
@@ -107,6 +117,20 @@ const { getRedisStatus } = require('./middleware/auth');
 
 app.get('/health', (_req, res) => {
   const redisStatus = getRedisStatus();
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // En producción con STRICT_MODE, si Redis falla el health check debe fallar
+  if (isProduction && redisStatus.fallbackActive) {
+    return res.status(503).json({ 
+      estado: 'degraded', 
+      version: '2.0', 
+      service: 'backend', 
+      fecha: new Date().toISOString(),
+      redis: redisStatus,
+      error: 'Redis no disponible. En producción esto afecta la revocación de tokens en multi-instancia.'
+    });
+  }
+  
   res.json({ 
     estado: 'ok', 
     version: '2.0', 

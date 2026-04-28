@@ -218,6 +218,37 @@ const swaggerOptions = {
             fecha_emision: { type: 'string', format: 'date-time', description: 'Fecha de emisión' },
             fecha_vencimiento: { type: 'string', format: 'date-time', description: 'Fecha de vencimiento' }
           }
+        },
+        Comprobante: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', description: 'ID del comprobante' },
+            tipo: { type: 'string', enum: ['factura', 'boleta', 'nota_credito', 'nota_debito'], description: 'Tipo de comprobante' },
+            serie: { type: 'string', description: 'Serie del comprobante (ej: F001, B001)' },
+            correlativo: { type: 'integer', description: 'Número correlativo' },
+            numero: { type: 'string', description: 'Número completo del comprobante' },
+            ruc_cliente: { type: 'string', description: 'RUC del cliente' },
+            razon_social: { type: 'string', description: 'Razón social del cliente' },
+            total: { type: 'number', format: 'float', description: 'Monto total' },
+            moneda: { type: 'string', enum: ['PEN', 'USD'], description: 'Moneda' },
+            estado: { type: 'string', enum: ['pendiente', 'emitido', 'anulado', 'rechazado'], description: 'Estado del comprobante' },
+            sunat_estado: { type: 'string', description: 'Estado en SUNAT' },
+            fecha_emision: { type: 'string', format: 'date-time', description: 'Fecha de emisión' }
+          }
+        },
+        ApiKeyResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', description: 'Si la operación fue exitosa' },
+            data: { type: 'array', items: { $ref: '#/components/schemas/Comprobante' }, description: 'Lista de comprobantes' },
+            pagination: {
+              type: 'object',
+              properties: {
+                total: { type: 'integer', description: 'Total de registros' },
+                limit: { type: 'integer', description: 'Límite aplicado' }
+              }
+            }
+          }
         }
       }
     },
@@ -242,7 +273,7 @@ const swaggerOptions = {
       { name: 'RBAC', description: 'Control de acceso basado en roles' },
       { name: 'Admin', description: 'Endpoints de administración' },
       { name: 'Super Admin', description: 'Endpoints exclusivos para super administradores' },
-      { name: 'Public', description: 'Endpoints públicos sin autenticación' }
+      { name: 'Public', description: 'API Pública con autenticación por API Key' }
     ]
   },
   apis: ['./src/routes/*.js', './src/routes/admin/*.js']
