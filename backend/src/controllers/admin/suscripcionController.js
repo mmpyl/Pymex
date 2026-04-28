@@ -12,6 +12,7 @@ const { Op, fn, col, literal } = require('sequelize');
 const coreModels = require('../../domains/core/models');
 const billingModels = require('../../domains/billing/models');
 const authModels = require('../../domains/auth/models');
+const { clearFeatureCache } = require('../../services/featureGateService');
 
 // Extraer modelos de cada dominio
 const { sequelize, Empresa } = coreModels;
