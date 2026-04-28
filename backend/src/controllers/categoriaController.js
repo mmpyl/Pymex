@@ -23,7 +23,7 @@ const crear = async (req, res) => {
     });
     
     // Publicar evento para otros dominios
-    eventBus.publish('CATEGORY_CREATED', {
+    await eventBus.publish('CATEGORY_CREATED', {
       categoriaId: categoria.id,
       empresa_id: categoria.empresa_id,
       nombre: categoria.nombre,
