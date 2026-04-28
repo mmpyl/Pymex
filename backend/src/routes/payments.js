@@ -80,4 +80,100 @@ router.get('/webhook/health', (req, res) => {
   webhookController.healthCheck(req, res);
 });
 
+/**
+ * @swagger
+ * /api/payments/events:
+ *   get:
+ *     summary: Lista eventos de pagos
+ *     description: Obtiene una lista paginada de eventos de pagos recibidos desde Stripe
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *         description: Tamaño de página
+ *       - in: query
+ *         name: proveedor
+ *         schema:
+ *           type: string
+ *         description: Filtrar por proveedor (stripe)
+ *       - in: query
+ *         name: tipo
+ *         schema:
+ *           type: string
+ *         description: Filtrar por tipo de evento
+ *       - in: query
+ *         name: event_id
+ *         schema:
+ *           type: string
+ *         description: Filtrar por ID del evento
+ *     responses:
+ *       200:
+ *         description: Lista de eventos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PaymentEvent'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/events', async (req, res) => {
+  await webhookController.listPaymentEvents(req, res);
+});
+
+/**
+ * @swagger
+ * /api/payments/events/{id}:
+ *   get:
+ *     summary: Obtiene un evento de pago por ID
+ *     description: Obtiene los detalles de un evento de pago específico
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del evento
+ *     responses:
+ *       200:
+ *         description: Evento encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentEvent'
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/events/:id', async (req, res) => {
+  await webhookController.getPaymentEvent(req, res);
+});
+
 module.exports = router;

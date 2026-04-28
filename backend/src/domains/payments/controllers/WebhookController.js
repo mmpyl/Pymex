@@ -109,6 +109,80 @@ class WebhookController {
       timestamp: new Date().toISOString()
     });
   }
+
+  /**
+   * Lista eventos de webhook con paginación y filtros
+   * 
+   * @param {Request} req - Request de Express
+   * @param {Response} res - Response de Express
+   * @returns {Promise<void>}
+   */
+  async listPaymentEvents(req, res) {
+    try {
+      const { page = 1, pageSize = 20, proveedor, tipo, event_id } = req.query;
+      const pageNum = Math.max(parseInt(page, 10), 1);
+      const pageSizeNum = Math.min(Math.max(parseInt(pageSize, 10), 1), 100);
+      const offset = (pageNum - 1) * pageSizeNum;
+
+      const where = {};
+      if (proveedor) where.proveedor = proveedor;
+      if (tipo) where.tipo = tipo;
+      if (event_id) where.event_id = event_id;
+
+      const { count, rows } = await this.PaymentEvent.findAndCountAll({
+        where,
+        order: [['procesado_en', 'DESC']],
+        limit: pageSizeNum,
+        offset
+      });
+
+      return res.json({
+        data: rows,
+        meta: {
+          page: pageNum,
+          pageSize: pageSizeNum,
+          total: count,
+          totalPages: Math.ceil(count / pageSizeNum)
+        }
+      });
+    } catch (error) {
+      logger.error('[WebhookController] Error listando eventos:', error.message);
+      return res.status(500).json({
+        error: 'Error obteniendo eventos de pago',
+        code: 'LIST_EVENTS_ERROR'
+      });
+    }
+  }
+
+  /**
+   * Obtiene un evento específico por su ID
+   * 
+   * @param {Request} req - Request de Express
+   * @param {Response} res - Response de Express
+   * @returns {Promise<void>}
+   */
+  async getPaymentEvent(req, res) {
+    try {
+      const { id } = req.params;
+      
+      const event = await this.PaymentEvent.findByPk(id);
+      
+      if (!event) {
+        return res.status(404).json({
+          error: 'Evento no encontrado',
+          code: 'EVENT_NOT_FOUND'
+        });
+      }
+
+      return res.json(event);
+    } catch (error) {
+      logger.error('[WebhookController] Error obteniendo evento:', error.message);
+      return res.status(500).json({
+        error: 'Error obteniendo evento de pago',
+        code: 'GET_EVENT_ERROR'
+      });
+    }
+  }
 }
 
 module.exports = WebhookController;
