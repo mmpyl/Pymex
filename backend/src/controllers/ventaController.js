@@ -110,7 +110,7 @@ const crear = asyncHandler(async (req, res) => {
     await t.commit();
     
     // ✅ PUBLICAR EVENTO DE DOMINIO: Otros dominios pueden reaccionar a esta venta
-    eventBus.publish('SALE_COMPLETED', {
+    await eventBus.publish('SALE_COMPLETED', {
       ventaId: venta.id,
       empresaId: req.usuario.empresa_id,
       usuarioId: req.usuario.id,
