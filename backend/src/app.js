@@ -117,6 +117,20 @@ const { getRedisStatus } = require('./middleware/auth');
 
 app.get('/health', (_req, res) => {
   const redisStatus = getRedisStatus();
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // En producción con STRICT_MODE, si Redis falla el health check debe fallar
+  if (isProduction && redisStatus.fallbackActive) {
+    return res.status(503).json({ 
+      estado: 'degraded', 
+      version: '2.0', 
+      service: 'backend', 
+      fecha: new Date().toISOString(),
+      redis: redisStatus,
+      error: 'Redis no disponible. En producción esto afecta la revocación de tokens en multi-instancia.'
+    });
+  }
+  
   res.json({ 
     estado: 'ok', 
     version: '2.0', 
