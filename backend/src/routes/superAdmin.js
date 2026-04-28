@@ -4,19 +4,21 @@
 //      Los límites del plan ahora van a PlanLimit separado, no como columnas en Plan.
 // FIX: Suscripcion.update usa fecha_fin (no periodo_fin).
 // FIX: Pago.create usa fecha_vencimiento (requerida en v3).
-// FIX: checkSuperAdmin ahora delega en verificarTokenAdmin para la nueva arquitectura
-//      de panel admin separado. Se mantiene compatibilidad con usuarios empresa con rol super_admin.
+//
+// NOTA ARQUITECTURA: Esta ruta usa verificarToken + checkSuperAdminRol para mantener
+// compatibilidad con usuarios de empresa que tienen rol super_admin.
+// Para nuevas funcionalidades de admin del SaaS, considerar migrar a /api/admin con tokens admin dedicados.
 
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
 const { verificarToken } = require('../middleware/auth');
-const { checkSuperAdmin } = require('../middleware/superAdmin');
+const { checkSuperAdminRol } = require('../middleware/superAdmin');
 const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
 const { Usuario, Rol } = require('../domains/auth/models');
 
-router.use(verificarToken, checkSuperAdmin);
+router.use(verificarToken, checkSuperAdminRol);
 
 // ─── EMPRESAS ─────────────────────────────────────────────────────────────────
 router.post('/empresas', async (req, res) => {
