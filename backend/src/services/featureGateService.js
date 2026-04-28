@@ -246,7 +246,29 @@ const getEffectiveFeaturesForEmpresa = async (empresaId) => {
   const overrides    = await FeatureOverride.findAll({ where: { empresa_id: empresaId } });
   const overrideMap  = new Map(overrides.map(ov => [ov.feature_id, ov]));
 
+  // OPTIMIZACIÓN: Precargar RubroFeature en batch para evitar N+1 queries
+  // Se obtiene el rubro de la empresa y se cargan todas las relaciones rubro-feature
+  let rubroFeatureMap = new Map();
+  try {
+    const coreModels = require('../domains/core/models');
+    const { Empresa, RubroFeature } = coreModels;
+    
+    const empresa = await Empresa.findByPk(empresaId, {
+      attributes: ['id', 'rubro_id']
+    });
+
+    if (empresa && empresa.rubro_id) {
+      const rubroFeatures = await RubroFeature.findAll({
+        where: { rubro_id: empresa.rubro_id }
+      });
+      rubroFeatureMap = new Map(rubroFeatures.map(rf => [rf.feature_id, rf]));
+    }
+  } catch (error) {
+    // Si no hay modelos core disponibles, continuar sin esta verificación
+  }
+
   return features.map(feature => {
+    // 1. Override por empresa (máxima prioridad)
     const override = overrideMap.get(feature.id);
     if (override) {
       return {
@@ -255,6 +277,16 @@ const getEffectiveFeaturesForEmpresa = async (empresaId) => {
       };
     }
 
+    // 2. Feature por rubro (segunda prioridad)
+    const rubroFeature = rubroFeatureMap.get(feature.id);
+    if (rubroFeature) {
+      return {
+        feature_id: feature.id, codigo: feature.codigo, nombre: feature.nombre,
+        activo: Boolean(rubroFeature.activo), fuente: 'rubro_feature'
+      };
+    }
+
+    // 3. Plan activo de la empresa
     const fromPlan = planFeatureMap.get(feature.id);
     if (typeof fromPlan === 'boolean') {
       return {
@@ -263,6 +295,7 @@ const getEffectiveFeaturesForEmpresa = async (empresaId) => {
       };
     }
 
+    // 4. Fallback a legacy features
     const legacy = isLegacyFeatureEnabled(feature.codigo);
     return {
       feature_id: feature.id, codigo: feature.codigo, nombre: feature.nombre,
