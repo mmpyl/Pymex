@@ -127,6 +127,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────
 // Nota: limiterAuth ya se aplica en la sección 5 para /api/auth/login y /api/auth/register
 // El limiterGlobal se aplica en /api/auth para el resto de endpoints de autenticación
+app.use('/api/auth',        require('./routes/auth'));
 app.use('/api/usuarios',    require('./routes/usuarios'));
 app.use('/api/productos',   require('./routes/productos'));
 app.use('/api/categorias',  require('./routes/categorias'));
