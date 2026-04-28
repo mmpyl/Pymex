@@ -6,7 +6,7 @@ const authModels = require('../../domains/auth/models');
 const billingModels = require('../../domains/billing/models');
 
 // Extraer modelos de cada dominio
-const { sequelize, Empresa, Rubro, EmpresaRubro } = coreModels;
+const { sequelize, Empresa, Rubro, EmpresaRubro, RubroFeature } = coreModels;
 const { Usuario, AuditoriaAdmin } = authModels;
 const { Plan, Feature, PlanFeature, PlanLimit, Suscripcion, FeatureOverride, Pago } = billingModels;
 
@@ -258,6 +258,72 @@ const listarRubros = async (_req, res) => {
   try {
     const rubros = await Rubro.findAll({ order: [['nombre', 'ASC']] });
     return res.json(rubros);
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
+const listarRubrosFeatures = async (_req, res) => {
+  try {
+    const [rubros, features] = await Promise.all([
+      Rubro.findAll({ order: [['nombre', 'ASC']] }),
+      Feature.findAll({ where: { estado: 'activo' }, order: [['codigo', 'ASC']] })
+    ]);
+
+    // Obtener todas las relaciones RubroFeature existentes
+    const rubroFeatures = await RubroFeature.findAll();
+    const rubroFeatureMap = new Map();
+    rubroFeatures.forEach(rf => {
+      const key = `${rf.rubro_id}-${rf.feature_id}`;
+      rubroFeatureMap.set(key, rf.activo);
+    });
+
+    // Construir respuesta con estado de cada feature por rubro
+    const result = rubros.map(rubro => ({
+      ...rubro.toJSON(),
+      features: features.map(feature => ({
+        ...feature.toJSON(),
+        activo: rubroFeatureMap.get(`${rubro.id}-${feature.id}`) ?? false
+      }))
+    }));
+
+    return res.json(result);
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
+const actualizarRubroFeature = async (req, res) => {
+  try {
+    const rubroId = Number(req.params.rubroId);
+    const featureId = Number(req.params.featureId);
+    const { activo } = req.body;
+
+    // Verificar que el rubro existe
+    const rubro = await Rubro.findByPk(rubroId);
+    if (!rubro) {
+      return res.status(404).json({ error: 'Rubro no encontrado' });
+    }
+
+    // Verificar que el feature existe
+    const feature = await Feature.findByPk(featureId);
+    if (!feature) {
+      return res.status(404).json({ error: 'Feature no encontrado' });
+    }
+
+    // Crear o actualizar la relación RubroFeature
+    const [rubroFeature, created] = await RubroFeature.findOrCreate({
+      where: { rubro_id: rubroId, feature_id: featureId },
+      defaults: { activo }
+    });
+
+    if (!created) {
+      await rubroFeature.update({ activo });
+    }
+
+    await audit(req, 'actualizar_rubro_feature', 'rubro_feature', rubroFeature.id, { rubro_id: rubroId, feature_id: featureId, activo });
+    
+    return res.json({ mensaje: 'Feature de rubro actualizado', rubro_id: rubroId, feature_id: featureId, activo });
   } catch (error) {
     return err500(res, error);
   }
@@ -666,6 +732,8 @@ module.exports = {
   listarUsuariosEmpresa,
   actualizarUsuario,
   listarRubros,
+  listarRubrosFeatures,
+  actualizarRubroFeature,
   crearRubro,
   actualizarRubro,
   asignarRubrosEmpresa,
