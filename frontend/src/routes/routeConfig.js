@@ -3,7 +3,7 @@ import { lazy } from 'react';
 // Landing & Auth
 export const LandingPage = lazy(() => import('../pages/landing/LandingPage'));
 export const LoginHubPage = lazy(() => import('../pages/LoginHub'));
-export const EmpresaLoginPage = lazy(() => import('../pages/Login'));
+export const EmpresaLoginPage = lazy(() => import('../pages/EmpresaLogin'));
 export const AdminLoginPage = lazy(() => import('../pages/AdminLogin'));
 export const RegisterPage = lazy(() => import('../pages/Register'));
 
