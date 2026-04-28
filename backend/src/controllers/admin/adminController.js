@@ -688,6 +688,57 @@ const listarAuditoria = async (req, res) => {
   }
 };
 
+const auditHealth = async (req, res) => {
+  try {
+    const { action } = req.query;
+    
+    if (action === 'reset') {
+      // Resetear el contador eliminando todos los logs de auditoría
+      const deleted = await AuditoriaAdmin.destroy({ where: {}, truncate: true });
+      await audit(req, 'reset_audit_logs', 'auditoria', null, { registros_eliminados: deleted });
+      return res.json({ message: 'Logs de auditoría reseteados', registros_eliminados: deleted });
+    }
+    
+    // Obtener estado de salud por defecto
+    const totalLogs = await AuditoriaAdmin.count();
+    const logsLast24h = await AuditoriaAdmin.count({
+      where: {
+        creado_en: { [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      }
+    });
+    const logsLast7d = await AuditoriaAdmin.count({
+      where: {
+        creado_en: { [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }
+    });
+    
+    // Determinar estado de salud
+    let healthStatus = 'healthy';
+    let healthMessage = 'Sistema de auditoría operando normalmente';
+    
+    if (totalLogs > 100000) {
+      healthStatus = 'warning';
+      healthMessage = 'Alto volumen de logs considerados (>100k)';
+    }
+    
+    if (totalLogs > 500000) {
+      healthStatus = 'critical';
+      healthMessage = 'Volumen crítico de logs (>500k). Considere archivar o resetear.';
+    }
+    
+    return res.json({
+      total_logs: totalLogs,
+      logs_24h: logsLast24h,
+      logs_7d: logsLast7d,
+      health_status: healthStatus,
+      health_message: healthMessage,
+      last_updated: new Date().toISOString()
+    });
+  } catch (error) {
+    return err500(res, error);
+  }
+};
+
 const metricasSaas = async (_req, res) => {
   try {
     const now = new Date();
@@ -755,5 +806,6 @@ module.exports = {
   generarCheckoutPago,
   marcarPagoPagado,
   listarAuditoria,
+  auditHealth,
   metricasSaas
 };

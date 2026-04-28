@@ -115,6 +115,7 @@ router.post('/pagos/:id/marcar-pagado', ctrl.marcarPagoPagado);
 // ─── Billing, Auditoría y Métricas ────────────────────────────────────────────
 router.post('/billing/run-collection', ctrl.ejecutarCobranza);
 router.get('/auditoria',               ctrl.listarAuditoria);
+router.get('/audit/health',            ctrl.auditHealth);
 router.get('/metricas',                ctrl.metricasSaas);
 
 module.exports = router;
