@@ -1,30 +1,78 @@
 ```
 # Dependencies
-node_modules/
+backend/node_modules/
 
-# TypeScript/JavaScript build artifacts
-*.d.ts
-
-# Environment
+# Environment variables
 .env
 .env.local
-*.env.*
+.env.*
 
-# Editors
+# Logs
+*.log
+
+# IDE and editor files
 .vscode/
 .idea/
-
-# Logs and temp files
-*.log
-*.tmp
 *.swp
+*.swo
 
 # OS generated files
 .DS_Store
 Thumbs.db
 
-# Build directories
+# Build artifacts and temporary files
 dist/
 build/
-target/
+*.tmp
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.zip
+*.7z
+*.rar
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Node.js specific
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compression and archives
+*.7z
+*.Z
+*.lz
+*.lzo
+*.rar
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+
 ```

@@ -81,7 +81,12 @@ const validateEnv = () => {
       warnings.push('⚠️ En producción se recomienda REQUIRE_HTTPS=true');
     }
     if (!process.env.REDIS_HOST) {
-      warnings.push('⚠️ En producción es altamente recomendado configurar Redis');
+      // En STRICT_MODE, Redis es crítico para multi-instancia
+      if (process.env.STRICT_MODE === 'true') {
+        missingRequired.push('REDIS_HOST - Redis es obligatorio en producción con STRICT_MODE para garantizar logout en multi-instancia');
+      } else {
+        warnings.push('⚠️ En producción es altamente recomendado configurar Redis');
+      }
     }
   }
 

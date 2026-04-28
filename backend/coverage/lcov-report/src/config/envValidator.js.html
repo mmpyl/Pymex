@@ -1,0 +1,472 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/config/envValidator.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/config</a> envValidator.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">16% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>8/50</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">3.12% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/32</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">25% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">17.02% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>8/47</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// backend/src/config/envValidator.js
+// Validador de variables de entorno críticas al inicio del servidor
+// Previene fallos en runtime por configuración incompleta
+&nbsp;
+const logger = require('../utils/logger');
+const requiredEnvVars = {
+  // Base de datos
+  DB_HOST: 'Host de la base de datos PostgreSQL',
+  DB_USER: 'Usuario de la base de datos',
+  DB_PASSWORD: 'Contraseña de la base de datos (debe tener mínimo 16 caracteres)',
+  DB_NAME: 'Nombre de la base de datos',
+  
+  // Seguridad
+  JWT_SECRET: 'Secreto JWT (mínimo 32 caracteres,推荐使用 256+ bits)',
+  
+  // Entorno
+  NODE_ENV: 'Entorno de ejecución (development/production)'
+};
+&nbsp;
+const recommendedEnvVars = {
+  REDIS_HOST: 'Host de Redis para blacklist de tokens y caché',
+  REDIS_PASSWORD: 'Contraseña de Redis',
+  CORS_ALLOWED_ORIGINS: 'Orígenes permitidos para CORS',
+  APP_URL: 'URL pública de la aplicación',
+  REQUIRE_HTTPS: 'Forzar HTTPS en producción (true/false)',
+  
+  // Email
+  EMAIL_HOST: 'Servidor SMTP para emails transaccionales',
+  EMAIL_USER: 'Usuario SMTP',
+  EMAIL_PASS: 'Contraseña SMTP',
+  EMAIL_FROM: 'Remitente por defecto para emails',
+  
+  // Microservicios
+  ML_SERVICE_URL: 'URL del servicio de Machine Learning',
+  FACTURACION_SERVICE_URL: 'URL del servicio de facturación electrónica',
+  
+  // Pagos
+  STRIPE_SECRET_KEY: 'Clave secreta de Stripe',
+  STRIPE_WEBHOOK_SECRET: 'Secreto para webhooks de Stripe'
+};
+&nbsp;
+const validateEnv = () =&gt; {
+  // Saltar validación en entorno de tests
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (process.env.NODE_ENV === 'test') {
+    return {
+      missingRequired: [],
+      missingRecommended: [],
+      warnings: []
+    };
+  }
+&nbsp;
+  const missingRequired = <span class="cstat-no" title="statement not covered" >[];</span>
+  const missingRecommended = <span class="cstat-no" title="statement not covered" >[];</span>
+  const warnings = <span class="cstat-no" title="statement not covered" >[];</span>
+&nbsp;
+  // Validar variables requeridas
+<span class="cstat-no" title="statement not covered" >  for (const [varName, description] of Object.entries(requiredEnvVars)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!process.env[varName]) {</span>
+<span class="cstat-no" title="statement not covered" >      missingRequired.push(`${varName} - ${description}`);</span>
+    }
+  }
+&nbsp;
+  // Validar variables recomendadas (solo warning)
+<span class="cstat-no" title="statement not covered" >  for (const [varName, description] of Object.entries(recommendedEnvVars)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!process.env[varName]) {</span>
+<span class="cstat-no" title="statement not covered" >      missingRecommended.push(`${varName} - ${description}`);</span>
+    }
+  }
+&nbsp;
+  // Validaciones específicas
+<span class="cstat-no" title="statement not covered" >  if (process.env.JWT_SECRET &amp;&amp; process.env.JWT_SECRET.length &lt; 32) {</span>
+<span class="cstat-no" title="statement not covered" >    warnings.push('⚠️ JWT_SECRET debería tener al menos 32 caracteres para seguridad óptima');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (process.env.DB_PASSWORD &amp;&amp; process.env.DB_PASSWORD.length &lt; 16) {</span>
+<span class="cstat-no" title="statement not covered" >    warnings.push('⚠️ DB_PASSWORD debería tener al menos 16 caracteres');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (process.env.NODE_ENV === 'production') {</span>
+<span class="cstat-no" title="statement not covered" >    if (!process.env.REQUIRE_HTTPS || process.env.REQUIRE_HTTPS !== 'true') {</span>
+<span class="cstat-no" title="statement not covered" >      warnings.push('⚠️ En producción se recomienda REQUIRE_HTTPS=true');</span>
+    }
+<span class="cstat-no" title="statement not covered" >    if (!process.env.REDIS_HOST) {</span>
+      // En STRICT_MODE, Redis es crítico para multi-instancia
+<span class="cstat-no" title="statement not covered" >      if (process.env.STRICT_MODE === 'true') {</span>
+<span class="cstat-no" title="statement not covered" >        missingRequired.push('REDIS_HOST - Redis es obligatorio en producción con STRICT_MODE para garantizar logout en multi-instancia');</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        warnings.push('⚠️ En producción es altamente recomendado configurar Redis');</span>
+      }
+    }
+  }
+&nbsp;
+  // Reportar resultados
+<span class="cstat-no" title="statement not covered" >  if (missingRequired.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    logger.error('Variables de entorno requeridas faltantes', { component: 'envValidator', event: 'validation_error', missing: missingRequired });</span>
+<span class="cstat-no" title="statement not covered" >    console.error('\n❌ ERROR: Variables de entorno requeridas faltantes:\n');</span>
+<span class="cstat-no" title="statement not covered" >    missingRequired.forEach(<span class="fstat-no" title="function not covered" >ms</span>g =&gt; <span class="cstat-no" title="statement not covered" >console.error(`  • ${msg}`))</span>;</span>
+<span class="cstat-no" title="statement not covered" >    console.error('\nPor favor configura estas variables antes de iniciar el servidor.\n');</span>
+<span class="cstat-no" title="statement not covered" >    process.exit(1);</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (warnings.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('\n⚠️ ADVERTENCIAS DE CONFIGURACIÓN:\n');</span>
+<span class="cstat-no" title="statement not covered" >    logger.warn('Advertencias de configuración', { component: 'envValidator', event: 'validation_warning', warnings });</span>
+<span class="cstat-no" title="statement not covered" >    warnings.forEach(<span class="fstat-no" title="function not covered" >wa</span>rn =&gt; <span class="cstat-no" title="statement not covered" >console.warn(`  ${warn}`))</span>;</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (missingRecommended.length &gt; 0 &amp;&amp; process.env.NODE_ENV === 'development') {</span>
+<span class="cstat-no" title="statement not covered" >    console.log('\n💡 SUGERENCIA: Las siguientes variables de entorno no están configuradas (opcionales):\n');</span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Variables de entorno opcionales no configuradas', { component: 'envValidator', event: 'validation_info', missing: missingRecommended });</span>
+<span class="cstat-no" title="statement not covered" >    missingRecommended.forEach(<span class="fstat-no" title="function not covered" >ms</span>g =&gt; <span class="cstat-no" title="statement not covered" >console.log(`  • ${msg}`))</span>;</span>
+<span class="cstat-no" title="statement not covered" >    console.log('');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  console.log('✅ Validación de variables de entorno completada exitosamente\n');</span>
+<span class="cstat-no" title="statement not covered" >  logger.info('Validación de variables de entorno completada exitosamente', { component: 'envValidator', event: 'validation_success' });</span>
+  
+<span class="cstat-no" title="statement not covered" >  return {</span>
+    missingRequired,
+    missingRecommended,
+    warnings
+  };
+};
+&nbsp;
+// Ejecutar validación inmediatamente al importar
+validateEnv();
+&nbsp;
+module.exports = { validateEnv, requiredEnvVars, recommendedEnvVars };
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-04-28T10:15:54.564Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

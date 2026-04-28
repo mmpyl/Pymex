@@ -8,20 +8,35 @@ const crypto = require('crypto');
 // Intentar cargar Redis, fallback a memoria si no está disponible
 let redisClient = null;
 let useRedis = false;
+let redisConnectionFailed = false;
 
 try {
   const redisConfig = require('../config/redis');
   redisClient = redisConfig;
-  // Verificar conexión asíncronamente (no bloquear inicio)
-  redisConfig.checkConnection().then(connected => {
-    useRedis = connected;
-    if (useRedis) {
-      console.log('[Auth] Usando Redis para blacklist de tokens');
-    } else {
-      console.warn('[Auth] Redis no disponible, usando fallback en memoria (limitado a una instancia)');
-    }
-  });
+  
+  // Verificar conexión al inicio (sin bloquear, pero registrando el estado)
+  redisConfig.checkConnection()
+    .then(connected => {
+      useRedis = connected;
+      redisConnectionFailed = !connected;
+      
+      if (useRedis) {
+        console.log('[Auth] Usando Redis para blacklist de tokens');
+      } else {
+        const warningMsg = '[Auth] Redis no disponible, usando fallback en memoria (limitado a una instancia)';
+        if (process.env.NODE_ENV === 'production') {
+          console.error(`[CRÍTICO] ${warningMsg}. El logout puede no funcionar correctamente en multi-instancia.`);
+        } else {
+          console.warn(warningMsg);
+        }
+      }
+    })
+    .catch(err => {
+      redisConnectionFailed = true;
+      console.error('[Auth] Error verificando conexión Redis:', err.message);
+    });
 } catch (error) {
+  redisConnectionFailed = true;
   console.warn('[Auth] Redis no configurado, usando fallback en memoria');
 }
 
@@ -58,7 +73,6 @@ setInterval(() => {
 // en lugar de hacer fallback a memoria (que no funciona en multi-instancia).
 const STRICT_MODE = process.env.NODE_ENV === 'production';
 
-let redisConnectionFailed = false;
 
 // Registrar cuando Redis falla para monitoreo
 if (typeof redisClient !== 'undefined' && redisClient) {
@@ -124,7 +138,8 @@ const revokeToken = async (jti, expiresAtMs) => {
 const getRedisStatus = () => ({
   useRedis,
   redisConnectionFailed,
-  fallbackActive: !useRedis || redisConnectionFailed
+  fallbackActive: !useRedis || redisConnectionFailed,
+  strictModeEnabled: STRICT_MODE
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
