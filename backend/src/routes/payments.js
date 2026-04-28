@@ -1,57 +1,83 @@
-const crypto = require('crypto');
 const router = require('express').Router();
-const billingModels = require('../domains/billing/models');
-const { idempotencyMiddleware } = require('../middleware/idempotency');
+const paymentsDomain = require('../domains/payments');
 
-const { PaymentEvent } = billingModels;
-const { applyPaymentAndReactivate } = require('../services/billingService');
+// Crear controller con dependencias inyectadas desde el dominio
+const webhookController = paymentsDomain.interfaces.public.controllers.createWebhookController({
+  PaymentEvent: paymentsDomain.models.PaymentEvent
+});
 
-const verifyStripeSignature = (payload, signature, secret) => {
-  if (!secret) return true; // fallback para desarrollo
-  if (!signature) return false;
+/**
+ * @swagger
+ * /api/payments/webhook/stripe:
+ *   post:
+ *     summary: Webhook para eventos de Stripe
+ *     description: Endpoint para recibir eventos de Stripe (checkout.session.completed, payment_intent.succeeded, etc.)
+ *     tags: [Payments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               data:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Evento procesado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 processed:
+ *                   type: boolean
+ *                 deduplicated:
+ *                   type: boolean
+ *                 event_id:
+ *                   type: string
+ *       400:
+ *         description: Firma inválida o payload incorrecto
+ *       500:
+ *         description: Error interno procesando el webhook
+ */
+router.post('/webhook/stripe', async (req, res) => {
+  await webhookController.handleStripeWebhook(req, res);
+});
 
-  const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-  return signature.includes(expected);
-};
-
-router.post('/webhook/stripe', idempotencyMiddleware, async (req, res) => {
-  try {
-    const payload = JSON.stringify(req.body);
-    const signature = req.headers['stripe-signature'];
-    const secret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!verifyStripeSignature(payload, signature, secret)) {
-      return res.status(400).json({ error: 'Firma webhook inválida' });
-    }
-
-    const event = req.body;
-    if (!event?.id || !event?.type) {
-      return res.status(400).json({ error: 'Evento inválido' });
-    }
-
-    const exists = await PaymentEvent.findOne({ where: { event_id: event.id } });
-    if (exists) {
-      return res.status(200).json({ ok: true, deduplicated: true });
-    }
-
-    await PaymentEvent.create({
-      proveedor: 'stripe',
-      event_id: event.id,
-      tipo: event.type,
-      payload: event
-    });
-
-    if (event.type === 'checkout.session.completed') {
-      const pagoId = Number(event.data?.object?.metadata?.pago_id);
-      if (pagoId) {
-        await applyPaymentAndReactivate(pagoId, event.data?.object?.id || null);
-      }
-    }
-
-    return res.json({ ok: true });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+/**
+ * @swagger
+ * /api/payments/webhook/health:
+ *   get:
+ *     summary: Health check para webhooks
+ *     description: Verifica que el servicio de webhooks esté operativo
+ *     tags: [Payments]
+ *     responses:
+ *       200:
+ *         description: Servicio operativo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 service:
+ *                   type: string
+ *                   example: payments-webhook
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
+router.get('/webhook/health', (req, res) => {
+  webhookController.healthCheck(req, res);
 });
 
 module.exports = router;
