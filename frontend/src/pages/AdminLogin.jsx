@@ -39,7 +39,11 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      await api.post('/auth/admin/login', form);
+      const response = await api.post('/auth/admin/login', form);
+      const token = response.data.token || response.data.accessToken;
+      if (token) {
+        localStorage.setItem('admin_token', token);
+      }
       navigate('/admin');
     } catch (err) {
       setError(err.response?.data?.error || 'No se pudo iniciar sesión staff');
