@@ -6,135 +6,154 @@
 
 /* ============================================================
    SAPYME DESIGN SYSTEM — Design Tokens
-   Palette: Deep navy + warm amber + sage green + pearl white
+   Palette: Refined Deep Navy + Golden Amber + Natural Sage + Soft Rose
+   Enhanced for better accessibility, contrast and modern aesthetics
    ============================================================ */
 
 @layer base {
   :root {
-    /* Brand Colors */
-    --navy-950: #050D1F;
-    --navy-900: #0A1628;
-    --navy-800: #0F2040;
-    --navy-700: #163058;
-    --navy-600: #1E4080;
-    --navy-500: #2E5BA8;
-    --navy-400: #4A78C8;
-    --navy-300: #7AA3DC;
-    --navy-200: #B0C9EE;
-    --navy-100: #D8E6F7;
-    --navy-50:  #EEF4FB;
-
-    --amber-950: #3D1A00;
-    --amber-900: #5C2800;
-    --amber-800: #8A3D00;
-    --amber-700: #B85200;
-    --amber-600: #D96A00;
-    --amber-500: #F08020;
-    --amber-400: #F5A04A;
-    --amber-300: #F8BC78;
-    --amber-200: #FAD4A8;
-    --amber-100: #FDE8CC;
-    --amber-50:  #FEF5E8;
-
-    --sage-900: #0E2218;
-    --sage-800: #183A28;
-    --sage-700: #235438;
-    --sage-600: #306E4A;
-    --sage-500: #3F885C;
-    --sage-400: #5AA677;
-    --sage-300: #7DC49A;
-    --sage-200: #A8DAB8;
-    --sage-100: #D0EDD9;
-    --sage-50:  #E8F6ED;
-
-    --coral-500: #E0513A;
-    --coral-400: #E97060;
-    --coral-100: #FAEBE8;
-    --coral-50:  #FEF4F3;
-
-    /* Semantic */
+    /* Brand Colors - Refined Navy Scale */
+    --navy-950: #020617;
+    --navy-900: #0B1120;
+    --navy-800: #151F32;
+    --navy-700: #1E2D4A;
+    --navy-600: #2A3F66;
+    --navy-500: #3D5586;
+    --navy-400: #5673AB;
+    --navy-300: #7A95C9;
+    --navy-200: #A5BCE6;
+    --navy-100: #D1DFF5;
+    --navy-50:  #F0F5FC;
+    
+    /* Brand Colors - Warm Golden Amber */
+    --amber-950: #451A00;
+    --amber-900: #662600;
+    --amber-800: #8A3300;
+    --amber-700: #AD4100;
+    --amber-600: #CC5500;
+    --amber-500: #E56B00;
+    --amber-400: #F08729;
+    --amber-300: #F5A959;
+    --amber-200: #FAC68A;
+    --amber-100: #FDE0B8;
+    --amber-50:  #FEF3DD;
+    
+    /* Brand Colors - Natural Sage Green */
+    --sage-950: #05140E;
+    --sage-900: #0B2218;
+    --sage-800: #143826;
+    --sage-700: #1F4F36;
+    --sage-600: #2D6A4A;
+    --sage-500: #3D855F;
+    --sage-400: #52A378;
+    --sage-300: #75C297;
+    --sage-200: #A3DBC0;
+    --sage-100: #D0EFE0;
+    --sage-50:  #EAF8F1;
+    
+    /* Brand Colors - Modern Rose (replacing Coral) */
+    --rose-500: #E11D48;
+    --rose-400: #FB7185;
+    --rose-100: #FFE4E6;
+    --rose-50:  #FFF1F2;
+    
+    /* Semantic Colors - Optimized for Accessibility */
     --background: 0 0% 100%;
-    --foreground: 220 40% 10%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 10%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 10%;
-    --primary: 218 64% 42%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 55% 43%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 96%;
-    --secondary-foreground: 220 40% 20%;
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 15% 50%;
-    --accent: 33 90% 52%;
-    --accent-foreground: 33 90% 15%;
-    --destructive: 8 75% 55%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 14% 25%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 28 95% 53%;
+    --accent-foreground: 28 95% 15%;
+    --destructive: 350 82% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 148 55% 40%;
+    --success: 150 58% 39%;
     --success-foreground: 0 0% 100%;
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 218 64% 42%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 15%;
+    --info: 210 75% 45%;
+    --info-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 55% 43%;
     --radius: 0.625rem;
-
-    /* Sidebar */
+    
+    /* Sidebar - Enhanced Contrast */
     --sidebar-bg: var(--navy-900);
-    --sidebar-text: #B8CAE0;
+    --sidebar-text: #B8C5D6;
     --sidebar-text-active: #FFFFFF;
     --sidebar-accent: var(--amber-500);
-    --sidebar-border: rgba(255,255,255,0.08);
-    --sidebar-hover: rgba(255,255,255,0.06);
-    --sidebar-active: rgba(240,128,32,0.15);
+    --sidebar-border: rgba(255,255,255,0.06);
+    --sidebar-hover: rgba(255,255,255,0.05);
+    --sidebar-active: rgba(229, 107, 0, 0.12);
     --sidebar-width: 260px;
-
-    /* Topbar */
+    
+    /* Topbar - Clean & Professional */
     --topbar-bg: #FFFFFF;
     --topbar-border: hsl(var(--border));
     --topbar-height: 60px;
-
-    /* Shadows */
-    --shadow-xs: 0 1px 2px rgba(10, 22, 40, 0.04);
-    --shadow-sm: 0 1px 4px rgba(10, 22, 40, 0.06), 0 2px 8px rgba(10, 22, 40, 0.04);
-    --shadow-md: 0 4px 12px rgba(10, 22, 40, 0.08), 0 2px 4px rgba(10, 22, 40, 0.04);
-    --shadow-lg: 0 8px 24px rgba(10, 22, 40, 0.10), 0 4px 8px rgba(10, 22, 40, 0.06);
-
+    
+    /* Shadows - Refined Depth */
+    --shadow-xs: 0 1px 2px rgba(2, 6, 23, 0.05);
+    --shadow-sm: 0 1px 3px rgba(2, 6, 23, 0.08), 0 1px 2px rgba(2, 6, 23, 0.04);
+    --shadow-md: 0 4px 6px rgba(2, 6, 23, 0.07), 0 2px 4px rgba(2, 6, 23, 0.05);
+    --shadow-lg: 0 10px 15px rgba(2, 6, 23, 0.08), 0 4px 6px rgba(2, 6, 23, 0.05);
+    --shadow-xl: 0 20px 25px rgba(2, 6, 23, 0.10), 0 10px 10px rgba(2, 6, 23, 0.06);
+    
+    /* Gradients - Premium Touch */
+    --gradient-primary: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-500) 100%);
+    --gradient-accent: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-400) 100%);
+    --gradient-success: linear-gradient(135deg, var(--sage-600) 0%, var(--sage-500) 100%);
+    --gradient-destructive: linear-gradient(135deg, var(--rose-500) 0%, var(--rose-400) 100%);
+    
     /* Typography */
     --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'DM Mono', 'Fira Code', monospace;
   }
 
   .dark {
-    --background: 220 40% 6%;
-    --foreground: 220 15% 92%;
-    --card: 220 35% 9%;
-    --card-foreground: 220 15% 92%;
-    --popover: 220 35% 9%;
-    --popover-foreground: 220 15% 92%;
-    --primary: 218 75% 60%;
-    --primary-foreground: 220 40% 6%;
-    --secondary: 220 30% 14%;
-    --secondary-foreground: 220 15% 85%;
-    --muted: 220 30% 12%;
-    --muted-foreground: 220 15% 55%;
-    --accent: 33 85% 60%;
-    --accent-foreground: 33 90% 10%;
-    --destructive: 8 70% 60%;
-    --destructive-foreground: 220 40% 6%;
-    --border: 220 25% 18%;
-    --input: 220 25% 18%;
+    --background: 222 47% 6%;
+    --foreground: 220 14% 92%;
+    --card: 222 47% 8%;
+    --card-foreground: 220 14% 92%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 220 14% 92%;
+    --primary: 221 55% 60%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 220 14% 14%;
+    --secondary-foreground: 220 14% 85%;
+    --muted: 220 14% 12%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 28 95% 60%;
+    --accent-foreground: 28 95% 10%;
+    --destructive: 350 82% 60%;
+    --destructive-foreground: 222 47% 6%;
+    --success: 150 58% 50%;
+    --success-foreground: 222 47% 6%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 38 92% 10%;
+    --info: 210 75% 55%;
+    --info-foreground: 0 0% 100%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
 
-    --topbar-bg: #0A1628;
-    --topbar-border: rgba(255,255,255,0.08);
+    --topbar-bg: #0B1120;
+    --topbar-border: rgba(255,255,255,0.06);
 
-    --shadow-xs: 0 1px 2px rgba(0,0,0,0.25);
-    --shadow-sm: 0 1px 4px rgba(0,0,0,0.30), 0 2px 8px rgba(0,0,0,0.20);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.25);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.40), 0 4px 8px rgba(0,0,0,0.30);
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.30);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.40), 0 2px 4px rgba(0,0,0,0.30);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.45), 0 4px 6px rgba(0,0,0,0.35);
+    --shadow-xl: 0 20px 25px rgba(0,0,0,0.50), 0 10px 10px rgba(0,0,0,0.40);
   }
 }
-
-/* ============================================================
-   BASE RESET & TYPOGRAPHY
-   ============================================================ */
 
 * { box-sizing: border-box; }
 
@@ -307,7 +326,7 @@ body {
 
 .nav-badge {
   margin-left: auto;
-  background: var(--coral-500);
+  background: var(--rose-500);
   color: white;
   font-size: 10px;
   font-weight: 700;
@@ -432,7 +451,7 @@ body {
   right: 5px;
   width: 7px;
   height: 7px;
-  background: var(--coral-500);
+  background: var(--rose-500);
   border-radius: 50%;
   border: 1.5px solid var(--topbar-bg);
 }
@@ -525,8 +544,8 @@ body {
 }
 
 .stat-trend.down {
-  background: var(--coral-50);
-  color: var(--coral-500);
+  background: var(--rose-50);
+  color: var(--rose-500);
 }
 .dark .stat-trend.down {
   background: rgba(224, 81, 58, 0.15);
@@ -603,12 +622,12 @@ body {
 }
 
 .btn-danger {
-  background: var(--coral-100);
-  color: var(--coral-500);
+  background: var(--rose-100);
+  color: var(--rose-500);
   border-color: transparent;
 }
 .btn-danger:hover:not(:disabled) {
-  background: var(--coral-500);
+  background: var(--rose-500);
   color: white;
 }
 
@@ -680,7 +699,7 @@ body {
 }
 
 .form-input.error {
-  border-color: var(--coral-500);
+  border-color: var(--rose-500);
 }
 
 .form-input.error:focus {
@@ -694,7 +713,7 @@ body {
 
 .form-error {
   font-size: 12px;
-  color: var(--coral-500);
+  color: var(--rose-500);
 }
 
 .form-grid {
@@ -824,8 +843,8 @@ body {
   color: var(--amber-700);
 }
 .badge-danger {
-  background: var(--coral-50);
-  color: var(--coral-500);
+  background: var(--rose-50);
+  color: var(--rose-500);
 }
 .badge-info {
   background: var(--navy-50);
@@ -902,8 +921,8 @@ body {
 }
 
 .alert-danger {
-  background: var(--coral-50);
-  color: var(--coral-500);
+  background: var(--rose-50);
+  color: var(--rose-500);
   border: 1px solid rgba(224,81,58,0.2);
 }
 
@@ -996,7 +1015,7 @@ body {
 .mono { font-family: var(--font-mono); }
 .text-muted { color: hsl(var(--muted-foreground)); }
 .text-success { color: var(--sage-600); }
-.text-danger  { color: var(--coral-500); }
+.text-danger  { color: var(--rose-500); }
 .text-warning { color: var(--amber-600); }
 .text-info    { color: var(--navy-600); }
 
@@ -1150,9 +1169,9 @@ body {
 }
 
 .trial-banner.danger {
-  background: var(--coral-50);
+  background: var(--rose-50);
   border-bottom: 1px solid rgba(224,81,58,0.2);
-  color: var(--coral-500);
+  color: var(--rose-500);
 }
 
 .trial-banner a {
