@@ -15,7 +15,10 @@ const PORT = process.env.PORT || 3000;
 const initializeServices = () => {
   // 1. Inicializar relaciones cross-domain entre dominios
   const coreModels = require('./src/domains/core/models');
+  const authModels = require('./src/domains/auth/models');
+  
   coreModels.initializeCrossDomainRelations();
+  authModels.initializeCrossDomainRelations();
   
   // 2. Inicializar servicio de feature gate (suscripciones al eventBus)
   const featureGateService = require('./src/services/featureGateService');

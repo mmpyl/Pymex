@@ -47,6 +47,37 @@ Permiso.belongsToMany(Rol, {
 // En una arquitectura completa, esto se resolvería mediante eventos o APIs.
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// RELACIONES CROSS-DOMAIN (se inicializan explícitamente)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _crossDomainRelationsInitialized = false;
+
+/**
+ * Inicializa relaciones cross-domain entre AUTH y CORE
+ * Debe llamarse explícitamente durante el startup de la aplicación
+ */
+const initializeCrossDomainRelations = () => {
+  if (_crossDomainRelationsInitialized) {
+    return;
+  }
+
+  try {
+    const Empresa = require('../../core/models/Empresa');
+
+    // Usuario pertenece a una Empresa
+    Empresa.hasMany(Usuario, { foreignKey: 'empresa_id', as: 'usuarios' });
+    Usuario.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'Empresa' });
+
+    _crossDomainRelationsInitialized = true;
+    console.log('[AUTH] Relaciones cross-domain con CORE inicializadas');
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('[AUTH] No se pudo cargar Empresa para relación cross-domain:', error.message);
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTACIÓN
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -62,7 +93,10 @@ module.exports = {
   // Seguridad de sesiones
   RevokedToken,
   // Auditoría
-  AuditoriaAdmin
+  AuditoriaAdmin,
+  // Inicialización cross-domain
+  initializeCrossDomainRelations,
+  areCrossDomainRelationsInitialized: () => _crossDomainRelationsInitialized
 };
 
 // Alias para compatibilidad con código legacy
