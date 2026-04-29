@@ -17,9 +17,11 @@ const logLevels = {
     http: 3,
     verbose: 4,
     debug: 5,
-    silly: 6
+    silly: 6,
+    crit: -1 // Nivel crítico para emergencias
   },
   colors: {
+    crit: 'red',
     error: 'red',
     warn: 'yellow',
     info: 'green',
@@ -134,6 +136,28 @@ logger.debug = (message, data = {}) => {
   });
 };
 
+logger.crit = (message, data = {}) => {
+  logger.log('crit', message, { 
+    ...data, 
+    context: 'critical',
+    urgency: 'high'
+  });
+};
+
+// Función para crear un logger con contexto específico (útil para servicios)
+logger.createChildLogger = (contextName) => {
+  return {
+    error: (message, data = {}) => logger.error(`[${contextName}] ${message}`, data),
+    warn: (message, data = {}) => logger.warn(`[${contextName}] ${message}`, data),
+    info: (message, data = {}) => logger.info(`[${contextName}] ${message}`, data),
+    http: (message, data = {}) => logger.http(`[${contextName}] ${message}`, data),
+    verbose: (message, data = {}) => logger.verbose(`[${contextName}] ${message}`, data),
+    debug: (message, data = {}) => logger.debug(`[${contextName}] ${message}`, data),
+    crit: (message, data = {}) => logger.crit(`[${contextName}] ${message}`, data),
+    audit: (message, data = {}) => logger.audit(`[${contextName}] ${message}`, data)
+  };
+};
+
 // Middleware para integrar con Express
 logger.expressMiddleware = () => {
   return (req, res, next) => {
@@ -141,17 +165,43 @@ logger.expressMiddleware = () => {
     
     res.on('finish', () => {
       const duration = Date.now() - start;
-      logger.http(`${req.method} ${req.originalUrl}`, {
+      const logData = {
         method: req.method,
         url: req.originalUrl,
         statusCode: res.statusCode,
         duration: `${duration}ms`,
         ip: req.ip,
         userAgent: req.get('user-agent'),
-      });
+        request_id: req.requestId,
+        user_id: req.usuario?.id || null,
+        empresa_id: req.usuario?.empresa_id || null
+      };
+      
+      // Clasificar logs por nivel según el status code
+      if (res.statusCode >= 500) {
+        logger.error(`Error en solicitud ${req.method} ${req.originalUrl}`, logData);
+      } else if (res.statusCode >= 400) {
+        logger.warn(`Error del cliente en ${req.method} ${req.originalUrl}`, logData);
+      } else {
+        logger.http(`${req.method} ${req.originalUrl}`, logData);
+      }
     });
     
     next();
+  };
+};
+
+// Middleware para capturar errores no manejados en rutas asíncronas
+logger.asyncErrorHandler = () => {
+  return (err, req, res, next) => {
+    logger.error('Error no manejado en ruta asíncrona', {
+      error: err.message,
+      stack: err.stack,
+      path: req.originalUrl,
+      method: req.method,
+      request_id: req.requestId
+    });
+    next(err);
   };
 };
 
