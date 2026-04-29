@@ -1,12 +1,12 @@
+```
 # Dependencies
 node_modules/
 
-# Build artifacts
-dist/
-build/
-*.js.map
+# Logs and temp files
+*.log
+*.tmp
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
@@ -15,24 +15,30 @@ build/
 .vscode/
 .idea/
 
-# Logs
-*.log
-
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-*.so
+env/
+venv/
+.venv/
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
 .coverage
-htmlcov/
 .coverage.*
-.pytest_cache/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
 .mypy_cache/
-.pyre/
-.pytype/
-.ipynb_checkpoints/
+.pytest_cache/
+.hypothesis/
 
 # Node.js
 npm-debug.log*
@@ -43,10 +49,38 @@ dist/
 build/
 .nyc_output
 coverage/
-.nyc_output/
-coverage/
+*.lcov
+.nodemon
+.next/
+.nuxt/
+.vuepress/dist
+.svelte-kit/
+output/
+.sanity/
+.vercel/
+.netlify/
 
-# OS generated files
+# Build outputs
+target/
+dist/
+build/
+out/
+output/
+coverage/
+*.min.js
+*.min.css
+bundle.js
+bundle.css
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -54,110 +88,4 @@ coverage/
 .Trashes
 ehthumbs.db
 Thumbs.db
-desktop.ini
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.swp
-*.swo
-
-# Compression files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
-# Generated documentation
-docs/_build/
-docs/build/
-
-# IDE specific
-.vs/
-*.userprefs
-*.useroptions
-*.userlaunches
-*.userfilters
-*.user
-*.userfile
-*.suo
-*.userosscache
-*.sln.docstates
-*.VC.db
-*.VC.VC.opendb
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opendb-shm
-*.VC.VC.opendb-wal
-*.VC.VC.opend......
+```
