@@ -42,7 +42,9 @@ export default function AdminLogin() {
       const response = await api.post('/auth/admin/login', form);
       const token = response.data.token || response.data.accessToken;
       if (token) {
-        localStorage.setItem('admin_token', token);
+        // Guardar token según preferencia del usuario
+        const storage = form.remember ? localStorage : sessionStorage;
+        storage.setItem('admin_token', token);
       }
       navigate('/admin');
     } catch (err) {

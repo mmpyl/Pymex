@@ -37,7 +37,12 @@ export const AuthProvider = ({ children }) => {
     validarSesion();
   }, [validarSesion]);
 
-  const login = useCallback((datos) => {
+  const login = useCallback((datos, remember = false) => {
+    if (datos?.token) {
+      // Guardar token en localStorage según preferencia del usuario
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('empresa_token', datos.token);
+    }
     cachedUsuario = datos?.usuario || null;
     cacheTimestamp = Date.now();
     setUsuario(cachedUsuario);
@@ -48,6 +53,10 @@ export const AuthProvider = ({ children }) => {
       await api.post('/auth/logout', {}, { timeout: 5000 });
     } catch {}
 
+    // Limpiar tokens de ambos tipos
+    localStorage.removeItem('empresa_token');
+    sessionStorage.removeItem('empresa_token');
+    
     cachedUsuario = null;
     cacheTimestamp = 0;
     setUsuario(null);
