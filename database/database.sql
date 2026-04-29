@@ -324,14 +324,6 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_payment_events_provider ON payment_e
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_revoked_tokens_expires_at ON revoked_tokens(expires_at);
 
 -- SECCIÓN 5: DATOS INICIALES
-INSERT INTO usuarios_admin (nombre, email, password, rol, estado) VALUES 
-  ('Administrador'),
-  ('admin@saas.com'),
-  ('$2a$10$rMx9YQy8vZJ3KqN5wL6U7eXxH4jK2mN8pQ1rS3tU5vW6xY7zA8bC9d'),
-  ('admin'),
-  ('activo') 
-ON CONFLICT (email) DO NOTHING;
-
 INSERT INTO roles (nombre, descripcion) VALUES
 ('admin', 'Acceso total al sistema'),
 ('gerente', 'Reportes y dashboard'),
