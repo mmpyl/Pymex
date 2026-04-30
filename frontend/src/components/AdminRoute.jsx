@@ -2,18 +2,18 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 const AdminRoute = ({ children }) => {
-  const { usuario, cargando } = useAuth();
-
+  const { admin, cargando } = useAuth();
+  
   if (cargando) {
     return <div className="flex items-center justify-center min-h-screen text-gray-700">Cargando...</div>;
   }
-
-  if (!usuario) {
+  
+  if (!admin) {
     return <Navigate to='/staff/login' replace />;
   }
 
   const rolesPermitidos = ['super_admin', 'admin', 'moderador', 'soporte'];
-  if (!rolesPermitidos.includes(usuario.rol)) {
+  if (!rolesPermitidos.includes(admin.rol)) {
     return (
       <div className="p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-2">Acceso restringido</h2>

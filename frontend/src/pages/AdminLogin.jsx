@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function AdminLogin() {
@@ -11,6 +12,7 @@ export default function AdminLogin() {
   const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { loginAdmin } = useAuth();
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,11 +42,9 @@ export default function AdminLogin() {
 
     try {
       const response = await api.post('/auth/admin/login', form);
-      const token = response.data.token || response.data.accessToken;
+      const { token, admin } = response.data;
       if (token) {
-        // Guardar token según preferencia del usuario
-        const storage = form.remember ? localStorage : sessionStorage;
-        storage.setItem('admin_token', token);
+        loginAdmin({ token, admin }, form.remember);
       }
       navigate('/admin');
     } catch (err) {
