@@ -41,7 +41,7 @@ export default function EmpresaLogin() {
     setError('');
 
     try {
-      const { data } = await api.post('/auth/empresa/login', form);
+      const { data } = await api.post('/auth/login', form);
       login(data, form.remember);
       navigate('/dashboard');
     } catch (err) {

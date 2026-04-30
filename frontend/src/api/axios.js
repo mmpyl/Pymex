@@ -31,9 +31,9 @@ api.interceptors.request.use((config) => {
 
   config.__retryCount = config.__retryCount || 0;
 
-  // Agregar token de autorización desde localStorage
-  const adminToken = localStorage.getItem('admin_token');
-  const empresaToken = localStorage.getItem('empresa_token');
+  // Agregar token de autorización desde localStorage y sessionStorage
+  const adminToken = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+  const empresaToken = localStorage.getItem('empresa_token') || sessionStorage.getItem('empresa_token');
   const token = adminToken || empresaToken;
   
   if (token && !config.headers.Authorization) {
