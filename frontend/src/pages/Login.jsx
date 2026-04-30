@@ -52,14 +52,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[420px_1fr]">
-      <aside className="relative hidden overflow-hidden bg-slate-950 px-11 py-12 lg:flex lg:flex-col">
-        <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full border border-white/10" />
-        <div className="absolute bottom-10 -right-28 h-56 w-56 rounded-full border border-white/10" />
-        <div className="absolute -left-16 -top-16 h-52 w-52 rounded-full bg-amber-500/10" />
+    <div className="min-h-screen bg-gradient-to-br from-navy-50 via-white to-amber-50 lg:grid lg:grid-cols-[420px_1fr]">
+      <aside className="relative hidden overflow-hidden bg-gradient-to-b from-navy-950 via-navy-900 to-navy-800 px-11 py-12 lg:flex lg:flex-col">
+        <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full border border-amber-500/10" />
+        <div className="absolute bottom-10 -right-28 h-56 w-56 rounded-full border border-amber-500/10" />
+        <div className="absolute -left-16 -top-16 h-52 w-52 rounded-full bg-amber-500/15" />
 
         <div className="mb-auto flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-lg font-bold tracking-tight text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-lg font-bold tracking-tight text-white shadow-lg shadow-amber-500/25">
             SP
           </div>
           <span className="text-xl font-semibold tracking-tight text-white">SaPyme</span>
@@ -69,7 +69,7 @@ export default function Login() {
           <h1 className="mb-4 text-3xl font-semibold leading-tight tracking-tight text-white">
             Gestiona tu PYME con inteligencia
           </h1>
-          <p className="text-sm leading-6 text-slate-300/80">
+          <p className="text-sm leading-6 text-navy-200/90">
             Ventas, inventario, facturación electrónica y predicciones ML — todo en una sola plataforma.
           </p>
 
@@ -81,28 +81,31 @@ export default function Login() {
               'Multi-usuario con roles',
             ].map((feature) => (
               <div key={feature} className="flex items-center gap-2.5">
-                <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/25 text-amber-400">
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M2 5l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <span className="text-xs text-slate-300/90">{feature}</span>
+                <span className="text-xs text-navy-100/95">{feature}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <p className="mb-1 text-[11px] uppercase tracking-[0.08em] text-slate-400">Plataforma SaaS</p>
-          <p className="text-sm text-slate-300">Diseñado para PYMES peruanas</p>
+        <div className="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
+          <p className="mb-1 text-[11px] uppercase tracking-[0.08em] text-amber-400">Plataforma SaaS</p>
+          <p className="text-sm text-navy-100">Diseñado para PYMES peruanas</p>
         </div>
       </aside>
 
       <section className="flex items-center justify-center p-6 lg:p-10">
-        <Card className="w-full max-w-md border-slate-200 shadow-xl">
+        <Card className="w-full max-w-md border-slate-200 shadow-2xl shadow-navy-900/10">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl">Inicia sesión</CardTitle>
-            <CardDescription>Ingresa tus credenciales para continuar.</CardDescription>
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-600 to-navy-700 text-lg font-bold text-white shadow-md">
+              SP
+            </div>
+            <CardTitle className="text-2xl font-semibold text-navy-900">Inicia sesión</CardTitle>
+            <CardDescription className="text-slate-600">Ingresa tus credenciales para continuar.</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -140,14 +143,14 @@ export default function Login() {
                     type="checkbox"
                     checked={form.remember}
                     onChange={(e) => setForm({ ...form, remember: e.target.checked })}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500"
                     disabled={loading}
                   />
-                  <span className="text-sm text-slate-600">Recordarme</span>
+                  <span className="text-sm font-medium text-slate-700">Recordarme</span>
                 </label>
                 <Link 
                   to="/recuperar-password" 
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                  className="text-sm font-medium text-navy-600 hover:text-navy-500"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -159,7 +162,7 @@ export default function Login() {
                 </div>
               )}
 
-              <Button type="submit" className="h-11 w-full" disabled={loading}>
+              <Button type="submit" className="h-11 w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white hover:from-navy-700 hover:to-navy-800 shadow-md hover:shadow-lg" disabled={loading}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <SpinnerIcon />
@@ -172,10 +175,10 @@ export default function Login() {
             </form>
           </CardContent>
 
-          <CardFooter className="flex-col gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500">
+          <CardFooter className="flex-col gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600">
             <p>
               ¿No tienes cuenta?{' '}
-              <Link className="font-semibold text-indigo-600 hover:text-indigo-500" to="/register">
+              <Link className="font-semibold text-navy-600 hover:text-navy-500" to="/register">
                 Regístrate gratis
               </Link>
             </p>
