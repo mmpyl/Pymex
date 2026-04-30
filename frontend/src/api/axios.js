@@ -1,6 +1,29 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+
+const normalizeBaseUrl = () => {
+  if (!rawApiUrl) return '/api';
+
+  try {
+    const apiUrl = new URL(rawApiUrl, window.location.origin);
+    const appUrl = new URL(window.location.origin);
+
+    const isSameOriginAsFrontend = apiUrl.origin === appUrl.origin;
+    const hasApiPath = apiUrl.pathname.startsWith('/api');
+
+    if (isSameOriginAsFrontend && !hasApiPath) {
+      console.warn('[API] VITE_API_URL apunta al frontend. Usando /api para evitar 405 en login.');
+      return '/api';
+    }
+
+    return rawApiUrl;
+  } catch {
+    return rawApiUrl;
+  }
+};
+
+const BASE_URL = normalizeBaseUrl();
 const MAX_RETRIES = 2;
 const BASE_RETRY_DELAY_MS = 500;
 
