@@ -4,7 +4,7 @@
 
 const coreModels = require('../domains/core/models');
 
-const { Venta, DetalleVenta, Gasto, Producto, sequelize } = coreModels;
+const { Venta, DetalleVenta, Gasto, Producto } = coreModels;
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
@@ -14,7 +14,7 @@ const buildFechaWhere = (desde, hasta) => {
   if (desde && hasta) {
     const d = new Date(desde);
     const h = new Date(hasta);
-    if (isNaN(d) || isNaN(h)) return null;
+    if (isNaN(d) || isNaN(h)) {return null;}
     return { [Op.between]: [d, h] };
   }
   return null;
@@ -28,7 +28,7 @@ const reporteVentasPDF = async (req, res) => {
   try {
     const where = { empresa_id };
     const fechaWhere = buildFechaWhere(desde, hasta);
-    if (fechaWhere) where.fecha = fechaWhere;
+    if (fechaWhere) {where.fecha = fechaWhere;}
 
     const ventas = await Venta.findAll({
       where,
@@ -65,21 +65,21 @@ const reporteVentasPDF = async (req, res) => {
     const cols = { id: 40, fecha: 130, total: 380, metodo: 460 };
     doc.rect(40, doc.y, 515, 22).fill('#4f46e5');
     doc.fillColor('white').fontSize(10);
-    doc.text('#',       cols.id,     doc.y - 17);
-    doc.text('Fecha',   cols.fecha,  doc.y);
-    doc.text('Total',   cols.total,  doc.y);
-    doc.text('Método',  cols.metodo, doc.y);
+    doc.text('#', cols.id, doc.y - 17);
+    doc.text('Fecha', cols.fecha, doc.y);
+    doc.text('Total', cols.total, doc.y);
+    doc.text('Método', cols.metodo, doc.y);
     doc.moveDown(0.8);
 
     let totalGeneral = 0;
     ventas.forEach((v, i) => {
       const y = doc.y;
-      if (i % 2 === 0) doc.rect(40, y, 515, 20).fill('#f8fafc');
+      if (i % 2 === 0) {doc.rect(40, y, 515, 20).fill('#f8fafc');}
       doc.fillColor('#374151').fontSize(9);
-      doc.text(String(v.id),                                              cols.id,     y + 5);
-      doc.text(new Date(v.fecha).toLocaleDateString('es-PE'),             cols.fecha,  y + 5);
-      doc.text(`S/ ${parseFloat(v.total).toFixed(2)}`,                    cols.total,  y + 5);
-      doc.text(v.metodo_pago,                                             cols.metodo, y + 5);
+      doc.text(String(v.id), cols.id, y + 5);
+      doc.text(new Date(v.fecha).toLocaleDateString('es-PE'), cols.fecha, y + 5);
+      doc.text(`S/ ${parseFloat(v.total).toFixed(2)}`, cols.total, y + 5);
+      doc.text(v.metodo_pago, cols.metodo, y + 5);
       doc.moveDown(0.7);
       totalGeneral += parseFloat(v.total);
     });
@@ -105,24 +105,24 @@ const reporteVentasExcel = async (req, res) => {
   try {
     const where = { empresa_id };
     const fechaWhere = buildFechaWhere(desde, hasta);
-    if (fechaWhere) where.fecha = fechaWhere;
+    if (fechaWhere) {where.fecha = fechaWhere;}
 
     const ventas = await Venta.findAll({ where, order: [['fecha', 'DESC']] });
 
     const workbook = new ExcelJS.Workbook();
-    const sheet    = workbook.addWorksheet('Ventas');
+    const sheet = workbook.addWorksheet('Ventas');
 
     sheet.columns = [
-      { header: 'ID',             key: 'id',          width: 8  },
-      { header: 'Fecha',          key: 'fecha',        width: 18 },
-      { header: 'Total (S/)',     key: 'total',        width: 15 },
-      { header: 'Método de Pago', key: 'metodo_pago',  width: 18 },
-      { header: 'Estado',         key: 'estado',       width: 15 }
+      { header: 'ID', key: 'id', width: 8 },
+      { header: 'Fecha', key: 'fecha', width: 18 },
+      { header: 'Total (S/)', key: 'total', width: 15 },
+      { header: 'Método de Pago', key: 'metodo_pago', width: 18 },
+      { header: 'Estado', key: 'estado', width: 15 }
     ];
 
     sheet.getRow(1).eachCell((cell) => {
-      cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
-      cell.font  = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       cell.alignment = { horizontal: 'center' };
     });
 
@@ -167,14 +167,14 @@ const reporteGastosExcel = async (req, res) => {
     });
 
     const workbook = new ExcelJS.Workbook();
-    const sheet    = workbook.addWorksheet('Gastos');
+    const sheet = workbook.addWorksheet('Gastos');
 
     sheet.columns = [
-      { header: 'ID',          key: 'id',          width: 8  },
-      { header: 'Fecha',       key: 'fecha',        width: 18 },
-      { header: 'Categoría',   key: 'categoria',    width: 20 },
-      { header: 'Descripción', key: 'descripcion',  width: 30 },
-      { header: 'Monto (S/)',  key: 'monto',        width: 15 }
+      { header: 'ID', key: 'id', width: 8 },
+      { header: 'Fecha', key: 'fecha', width: 18 },
+      { header: 'Categoría', key: 'categoria', width: 20 },
+      { header: 'Descripción', key: 'descripcion', width: 30 },
+      { header: 'Monto (S/)', key: 'monto', width: 15 }
     ];
 
     sheet.getRow(1).eachCell((cell) => {

@@ -1,11 +1,11 @@
 // backend/src/app.js — versión mejorada con validación y manejo de errores
-const express      = require('express');
-const cors         = require('cors');
-const helmet       = require('helmet');
-const rateLimit    = require('express-rate-limit');
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const crypto       = require('crypto');
-const swaggerUi    = require('swagger-ui-express');
+const crypto = require('crypto');
+const swaggerUi = require('swagger-ui-express');
 require('dotenv').config();
 
 // Validar variables de entorno ANTES de iniciar
@@ -48,7 +48,7 @@ const ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:5
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {return cb(null, true);}
     cb(new Error(`CORS: origen no permitido → ${origin}`));
   },
   credentials:    true,
@@ -96,7 +96,7 @@ app.use(logger.expressMiddleware());
 // ─── 7. Request ID + structured log ──────────────────────────────────────────
 app.use((req, res, next) => {
   const requestId = req.headers['x-request-id'] || crypto.randomUUID();
-  req.requestId   = requestId;
+  req.requestId = requestId;
   res.setHeader('x-request-id', requestId);
 
   return next();
@@ -118,23 +118,23 @@ const { getRedisStatus } = require('./middleware/auth');
 app.get('/health', (_req, res) => {
   const redisStatus = getRedisStatus();
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   // En producción con STRICT_MODE, si Redis falla el health check debe fallar
   if (isProduction && redisStatus.fallbackActive) {
-    return res.status(503).json({ 
-      estado: 'degraded', 
-      version: '2.0', 
-      service: 'backend', 
+    return res.status(503).json({
+      estado: 'degraded',
+      version: '2.0',
+      service: 'backend',
       fecha: new Date().toISOString(),
       redis: redisStatus,
       error: 'Redis no disponible. En producción esto afecta la revocación de tokens en multi-instancia.'
     });
   }
-  
-  res.json({ 
-    estado: 'ok', 
-    version: '2.0', 
-    service: 'backend', 
+
+  res.json({
+    estado: 'ok',
+    version: '2.0',
+    service: 'backend',
     fecha: new Date().toISOString(),
     redis: redisStatus
   });
@@ -151,39 +151,36 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────
 // Nota: limiterAuth ya se aplica en la sección 5 para /api/auth/login y /api/auth/register
 // El limiterGlobal se aplica en /api/auth para el resto de endpoints de autenticación
-app.use('/api/auth',        require('./routes/auth'));
-app.use('/api/usuarios',    require('./routes/usuarios'));
-app.use('/api/productos',   require('./routes/productos'));
-app.use('/api/categorias',  require('./routes/categorias'));
-app.use('/api/ventas',      require('./routes/ventas'));
-app.use('/api/gastos',      require('./routes/gastos'));
-app.use('/api/clientes',    require('./routes/clientes'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/usuarios', require('./routes/usuarios'));
+app.use('/api/productos', require('./routes/productos'));
+app.use('/api/categorias', require('./routes/categorias'));
+app.use('/api/ventas', require('./routes/ventas'));
+app.use('/api/gastos', require('./routes/gastos'));
+app.use('/api/clientes', require('./routes/clientes'));
 app.use('/api/proveedores', require('./routes/proveedores'));
-app.use('/api/inventario',  require('./routes/inventario'));
-app.use('/api/dashboard',   require('./routes/dashboard'));
-app.use('/api/alertas',     require('./routes/alertas'));
-app.use('/api/reportes',    require('./routes/reportes'));
-app.use('/api/ml',          require('./routes/ml'));
+app.use('/api/inventario', require('./routes/inventario'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/alertas', require('./routes/alertas'));
+app.use('/api/reportes', require('./routes/reportes'));
+app.use('/api/ml', require('./routes/ml'));
 app.use('/api/facturacion', require('./routes/facturacion'));
-app.use('/api/saas',        require('./routes/saas'));
+app.use('/api/saas', require('./routes/saas'));
 app.use('/api/suspensiones',require('./routes/suspensiones'));
-app.use('/api/pagos',       require('./routes/pagos'));
-app.use('/api/public',      require('./routes/public'));
-app.use('/api/features',    require('./routes/features'));
-app.use('/api/rbac',        require('./routes/rbac'));
+app.use('/api/pagos', require('./routes/pagos'));
+app.use('/api/public', require('./routes/public'));
+app.use('/api/features', require('./routes/features'));
+app.use('/api/rbac', require('./routes/rbac'));
 app.use('/api/super-admin', require('./routes/superAdmin'));
-app.use('/api/admin',       require('./routes/admin'));
-app.use('/api/payments',    require('./routes/payments'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/payments', require('./routes/payments'));
 
 // ─── 12. 404 ──────────────────────────────────────────────────────────────────
-app.use((_req, res) => {
-  const { NotFoundError } = require('./middleware/errorHandler');
-  return res.status(404).json({ 
-    error: 'Ruta no encontrada', 
-    code: 'NOT_FOUND',
-    request_id: _req.requestId
-  });
-});
+app.use((_req, res) => res.status(404).json({
+  error: 'Ruta no encontrada',
+  code: 'NOT_FOUND',
+  request_id: _req.requestId
+}));
 
 // ─── 13. Error handler global ─────────────────────────────────────────────────
 app.use(errorHandler);

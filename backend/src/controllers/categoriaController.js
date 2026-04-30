@@ -21,7 +21,7 @@ const crear = async (req, res) => {
       ...req.body,
       empresa_id: req.usuario.empresa_id
     });
-    
+
     // Publicar evento para otros dominios
     await eventBus.publish('CATEGORY_CREATED', {
       categoriaId: categoria.id,
@@ -29,7 +29,7 @@ const crear = async (req, res) => {
       nombre: categoria.nombre,
       timestamp: new Date()
     }, 'CORE');
-    
+
     res.status(201).json(categoria);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -41,7 +41,7 @@ const eliminar = async (req, res) => {
     const categoria = await Categoria.findOne({
       where: { id: req.params.id, empresa_id: req.usuario.empresa_id }
     });
-    if (!categoria) return res.status(404).json({ error: 'Categoria no encontrada' });
+    if (!categoria) {return res.status(404).json({ error: 'Categoria no encontrada' });}
     await categoria.destroy();
     res.json({ mensaje: 'Categoria eliminada' });
   } catch (error) {

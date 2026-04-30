@@ -67,18 +67,18 @@ const crear = asyncHandler(async (req, res) => {
         // current stock levels in error messages (information disclosure vulnerability).
         // Instead, we return a generic message that doesn't expose internal state.
         await t.rollback();
-        
+
         // Check if product exists (without exposing stock info)
         const productoExists = await Producto.findOne({
           where: { id: item.producto_id, empresa_id: req.usuario.empresa_id },
           attributes: ['id'], // Only fetch ID to confirm existence
           transaction: t
         });
-        
+
         if (!productoExists) {
           throw new NotFoundError(`Producto ${item.producto_id} no encontrado`);
         }
-        
+
         // Generic message that doesn't reveal current stock level
         throw new ConflictError(`Stock insuficiente para el producto ${item.producto_id}`);
       }
@@ -96,7 +96,7 @@ const crear = asyncHandler(async (req, res) => {
     }, { transaction: t });
 
     for (const item of items) {
-      const cantidad      = Number(item.cantidad);
+      const cantidad = Number(item.cantidad);
       const precioUnitario = Number(item.precio_unitario);
       await DetalleVenta.create({
         venta_id:        venta.id,
@@ -108,7 +108,7 @@ const crear = asyncHandler(async (req, res) => {
     }
 
     await t.commit();
-    
+
     // ✅ PUBLICAR EVENTO DE DOMINIO: Otros dominios pueden reaccionar a esta venta
     await eventBus.publish('SALE_COMPLETED', {
       ventaId: venta.id,
@@ -119,7 +119,7 @@ const crear = asyncHandler(async (req, res) => {
       metodo_pago: venta.metodo_pago,
       itemsCount: items.length
     }, 'CORE');
-    
+
     return res.status(201).json({ mensaje: 'Venta registrada', venta_id: venta.id, total });
   } catch (error) {
     await t.rollback();

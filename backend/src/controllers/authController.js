@@ -1,6 +1,6 @@
 // backend/src/controllers/authController.js — versión consolidada
 const bcrypt = require('bcryptjs');
-const jwt    = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const authModels = require('../domains/auth/models');
 const coreModels = require('../domains/core/models');
@@ -155,7 +155,7 @@ const startTrial = asyncHandler(async (req, res) => {
     }, { transaction: t });
 
     const inicio = new Date();
-    const fin    = new Date(inicio);
+    const fin = new Date(inicio);
     fin.setDate(fin.getDate() + Number(dias_trial));
 
     await Suscripcion.create({
@@ -300,10 +300,10 @@ const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
     }, { transaction: t });
 
     await t.commit();
-    
+
     // Log de éxito para auditoría
-    console.log('[AUDIT] Super admin creado exitosamente:', email);
-    
+    console.warn('[AUDIT] Super admin creado exitosamente:', email);
+
     return res.status(201).json({
       mensaje:     'Super admin creado. ESTABLECE BOOTSTRAP_DISABLED=true INMEDIATAMENTE.',
       advertencia: 'Este endpoint será deshabilitado en el próximo reinicio si BOOTSTRAP_DISABLED=true',
