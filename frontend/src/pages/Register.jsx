@@ -189,20 +189,23 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <Card className="w-full max-w-xl border-slate-200 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-center">Registra tu empresa</CardTitle>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-navy-50 via-white to-amber-50 p-4">
+      <Card className="w-full max-w-xl border-slate-200 shadow-2xl shadow-navy-900/10">
+        <CardHeader className="pb-4">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-600 to-navy-700 text-lg font-bold text-white shadow-md">
+            SP
+          </div>
+          <CardTitle className="text-2xl font-semibold text-navy-900">Registra tu empresa</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">Datos de la empresa</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-navy-600">Datos de la empresa</p>
             {campo('Nombre de la empresa', 'empresa_nombre', 'text', 'Mi Empresa S.A.')}
             {campo('Email de la empresa (opcional)', 'empresa_email', 'email', 'empresa@email.com', false)}
             {campo('RUC', 'empresa_ruc', 'text', '20123456789')}
             {campo('Teléfono de contacto (opcional)', 'empresa_telefono', 'tel', '+51 999 999 999', false)}
 
-            <p className="pt-2 text-xs font-bold uppercase tracking-wider text-indigo-600">Tu cuenta de administrador</p>
+            <p className="pt-2 text-xs font-bold uppercase tracking-wider text-navy-600">Tu cuenta de administrador</p>
             {campo('Tu nombre', 'nombre', 'text', 'Juan Pérez')}
             {campo('Tu email', 'email', 'email', 'tu@email.com')}
             
@@ -228,14 +231,14 @@ const Register = () => {
                         style={{ width: `${(fortalezaPassword / 5) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs font-medium text-slate-600">{getFortalezaTexto()}</span>
+                    <span className="text-xs font-medium text-slate-700">{getFortalezaTexto()}</span>
                   </div>
-                  <ul className="mt-1 text-xs text-slate-500 space-y-0.5">
-                    <li className={form.password.length >= 8 ? 'text-green-600' : ''}>• Mínimo 8 caracteres</li>
-                    <li className={/[a-z]/.test(form.password) ? 'text-green-600' : ''}>• Letra minúscula</li>
-                    <li className={/[A-Z]/.test(form.password) ? 'text-green-600' : ''}>• Letra mayúscula</li>
-                    <li className={/[0-9]/.test(form.password) ? 'text-green-600' : ''}>• Número</li>
-                    <li className={/[^a-zA-Z0-9]/.test(form.password) ? 'text-green-600' : ''}>• Símbolo especial</li>
+                  <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
+                    <li className={form.password.length >= 8 ? 'text-green-600 font-medium' : ''}>• Mínimo 8 caracteres</li>
+                    <li className={/[a-z]/.test(form.password) ? 'text-green-600 font-medium' : ''}>• Letra minúscula</li>
+                    <li className={/[A-Z]/.test(form.password) ? 'text-green-600 font-medium' : ''}>• Letra mayúscula</li>
+                    <li className={/[0-9]/.test(form.password) ? 'text-green-600 font-medium' : ''}>• Número</li>
+                    <li className={/[^a-zA-Z0-9]/.test(form.password) ? 'text-green-600 font-medium' : ''}>• Símbolo especial</li>
                   </ul>
                 </div>
               )}
@@ -251,15 +254,15 @@ const Register = () => {
                 name="terminos"
                 checked={form.terminos}
                 onChange={handleChange}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500 cursor-pointer"
               />
-              <label htmlFor="terminos" className="text-sm text-slate-600">
+              <label htmlFor="terminos" className="text-sm text-slate-700">
                 Acepto los{' '}
-                <a href="#" className="text-indigo-600 hover:text-indigo-500 underline">
+                <a href="#" className="font-medium text-navy-600 hover:text-navy-500 underline">
                   términos y condiciones
                 </a>{' '}
                 y la{' '}
-                <a href="#" className="text-indigo-600 hover:text-indigo-500 underline">
+                <a href="#" className="font-medium text-navy-600 hover:text-navy-500 underline">
                   política de privacidad
                 </a>
               </label>
@@ -268,14 +271,14 @@ const Register = () => {
               <p className="text-xs text-red-600">{errores.terminos}</p>
             )}
 
-            <Button className="w-full" type="submit" disabled={cargando}>
+            <Button className="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white hover:from-navy-700 hover:to-navy-800 shadow-md hover:shadow-lg" type="submit" disabled={cargando}>
               {cargando ? 'Registrando...' : 'Crear cuenta'}
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-slate-700">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/empresa/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+            <Link to="/empresa/login" className="font-semibold text-navy-600 hover:text-navy-500">
               Inicia sesión
             </Link>
           </p>
