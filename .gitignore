@@ -1,3 +1,35 @@
 ```
-.dockerignore
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+*.class
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 ```

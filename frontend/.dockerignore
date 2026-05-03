@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output (will be generated in container)
+dist/
+build/
+
+# Dev files
+npm-debug.log*
+vite.config.js.timestamp-*
+
+# Test files
+coverage/
+*.test.*
+__tests__/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,34 @@
+# Composer dependencies
+vendor/
+
+# Dev files
+composer.lock
+
+# Test files
+tests/
+phpunit.xml*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
