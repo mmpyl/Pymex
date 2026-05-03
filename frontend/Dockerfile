@@ -23,7 +23,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy package files and install production dependencies
 COPY --from=builder /app/package*.json ./
-RUN npm install --omit=dev --omit=optional && npm cache clean --force
+RUN npm install --omit=dev --omit=optional --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder --chown=nextjs:nodejs /app .
 
