@@ -15,6 +15,7 @@ target/
 Dockerfile
 !ml_service/Dockerfile
 !facturacion-service/Dockerfile
+!frontend/Dockerfile
 docker-compose.yml
 
 # Environment variables
