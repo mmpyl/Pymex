@@ -10,9 +10,12 @@ const normalizeBaseUrl = () => {
     const appUrl = new URL(window.location.origin);
 
     const isSameOriginAsFrontend = apiUrl.origin === appUrl.origin;
+    const isLocalFrontendAlias = ['localhost', '127.0.0.1'].includes(apiUrl.hostname)
+      && ['localhost', '127.0.0.1'].includes(appUrl.hostname)
+      && apiUrl.port === appUrl.port;
     const hasApiPath = apiUrl.pathname.startsWith('/api');
 
-    if (isSameOriginAsFrontend && !hasApiPath) {
+    if ((isSameOriginAsFrontend || isLocalFrontendAlias) && !hasApiPath) {
       console.warn('[API] VITE_API_URL apunta al frontend. Usando /api para evitar 405 en login.');
       return '/api';
     }
