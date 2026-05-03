@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (fallback for repos without lockfile)
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm install
 
 # Build (if applicable)
 COPY . .
@@ -23,8 +23,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy package files and install production dependencies
 COPY --from=builder /app/package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci --omit=dev --omit=optional; else npm install --omit=dev --omit=optional; fi \
-    && npm cache clean --force
+RUN npm install --omit=dev --omit=optional && npm cache clean --force
 
 COPY --from=builder --chown=nextjs:nodejs /app .
 
