@@ -1,4 +1,4 @@
--- === SAAS PYMES (SaPyme) — Base de datos completa v3.0 ===
+ -- === SAAS PYMES (SaPyme) — Base de datos completa v3.0 ===
 -- Incluye: usuarios_admin, rubros, payment_events, max_ventas_mes
 -- Trigger sync_empresa_plan al final
 
@@ -426,4 +426,3 @@ INSERT INTO schema_migrations (version, descripcion) VALUES ('v3.0', 'Schema com
 ON CONFLICT DO NOTHING;
 
 -- Verificación: SELECT COUNT(*) FROM pg_tables WHERE schemaname='public';
-
