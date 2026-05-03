@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sapyme-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3001:3000"
+    depends_on:
+      - ml_service
+      - facturacion_service
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sapyme-frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  ml_service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: sapyme-ml-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  facturacion_service:
+    build:
+      context: ./facturacion-service
+      dockerfile: Dockerfile
+    container_name: sapyme-facturacion-service
+    ports:
+      - "8080:80"
+    restart: unless-stopped
