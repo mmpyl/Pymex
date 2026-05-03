@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (fallback for repos without lockfile)
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Build (if applicable)
 COPY . .
@@ -23,7 +23,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy package files and install production dependencies
 COPY --from=builder /app/package*.json ./
-RUN npm install --omit=dev --omit=optional && npm cache clean --force
+RUN npm install --legacy-peer-deps --omit=dev --omit=optional --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder --chown=nextjs:nodejs /app .
 
