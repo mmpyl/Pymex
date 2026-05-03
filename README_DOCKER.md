@@ -48,7 +48,7 @@ Una vez que todos los servicios estén corriendo, podrás acceder a:
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **Frontend** | http://localhost:3000 | Interfaz de usuario (React + Vite) |
+| **Frontend** | http://localhost:5173 | Interfaz de usuario (React + Vite) |
 | **Backend API** | http://localhost:3001 | API REST principal |
 | **ML Service** | http://localhost:8000 | Servicio de Machine Learning |
 | **Facturación Service** | http://localhost:8080 | Facturación electrónica |
