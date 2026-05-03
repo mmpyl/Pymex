@@ -13,6 +13,7 @@ services:
     depends_on:
       - ml_service
       - facturacion_service
+      - redis
     restart: unless-stopped
 
   frontend:
@@ -41,3 +42,16 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: sapyme-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass redis_secure_pass_2024
+    restart: unless-stopped
+
+volumes:
+  redis_data:
