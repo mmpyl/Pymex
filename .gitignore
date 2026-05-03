@@ -13,7 +13,11 @@ target/
 # Docker
 .dockerignore
 Dockerfile
+!ml_service/Dockerfile
+!facturacion-service/Dockerfile
+!frontend/Dockerfile
 docker-compose.yml
+!docker-compose.yml
 
 # Environment variables
 .env
