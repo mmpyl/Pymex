@@ -16,6 +16,7 @@ Dockerfile
 !ml_service/Dockerfile
 !facturacion-service/Dockerfile
 !frontend/Dockerfile
+!backend/Dockerfile
 docker-compose.yml
 !docker-compose.yml
 
