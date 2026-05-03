@@ -63,7 +63,9 @@ const limiterGlobal = rateLimit({
   max:      Number(process.env.RATE_LIMIT_MAX || 150),
   standardHeaders: true,
   legacyHeaders:   false,
-  message: { error: 'Demasiadas solicitudes. Intenta más tarde.' }
+  message: { error: 'Demasiadas solicitudes. Intenta más tarde.' },
+  skipSuccessfulRequests: false,  // Contar todas las requests
+  skipFailedRequests: false       // Contar todas las requests
 });
 
 // Límite estricto para autenticación (20 intentos / 15 min) - se aplica antes que el global
@@ -72,7 +74,9 @@ const limiterAuth = rateLimit({
   max:      20,
   standardHeaders: true,
   legacyHeaders:   false,
-  message: { error: 'Demasiados intentos de autenticación. Espera 15 minutos.' }
+  message: { error: 'Demasiados intentos de autenticación. Espera 15 minutos.' },
+  skipSuccessfulRequests: false,
+  skipFailedRequests: false
 });
 
 // Límite ultra-estricto para bootstrap-super-admin (3 intentos / hora) - solo desarrollo
@@ -87,6 +91,7 @@ const limiterBootstrap = rateLimit({
 // Aplicar limiterAuth ANTES que limiterGlobal para endpoints críticos
 app.use('/api/auth/login', limiterAuth);
 app.use('/api/auth/register', limiterAuth);
+app.use('/api/auth/admin/login', limiterAuth);
 app.use('/api/auth/bootstrap-super-admin', limiterBootstrap);
 app.use('/api/auth', limiterGlobal);
 
