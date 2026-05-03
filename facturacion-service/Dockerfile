@@ -23,6 +23,18 @@ WORKDIR /var/www/html
 # Copy source code
 COPY . .
 
+# Set proper permissions for Apache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Configure Apache to serve from public directory
+RUN echo "DocumentRoot /var/www/html/public" > /etc/apache2/sites-available/000-default.conf && \
+    echo "<Directory /var/www/html/public>" >> /etc/apache2/sites-available/000-default.conf && \
+    echo "    Options Indexes FollowSymLinks" >> /etc/apache2/sites-available/000-default.conf && \
+    echo "    AllowOverride All" >> /etc/apache2/sites-available/000-default.conf && \
+    echo "    Require all granted" >> /etc/apache2/sites-available/000-default.conf && \
+    echo "</Directory>" >> /etc/apache2/sites-available/000-default.conf
+
 # Composer install (if composer.json exists, else skip)
 RUN if [ -f composer.json ]; then composer install --no-dev --optimize-autoloader; fi || echo "No composer.json found"
 

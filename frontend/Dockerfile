@@ -5,34 +5,29 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (fallback for repos without lockfile)
+# Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Build (if applicable)
+# Copy source
 COPY . .
-RUN npm run build || echo "No build step"
 
-# Production stage
-FROM node:20-alpine AS production
+# Build the application
+RUN npm run build
 
-WORKDIR /app
+# Production stage with Nginx
+FROM nginx:alpine AS production
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy package files and install production dependencies
-COPY --from=builder /app/package*.json ./
-RUN npm install --legacy-peer-deps --omit=dev --omit=optional --no-audit --no-fund && npm cache clean --force
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-COPY --from=builder --chown=nextjs:nodejs /app .
+# Expose port 80
+EXPOSE 80
 
-USER nextjs
-
-EXPOSE 3000
-
-# Healthcheck endpoint assumed at /health
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 
-CMD ["node", "server.js"]
+CMD ["nginx", "-g", "daemon off;"]

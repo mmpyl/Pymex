@@ -1,6 +1,29 @@
 version: '3.9'
 
 services:
+  database:
+    image: postgres:16-alpine
+    container_name: sapyme-database
+    env_file:
+      - ./backend/.env
+    environment:
+      POSTGRES_DB: saas_pymes
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123_secure_local_2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sapyme-network
+
   backend:
     build:
       context: ./backend
@@ -11,10 +34,17 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - ml_service
-      - facturacion_service
-      - redis
+      database:
+        condition: service_healthy
+      ml_service:
+        condition: service_started
+      facturacion_service:
+        condition: service_started
+      redis:
+        condition: service_started
     restart: unless-stopped
+    networks:
+      - sapyme-network
 
   frontend:
     build:
@@ -22,8 +52,12 @@ services:
       dockerfile: Dockerfile
     container_name: sapyme-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
+    depends_on:
+      - backend
     restart: unless-stopped
+    networks:
+      - sapyme-network
 
   ml_service:
     build:
@@ -33,6 +67,8 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    networks:
+      - sapyme-network
 
   facturacion_service:
     build:
@@ -42,6 +78,8 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    networks:
+      - sapyme-network
 
   redis:
     image: redis:7-alpine
@@ -51,7 +89,19 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --requirepass redis_secure_pass_2024
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
+    networks:
+      - sapyme-network
 
 volumes:
+  postgres_data:
   redis_data:
+
+networks:
+  sapyme-network:
+    driver: bridge
