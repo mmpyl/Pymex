@@ -27,6 +27,7 @@ router.get('/empresas', async (req, res) => {
       include: [
         { 
           model: Rubro, 
+          as: 'rubros',
           attributes: ['id', 'nombre'],
           through: { attributes: [] }
         }
