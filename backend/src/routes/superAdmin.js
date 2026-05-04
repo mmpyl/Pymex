@@ -15,7 +15,7 @@ const { Op, fn, col } = require('sequelize');
 const { verificarTokenAdmin } = require('../middleware/auth');
 const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
-const { UsuarioAdmin } = require('../domains/auth/models');
+const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin } = require('../domains/auth/models');
 
 router.use(verificarTokenAdmin);
 
@@ -414,6 +414,530 @@ router.get('/dashboard', async (req, res) => {
       plan_mas_usado: planMasUsado[0]?.Plan?.nombre || null,
       nuevas_empresas_mes: nuevasEmpresas
     });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GESTIÓN DE USUARIOS SUPER-ADMIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Obtener todos los usuarios super-admin
+router.get('/super-admins', async (req, res) => {
+  try {
+    const list = await UsuarioAdmin.findAll({
+      attributes: ['id', 'nombre', 'email', 'rol', 'estado', 'creado_en', 'actualizado_en'],
+      order: [['id', 'DESC']]
+    });
+    return res.json(list);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Obtener un usuario super-admin específico
+router.get('/super-admins/:id', async (req, res) => {
+  try {
+    const admin = await UsuarioAdmin.findByPk(Number(req.params.id), {
+      attributes: ['id', 'nombre', 'email', 'rol', 'estado', 'creado_en', 'actualizado_en']
+    });
+    if (!admin) return res.status(404).json({ error: 'Super-admin no encontrado' });
+    return res.json(admin);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Crear nuevo usuario super-admin
+router.post('/super-admins', async (req, res) => {
+  try {
+    const { nombre, email, password, rol = 'super_admin', estado = 'activo' } = req.body;
+    
+    if (!nombre || !email || !password) {
+      return res.status(400).json({ error: 'nombre, email y password son obligatorios' });
+    }
+
+    // Verificar si el email ya existe
+    const existingAdmin = await UsuarioAdmin.findOne({ where: { email } });
+    if (existingAdmin) return res.status(409).json({ error: 'El email ya está registrado' });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const admin = await UsuarioAdmin.create({
+      nombre,
+      email,
+      password: passwordHash,
+      rol,
+      estado
+    });
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'CREATE',
+      entidad: 'UsuarioAdmin',
+      entidad_id: admin.id,
+      detalles: { nombre, email, rol },
+      ip: req.ip
+    });
+
+    return res.status(201).json({
+      id: admin.id,
+      nombre: admin.nombre,
+      email: admin.email,
+      rol: admin.rol,
+      estado: admin.estado
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Actualizar usuario super-admin
+router.put('/super-admins/:id', async (req, res) => {
+  try {
+    const admin = await UsuarioAdmin.findByPk(Number(req.params.id));
+    if (!admin) return res.status(404).json({ error: 'Super-admin no encontrado' });
+
+    const allowed = ['nombre', 'email', 'rol', 'estado'];
+    allowed.forEach(key => {
+      if (req.body[key] !== undefined) admin[key] = req.body[key];
+    });
+
+    // Si se proporciona nueva contraseña, hashearla
+    if (req.body.password) {
+      admin.password = await bcrypt.hash(req.body.password, 10);
+    }
+
+    await admin.save();
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'UPDATE',
+      entidad: 'UsuarioAdmin',
+      entidad_id: admin.id,
+      detalles: { campos_actualizados: Object.keys(req.body) },
+      ip: req.ip
+    });
+
+    return res.json({
+      id: admin.id,
+      nombre: admin.nombre,
+      email: admin.email,
+      rol: admin.rol,
+      estado: admin.estado
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Eliminar usuario super-admin (soft delete cambiando estado)
+router.delete('/super-admins/:id', async (req, res) => {
+  try {
+    const admin = await UsuarioAdmin.findByPk(Number(req.params.id));
+    if (!admin) return res.status(404).json({ error: 'Super-admin no encontrado' });
+
+    // No permitir eliminarse a sí mismo
+    if (req.admin?.id === admin.id) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta' });
+    }
+
+    admin.estado = 'eliminado';
+    await admin.save();
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'DELETE',
+      entidad: 'UsuarioAdmin',
+      entidad_id: admin.id,
+      detalles: {},
+      ip: req.ip
+    });
+
+    return res.json({ mensaje: 'Super-admin eliminado correctamente' });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Cambiar estado de super-admin
+router.patch('/super-admins/:id/estado', async (req, res) => {
+  try {
+    const admin = await UsuarioAdmin.findByPk(Number(req.params.id));
+    if (!admin) return res.status(404).json({ error: 'Super-admin no encontrado' });
+
+    const estadosValidos = ['activo', 'inactivo', 'suspendido', 'eliminado'];
+    if (!estadosValidos.includes(req.body.estado)) {
+      return res.status(400).json({ error: `Estado inválido. Usa: ${estadosValidos.join(', ')}` });
+    }
+
+    admin.estado = req.body.estado;
+    await admin.save();
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'UPDATE_STATUS',
+      entidad: 'UsuarioAdmin',
+      entidad_id: admin.id,
+      detalles: { estado: req.body.estado },
+      ip: req.ip
+    });
+
+    return res.json({ id: admin.id, estado: admin.estado });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GESTIÓN DE OTROS USUARIOS (con asignación de plan, rol, rubro, configuraciones)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Obtener todos los usuarios con filtros y relaciones completas
+router.get('/usuarios-gestion', async (req, res) => {
+  try {
+    const { empresa_id, rol_id, estado, search } = req.query;
+    
+    const where = {};
+    if (empresa_id) where.empresa_id = Number(empresa_id);
+    if (rol_id) where.rol_id = Number(rol_id);
+    if (estado) where.estado = estado;
+    if (search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const list = await Usuario.findAll({
+      where,
+      include: [
+        { 
+          model: Empresa, 
+          attributes: ['id', 'nombre', 'email', 'estado'],
+          include: [
+            { model: Plan, attributes: ['id', 'nombre', 'codigo', 'precio_mensual'] },
+            { model: Rubro, attributes: ['id', 'nombre'] }
+          ]
+        },
+        { 
+          model: Rol, 
+          attributes: ['id', 'nombre', 'descripcion'],
+          include: [{ model: Permiso, attributes: ['id', 'nombre', 'codigo'], through: { attributes: [] } }]
+        }
+      ],
+      order: [['id', 'DESC']]
+    });
+    return res.json(list);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Asignar plan a usuario (a través de su empresa)
+router.post('/usuarios/:id/asignar-plan', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id), {
+      include: [{ model: Empresa }]
+    });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { plan_id } = req.body;
+    if (!plan_id) return res.status(400).json({ error: 'plan_id es obligatorio' });
+
+    const plan = await Plan.findByPk(plan_id);
+    if (!plan) return res.status(404).json({ error: 'Plan no encontrado' });
+
+    // Actualizar plan de la empresa
+    usuario.Empresa.plan_id = plan_id;
+    await usuario.Empresa.save();
+
+    // Actualizar o crear suscripción
+    let suscripcion = await Suscripcion.findOne({ where: { empresa_id: usuario.empresa_id } });
+    if (suscripcion) {
+      suscripcion.plan_id = plan_id;
+      suscripcion.estado = 'activa';
+      await suscripcion.save();
+    } else {
+      suscripcion = await Suscripcion.create({
+        empresa_id: usuario.empresa_id,
+        plan_id,
+        estado: 'activa',
+        fecha_inicio: new Date(),
+        fecha_fin: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 días
+      });
+    }
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'ASSIGN_PLAN',
+      entidad: 'Usuario',
+      entidad_id: usuario.id,
+      detalles: { plan_id, plan_nombre: plan.nombre, empresa_id: usuario.empresa_id },
+      ip: req.ip
+    });
+
+    return res.json({
+      mensaje: 'Plan asignado correctamente',
+      usuario_id: usuario.id,
+      empresa_id: usuario.empresa_id,
+      plan_id: plan.id,
+      plan_nombre: plan.nombre,
+      suscripcion_id: suscripcion.id
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Asignar rol a usuario
+router.post('/usuarios/:id/asignar-rol', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id));
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { rol_id } = req.body;
+    if (!rol_id) return res.status(400).json({ error: 'rol_id es obligatorio' });
+
+    const rol = await Rol.findByPk(rol_id);
+    if (!rol) return res.status(404).json({ error: 'Rol no encontrado' });
+
+    const oldRolId = usuario.rol_id;
+    usuario.rol_id = rol_id;
+    await usuario.save();
+
+    // Publicar evento para invalidar caché de roles
+    const eventBus = require('../domains/eventBus');
+    eventBus.publish('USER_ROLE_UPDATED', { 
+      usuario_id: usuario.id, 
+      empresa_id: usuario.empresa_id,
+      anterior_rol_id: oldRolId,
+      nuevo_rol_id: rol_id 
+    }, 'rbac');
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'ASSIGN_ROLE',
+      entidad: 'Usuario',
+      entidad_id: usuario.id,
+      detalles: { rol_id, rol_nombre: rol.nombre, anterior_rol_id: oldRolId },
+      ip: req.ip
+    });
+
+    return res.json({
+      mensaje: 'Rol asignado correctamente',
+      usuario_id: usuario.id,
+      rol_id: rol.id,
+      rol_nombre: rol.nombre
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Asignar rubro a usuario (a través de su empresa)
+router.post('/usuarios/:id/asignar-rubro', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id), {
+      include: [{ model: Empresa }]
+    });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { rubro_id } = req.body;
+    if (!rubro_id) return res.status(400).json({ error: 'rubro_id es obligatorio' });
+
+    const rubro = await Rubro.findByPk(rubro_id);
+    if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
+
+    // Actualizar rubro de la empresa
+    usuario.Empresa.rubro_id = rubro_id;
+    await usuario.Empresa.save();
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'ASSIGN_RUBRO',
+      entidad: 'Usuario',
+      entidad_id: usuario.id,
+      detalles: { rubro_id, rubro_nombre: rubro.nombre, empresa_id: usuario.empresa_id },
+      ip: req.ip
+    });
+
+    return res.json({
+      mensaje: 'Rubro asignado correctamente',
+      usuario_id: usuario.id,
+      empresa_id: usuario.empresa_id,
+      rubro_id: rubro.id,
+      rubro_nombre: rubro.nombre
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Actualizar configuración completa de usuario (plan, rol, rubro, estado)
+router.put('/usuarios/:id/configuracion', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id), {
+      include: [{ model: Empresa }]
+    });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { plan_id, rol_id, rubro_id, estado, nombre, email } = req.body;
+    const cambios = [];
+
+    // Actualizar datos básicos del usuario
+    if (nombre !== undefined) {
+      usuario.nombre = nombre;
+      cambios.push('nombre');
+    }
+    if (email !== undefined) {
+      // Verificar que el email no esté en uso por otro usuario
+      const existingUser = await Usuario.findOne({ 
+        where: { email, id: { [Op.ne]: usuario.id } } 
+      });
+      if (existingUser) {
+        return res.status(409).json({ error: 'El email ya está en uso por otro usuario' });
+      }
+      usuario.email = email;
+      cambios.push('email');
+    }
+    if (estado !== undefined) {
+      const estadosValidos = ['activo', 'inactivo', 'suspendido'];
+      if (!estadosValidos.includes(estado)) {
+        return res.status(400).json({ error: `Estado inválido. Usa: ${estadosValidos.join(', ')}` });
+      }
+      usuario.estado = estado;
+      cambios.push('estado');
+    }
+
+    // Actualizar rol
+    if (rol_id !== undefined) {
+      const rol = await Rol.findByPk(rol_id);
+      if (!rol) return res.status(404).json({ error: 'Rol no encontrado' });
+      usuario.rol_id = rol_id;
+      cambios.push(`rol: ${rol.nombre}`);
+    }
+
+    await usuario.save();
+
+    // Actualizar configuración de la empresa
+    if (plan_id !== undefined || rubro_id !== undefined) {
+      const empresaUpdates = {};
+      if (plan_id !== undefined) {
+        const plan = await Plan.findByPk(plan_id);
+        if (!plan) return res.status(404).json({ error: 'Plan no encontrado' });
+        empresaUpdates.plan_id = plan_id;
+        cambios.push(`plan: ${plan.nombre}`);
+      }
+      if (rubro_id !== undefined) {
+        const rubro = await Rubro.findByPk(rubro_id);
+        if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
+        empresaUpdates.rubro_id = rubro_id;
+        cambios.push(`rubro: ${rubro.nombre}`);
+      }
+      
+      await usuario.Empresa.update(empresaUpdates);
+    }
+
+    // Actualizar suscripción si cambió el plan
+    if (plan_id !== undefined) {
+      let suscripcion = await Suscripcion.findOne({ where: { empresa_id: usuario.empresa_id } });
+      if (suscripcion) {
+        await suscripcion.update({ plan_id, estado: 'activa' });
+      } else {
+        await Suscripcion.create({
+          empresa_id: usuario.empresa_id,
+          plan_id,
+          estado: 'activa',
+          fecha_inicio: new Date(),
+          fecha_fin: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        });
+      }
+    }
+
+    // Auditoría
+    await AuditoriaAdmin.create({
+      admin_usuario_id: req.admin?.id,
+      accion: 'UPDATE_CONFIG',
+      entidad: 'Usuario',
+      entidad_id: usuario.id,
+      detalles: { cambios },
+      ip: req.ip
+    });
+
+    return res.json({
+      mensaje: 'Configuración actualizada correctamente',
+      usuario_id: usuario.id,
+      cambios_realizados: cambios
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Obtener permisos de un usuario
+router.get('/usuarios/:id/permisos', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id), {
+      include: [
+        { 
+          model: Rol, 
+          include: [{ model: Permiso, attributes: ['id', 'nombre', 'codigo'], through: { attributes: [] } }]
+        }
+      ]
+    });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const permisos = usuario.Rol?.Permisos || [];
+    return res.json({
+      usuario_id: usuario.id,
+      usuario_nombre: usuario.nombre,
+      rol_id: usuario.rol_id,
+      rol_nombre: usuario.Rol?.nombre,
+      permisos: permisos.map(p => ({ id: p.id, nombre: p.nombre, codigo: p.codigo }))
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Listar todos los roles disponibles para asignación
+router.get('/roles-disponibles', async (req, res) => {
+  try {
+    const roles = await Rol.findAll({
+      attributes: ['id', 'nombre', 'descripcion'],
+      include: [
+        { 
+          model: Permiso, 
+          attributes: ['id', 'nombre', 'codigo'], 
+          through: { attributes: [] } 
+        }
+      ],
+      order: [['id', 'ASC']]
+    });
+    return res.json(roles);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Listar todos los planes disponibles para asignación
+router.get('/planes-disponibles', async (req, res) => {
+  try {
+    const planes = await Plan.findAll({
+      where: { estado: 'activo' },
+      attributes: ['id', 'nombre', 'codigo', 'descripcion', 'precio_mensual'],
+      include: [
+        { 
+          model: PlanLimit, 
+          attributes: ['limite', 'valor'] 
+        },
+        {
+          model: Feature,
+          attributes: ['id', 'nombre', 'codigo'],
+          through: { attributes: ['activo'] }
+        }
+      ],
+      order: [['precio_mensual', 'ASC']]
+    });
+    return res.json(planes);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Listar todos los rubros disponibles para asignación
+router.get('/rubros-disponibles', async (req, res) => {
+  try {
+    const rubros = await Rubro.findAll({
+      attributes: ['id', 'nombre', 'descripcion'],
+      include: [
+        {
+          model: Feature,
+          attributes: ['id', 'nombre', 'codigo'],
+          through: { attributes: ['activo'] }
+        }
+      ],
+      order: [['nombre', 'ASC']]
+    });
+    return res.json(rubros);
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
