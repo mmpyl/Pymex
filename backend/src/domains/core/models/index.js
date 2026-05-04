@@ -124,7 +124,7 @@ const initializeCrossDomainRelations = () => {
   }
 
   try {
-    const Feature = require('../billing/models/Feature');
+    const Feature = require('../../billing/models/Feature');
     
     Rubro.belongsToMany(Feature, { 
       through: RubroFeature, 
