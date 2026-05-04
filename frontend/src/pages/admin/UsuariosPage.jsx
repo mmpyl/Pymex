@@ -154,28 +154,28 @@ const UsuariosPage = () => {
       {/* Tabla de Usuarios */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-300">
+            <thead className="bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Empresa</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Rol</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-800 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-300">
               {usuarios.map((usuario) => (
                 <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{usuario.nombre}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{usuario.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">{usuario.nombre}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{usuario.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
                     {usuario.Empresa?.nombre || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
                     {usuario.Rol?.nombre || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -223,27 +223,27 @@ const UsuariosPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <label className="block text-sm font-bold text-gray-800">Nombre</label>
                   <input
                     type="text"
                     required
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-bold text-gray-800">Email</label>
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-bold text-gray-800">
                     {editingUsuario ? 'Nueva Contraseña (opcional)' : 'Contraseña'}
                   </label>
                   <input
@@ -251,16 +251,16 @@ const UsuariosPage = () => {
                     required={!editingUsuario}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Empresa</label>
+                  <label className="block text-sm font-bold text-gray-800">Empresa</label>
                   <select
                     value={formData.empresa_id}
                     onChange={(e) => setFormData({ ...formData, empresa_id: e.target.value })}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   >
                     <option value="">Seleccionar empresa</option>
                     {empresas.map((empresa) => (
@@ -269,12 +269,12 @@ const UsuariosPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Rol</label>
+                  <label className="block text-sm font-bold text-gray-800">Rol</label>
                   <select
                     value={formData.rol_id}
                     onChange={(e) => setFormData({ ...formData, rol_id: e.target.value })}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   >
                     <option value="">Seleccionar rol</option>
                     {roles.map((rol) => (
@@ -283,11 +283,11 @@ const UsuariosPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Estado</label>
+                  <label className="block text-sm font-bold text-gray-800">Estado</label>
                   <select
                     value={formData.estado}
                     onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
                   >
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
