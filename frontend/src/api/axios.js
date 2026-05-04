@@ -91,7 +91,7 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
-      const isAdminArea = currentPath.startsWith('/admin') || currentPath.startsWith('/staff');
+      const isAdminArea = currentPath.startsWith('/super-admin') || currentPath.startsWith('/staff');
 
       if (!currentPath.includes('/login')) {
         window.location.href = isAdminArea ? '/staff/login' : '/empresa/login';

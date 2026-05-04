@@ -12,7 +12,7 @@ const FeaturesPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/admin/rubros/features');
+      const response = await apiClient.get('/super-admin/rubros/features');
       setRubros(response.data);
       
       // Extraer lista única de features
@@ -42,7 +42,7 @@ const FeaturesPage = () => {
   const toggleFeature = async (rubroId, featureId, currentStatus) => {
     try {
       setSaving(true);
-      await apiClient.put(`/admin/rubros/${rubroId}/features/${featureId}`, {
+      await apiClient.put(`/super-admin/rubros/${rubroId}/features/${featureId}`, {
         activo: !currentStatus
       });
       showNotification('Feature actualizado correctamente');

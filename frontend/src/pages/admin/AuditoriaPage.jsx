@@ -12,7 +12,7 @@ const AuditoriaPage = () => {
   const loadAuditHealth = async () => {
     try {
       setHealthLoading(true);
-      const response = await apiClient.get('/admin/audit/health');
+      const response = await apiClient.get('/super-admin/audit/health');
       setAuditHealth(response.data);
     } catch (error) {
       console.error('Error loading audit health:', error);
@@ -27,7 +27,7 @@ const AuditoriaPage = () => {
     }
     
     try {
-      const response = await apiClient.get('/admin/audit/health?action=reset');
+      const response = await apiClient.get('/super-admin/audit/health?action=reset');
       toast.success(response.data.message || 'Logs reseteados correctamente');
       loadAuditHealth();
       loadLogs();
