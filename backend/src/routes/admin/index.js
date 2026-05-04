@@ -25,7 +25,6 @@ router.get('/empresas', async (req, res) => {
   try {
     const list = await Empresa.findAll({
       include: [
-        { model: Plan, attributes: ['id', 'nombre', 'codigo'] },
         { 
           model: Rubro, 
           attributes: ['id', 'nombre'],
