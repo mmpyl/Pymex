@@ -44,7 +44,7 @@ PlanLimit.belongsTo(Plan, { foreignKey: 'plan_id', as: 'plan' });
 Plan.hasMany(Suscripcion,      { foreignKey: 'plan_id', as: 'suscripciones' });
 Suscripcion.belongsTo(Plan,    { foreignKey: 'plan_id', as: 'plan' });
 // Relación cross-domain con Empresa (requerida para includes en rutas admin)
-const Empresa = require('../core/models').Empresa;
+const Empresa = require('../../core/models').Empresa;
 Empresa.hasMany(Suscripcion,   { foreignKey: 'empresa_id', as: 'suscripciones' });
 Suscripcion.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
 
