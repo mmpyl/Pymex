@@ -93,6 +93,7 @@ const AppRouter = () => (
         <Route path="/super-admin/suscripciones" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></AdminRoute>} />
         <Route path="/super-admin/auditoria" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></AdminRoute>} />
         <Route path="/super-admin/metricas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/usuarios" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminUsuariosPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
         {/* RBAC - Gestión de Roles y Permisos */}
         <Route path="/super-admin/rbac/usuarios" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><UsuariosRBACPage /></AdminLayout></RoleRoute></AdminRoute>} />
