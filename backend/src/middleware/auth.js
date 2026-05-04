@@ -161,6 +161,11 @@ const verificarTokenEmpresa = async (req, res, next) => {
       return res.status(403).json({ error: 'Token no válido para esta ruta' });
     }
 
+    // Validación estricta de scope para evitar acceso cruzado
+    if (decoded.scope !== 'business') {
+      return res.status(403).json({ error: 'Scope inválido para acceso de empresa' });
+    }
+
     const blacklisted = await isBlacklisted(decoded.jti);
     if (blacklisted) {
       return res.status(401).json({ error: 'Token revocado. Inicia sesión nuevamente.', code: 'TOKEN_REVOKED' });
@@ -186,6 +191,11 @@ const verificarTokenAdmin = async (req, res, next) => {
 
     if (decoded.token_type !== 'admin') {
       return res.status(403).json({ error: 'Token no válido para panel admin' });
+    }
+
+    // Validación estricta de scope para evitar acceso cruzado
+    if (decoded.scope !== 'global') {
+      return res.status(403).json({ error: 'Scope inválido para acceso global' });
     }
 
     const blacklisted = await isBlacklisted(decoded.jti);

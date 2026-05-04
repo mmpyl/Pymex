@@ -114,8 +114,62 @@ export const AuthProvider = ({ children }) => {
     setAdmin(null);
   }, []);
 
+  const getRol = useCallback(() => {
+    // Intentar obtener rol del usuario de empresa
+    if (usuario?.rol) return usuario.rol;
+    // Fallback: intentar obtener del token decodificado
+    try {
+      const token = localStorage.getItem('empresa_token') || sessionStorage.getItem('empresa_token');
+      if (token) {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        return decoded?.rol || 'admin';
+      }
+    } catch {}
+    return 'admin';
+  }, [usuario]);
+
+  const isAdminEmpresa = useCallback(() => {
+    const rol = getRol();
+    return ['admin', 'admin_empresa', 'administrador'].includes(rol.toLowerCase());
+  }, [getRol]);
+
+  const isGerente = useCallback(() => {
+    const rol = getRol();
+    return ['gerente', 'manager'].includes(rol.toLowerCase());
+  }, [getRol]);
+
+  const isEmpleado = useCallback(() => {
+    const rol = getRol();
+    return ['empleado', 'staff'].includes(rol.toLowerCase());
+  }, [getRol]);
+
+  const isContador = useCallback(() => {
+    const rol = getRol();
+    return ['contador', 'accountant'].includes(rol.toLowerCase());
+  }, [getRol]);
+
+  const hasRole = useCallback((roles) => {
+    const rolActual = getRol();
+    const rolesArray = Array.isArray(roles) ? roles : [roles];
+    return rolesArray.map(r => r.toLowerCase()).includes(rolActual.toLowerCase());
+  }, [getRol]);
+
   return (
-    <AuthContext.Provider value={{ usuario, admin, login, logout, loginAdmin, logoutAdmin, cargando }}>
+    <AuthContext.Provider value={{ 
+      usuario, 
+      admin, 
+      login, 
+      logout, 
+      loginAdmin, 
+      logoutAdmin, 
+      cargando,
+      getRol,
+      isAdminEmpresa,
+      isGerente,
+      isEmpleado,
+      isContador,
+      hasRole
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,7 +3,7 @@ const router = require('express').Router();
 const { check } = require('express-validator');
 const {
   register, startTrial, login, loginAdmin,
-  perfil, bootstrapSuperAdmin
+  perfil, refreshToken, bootstrapSuperAdmin
 } = require('../controllers/authController');
 const { verificarTokenEmpresa, verificarTokenAdmin, revokeToken } = require('../middleware/auth');
 const { validateSchema } = require('../middleware/schema');
@@ -294,6 +294,11 @@ const empresaEmailValido = check('empresa_email')
   .normalizeEmail()
   .withMessage('Email de empresa inválido');
 
+const refreshTokenValido = check('refreshToken')
+  .isLength({ min: 128, max: 128 }) // 64 bytes hex = 128 caracteres
+  .trim()
+  .withMessage('Refresh token inválido');
+
 const authRules = [emailValido, passwordValido];
 
 // ─── Empresas ─────────────────────────────────────────────────────────────────
@@ -322,6 +327,51 @@ router.post('/logout', verificarTokenEmpresa, async (req, res) => {
     return res.json({ mensaje: 'Sesión cerrada' });
   }
 });
+
+// ─── Refresh Token ────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Obtener nuevo access token usando refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: "a1b2c3d4e5f6..."
+ *     responses:
+ *       200:
+ *         description: Nuevo access token generado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Nuevo access token JWT
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Nuevo refresh token (rotación)
+ *                 tokenExpiresIn:
+ *                   type: string
+ *                   description: Tiempo de expiración del access token
+ *                 refreshTokenExpiresAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Fecha de expiración del refresh token
+ *       401:
+ *         description: Refresh token inválido o expirado
+ */
+router.post('/refresh', validate([refreshTokenValido]), refreshToken);
 
 // ─── Panel super admin ────────────────────────────────────────────────────────
 router.post('/admin/login', validate(authRules), loginAdmin);

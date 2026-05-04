@@ -43,7 +43,25 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data, form.remember);
-      navigate('/dashboard');
+      
+      // Redirección basada en el rol del usuario
+      const rol = data.usuario?.rol?.toLowerCase() || 'admin';
+      
+      switch(rol) {
+        case 'gerente':
+          navigate('/dashboard?view=gerencia');
+          break;
+        case 'empleado':
+          navigate('/ventas');
+          break;
+        case 'contador':
+          navigate('/reportes?view=financiero');
+          break;
+        case 'admin':
+        default:
+          navigate('/dashboard');
+          break;
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Credenciales inválidas');
     } finally {
