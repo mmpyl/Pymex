@@ -8,10 +8,55 @@ export const ProtectedRoute = ({ children }) => (
   <PrivateRoute>{children}</PrivateRoute>
 );
 
+/**
+ * RoleRoute - Guarda de rutas por rol específico
+ * Valida que el usuario tenga uno de los roles permitidos
+ * @param {Array<string>} roles - Lista de roles permitidos
+ */
 export const RoleRoute = ({ children, roles = [] }) => {
-  const { hasRole } = useAccessControl();
+  const { hasRole, cargando } = useAccessControl();
 
-  if (!hasRole(roles)) return <Navigate to="/403" replace />;
+  if (cargando) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-slate-600">Verificando permisos...</div>
+      </div>
+    );
+  }
+
+  if (!hasRole(roles)) {
+    return <Navigate to="/403" replace />;
+  }
+  
+  return children;
+};
+
+/**
+ * ScopeRoute - Guarda de rutas por scope (business vs global)
+ * Valida que el usuario tenga el scope correcto según el tipo de ruta
+ * @param {'business'|'global'} scope - Scope requerido para acceder a la ruta
+ */
+export const ScopeRoute = ({ children, scope = 'business' }) => {
+  const { usuario, admin, cargando } = useAuth();
+
+  if (cargando) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-slate-600">Verificando acceso...</div>
+      </div>
+    );
+  }
+
+  // Validar scope business (usuarios de empresa)
+  if (scope === 'business' && !usuario) {
+    return <Navigate to="/empresa/login" replace />;
+  }
+
+  // Validar scope global (admin del sistema)
+  if (scope === 'global' && !admin) {
+    return <Navigate to="/staff/login" replace />;
+  }
+
   return children;
 };
 

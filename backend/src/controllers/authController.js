@@ -18,6 +18,7 @@ const generarTokenEmpresa = (usuario, rolNombre) =>
   jwt.sign(
     {
       token_type: 'empresa',
+      scope: 'business', // Claim explícito de scope para validación
       id:         usuario.id,
       empresa_id: usuario.empresa_id,
       rol_id:     usuario.rol_id,
@@ -33,6 +34,7 @@ const generarTokenAdmin = (admin) =>
   jwt.sign(
     {
       token_type: 'admin',
+      scope: 'global', // Claim explícito de scope para validación
       id:         admin.id,
       rol:        admin.rol,
       nombre:     admin.nombre,
