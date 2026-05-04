@@ -191,10 +191,12 @@ router.get('/planes', async (req, res) => {
       include: [
         { 
           model: PlanLimit, 
+          as: 'limits',
           attributes: ['limite', 'valor'] 
         },
         {
           model: Feature,
+          as: 'features',
           attributes: ['id', 'nombre', 'codigo'],
           through: { attributes: ['activo'] }
         }
@@ -210,8 +212,8 @@ router.get('/suscripciones', async (req, res) => {
   try {
     const list = await Suscripcion.findAll({
       include: [
-        { model: Empresa, attributes: ['id', 'nombre', 'estado'] },
-        { model: Plan, attributes: ['id', 'nombre', 'codigo'] }
+        { model: Empresa, as: 'empresa', attributes: ['id', 'nombre', 'estado'] },
+        { model: Plan, as: 'plan', attributes: ['id', 'nombre', 'codigo'] }
       ],
       order: [['id', 'DESC']]
     });
@@ -272,7 +274,10 @@ router.post('/pagos', async (req, res) => {
 router.get('/pagos', async (req, res) => {
   try {
     const pagos = await Pago.findAll({
-      include: [{ model: Empresa, attributes: ['id', 'nombre'] }],
+      include: [
+        { model: Empresa, as: 'empresa', attributes: ['id', 'nombre'] },
+        { model: Suscripcion, as: 'suscripcion', attributes: ['id', 'empresa_id'] }
+      ],
       order: [['id', 'DESC']]
     });
     return res.json(pagos);
