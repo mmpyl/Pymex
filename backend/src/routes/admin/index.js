@@ -16,6 +16,7 @@ const { verificarTokenAdmin } = require('../middleware/auth');
 const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
 const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin } = require('../domains/auth/models');
+const eventBus = require('../domains/eventBus');
 
 router.use(verificarTokenAdmin);
 
@@ -694,7 +695,6 @@ router.post('/usuarios/:id/asignar-rol', async (req, res) => {
     await usuario.save();
 
     // Publicar evento para invalidar caché de roles
-    const eventBus = require('../domains/eventBus');
     eventBus.publish('USER_ROLE_UPDATED', { 
       usuario_id: usuario.id, 
       empresa_id: usuario.empresa_id,
