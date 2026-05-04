@@ -13,7 +13,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
 const { verificarTokenAdmin } = require('../../middleware/auth');
-const { Empresa, Rubro, AuditLog } = require('../../domains/core/models');
+const { Empresa, Rubro, AuditLog, EmpresaRubro } = require('../../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../../domains/billing/models');
 const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin } = require('../../domains/auth/models');
 const eventBus = require('../../domains/eventBus');
@@ -26,7 +26,11 @@ router.get('/empresas', async (req, res) => {
     const list = await Empresa.findAll({
       include: [
         { model: Plan, attributes: ['id', 'nombre', 'codigo'] },
-        { model: Rubro, attributes: ['id', 'nombre'] }
+        { 
+          model: Rubro, 
+          attributes: ['id', 'nombre'],
+          through: { attributes: [] }
+        }
       ],
       order: [['id', 'DESC']]
     });
@@ -38,7 +42,20 @@ router.post('/empresas', async (req, res) => {
   try {
     const { nombre, email, ruc = null, plan_id = null, rubro_id = null, estado = 'activo' } = req.body;
     if (!nombre || !email) return res.status(400).json({ error: 'nombre y email son obligatorios' });
-    const empresa = await Empresa.create({ nombre, email, ruc, plan_id, rubro_id, estado });
+    
+    // Crear empresa sin rubro_id directo
+    const empresa = await Empresa.create({ nombre, email, ruc, plan_id, estado });
+    
+    // Si se proporciona rubro_id, crear la relación en la tabla intermedia
+    if (rubro_id) {
+      const rubro = await Rubro.findByPk(rubro_id);
+      if (!rubro) {
+        await empresa.destroy();
+        return res.status(404).json({ error: 'Rubro no encontrado' });
+      }
+      await EmpresaRubro.create({ empresa_id: empresa.id, rubro_id });
+    }
+    
     return res.status(201).json(empresa);
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
@@ -47,9 +64,20 @@ router.put('/empresas/:id', async (req, res) => {
   try {
     const empresa = await Empresa.findByPk(Number(req.params.id));
     if (!empresa) return res.status(404).json({ error: 'Empresa no encontrada' });
-    const allowed = ['nombre', 'email', 'ruc', 'plan_id', 'rubro_id', 'estado'];
+    
+    const allowed = ['nombre', 'email', 'ruc', 'plan_id', 'estado'];
     allowed.forEach(key => { if (req.body[key] !== undefined) empresa[key] = req.body[key]; });
     await empresa.save();
+    
+    // Manejar actualización de rubro a través de la tabla intermedia
+    if (req.body.rubro_id !== undefined) {
+      const rubro = await Rubro.findByPk(req.body.rubro_id);
+      if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
+      
+      await EmpresaRubro.destroy({ where: { empresa_id: empresa.id } });
+      await EmpresaRubro.create({ empresa_id: empresa.id, rubro_id: req.body.rubro_id });
+    }
+    
     return res.json(empresa);
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
@@ -735,9 +763,9 @@ router.post('/usuarios/:id/asignar-rubro', async (req, res) => {
     const rubro = await Rubro.findByPk(rubro_id);
     if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
 
-    // Actualizar rubro de la empresa
-    usuario.Empresa.rubro_id = rubro_id;
-    await usuario.Empresa.save();
+    // Actualizar rubro de la empresa usando la tabla intermedia
+    await EmpresaRubro.destroy({ where: { empresa_id: usuario.empresa_id } });
+    await EmpresaRubro.create({ empresa_id: usuario.empresa_id, rubro_id });
 
     // Auditoría
     await AuditoriaAdmin.create({
@@ -817,7 +845,9 @@ router.put('/usuarios/:id/configuracion', async (req, res) => {
       if (rubro_id !== undefined) {
         const rubro = await Rubro.findByPk(rubro_id);
         if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
-        empresaUpdates.rubro_id = rubro_id;
+        // Actualizar rubro usando la tabla intermedia
+        await EmpresaRubro.destroy({ where: { empresa_id: usuario.empresa_id } });
+        await EmpresaRubro.create({ empresa_id: usuario.empresa_id, rubro_id });
         cambios.push(`rubro: ${rubro.nombre}`);
       }
       

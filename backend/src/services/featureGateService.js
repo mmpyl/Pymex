@@ -130,17 +130,22 @@ const resolveFeatureAccess = async (empresaId, featureCode) => {
   // 2. Feature por rubro (solo si existe relación RubroFeature)
   try {
     const coreModels = require('../domains/core/models');
-    const { RubroFeature } = coreModels;
+    const { RubroFeature, EmpresaRubro, Empresa } = coreModels;
     
-    // Obtener empresa para verificar rubro_id
-    const { Empresa } = coreModels;
+    // Obtener empresa y su rubro a través de la tabla intermedia
     const empresa = await Empresa.findByPk(empresaId, {
-      attributes: ['id', 'rubro_id']
+      attributes: ['id'],
+      include: [{
+        model: coreModels.Rubro,
+        attributes: ['id'],
+        through: { attributes: [] }
+      }]
     });
 
-    if (empresa && empresa.rubro_id) {
+    if (empresa && empresa.rubros && empresa.rubros.length > 0) {
+      const rubroId = empresa.rubros[0].id;
       const rubroFeature = await RubroFeature.findOne({
-        where: { rubro_id: empresa.rubro_id, feature_id: feature.id }
+        where: { rubro_id: rubroId, feature_id: feature.id }
       });
       if (rubroFeature) {
         return { active: Boolean(rubroFeature.activo), source: 'rubro_feature', featureId: feature.id };
@@ -254,12 +259,18 @@ const getEffectiveFeaturesForEmpresa = async (empresaId) => {
     const { Empresa, RubroFeature } = coreModels;
     
     const empresa = await Empresa.findByPk(empresaId, {
-      attributes: ['id', 'rubro_id']
+      attributes: ['id'],
+      include: [{
+        model: coreModels.Rubro,
+        attributes: ['id'],
+        through: { attributes: [] }
+      }]
     });
 
-    if (empresa && empresa.rubro_id) {
+    if (empresa && empresa.rubros && empresa.rubros.length > 0) {
+      const rubroId = empresa.rubros[0].id;
       const rubroFeatures = await RubroFeature.findAll({
-        where: { rubro_id: empresa.rubro_id }
+        where: { rubro_id: rubroId }
       });
       rubroFeatureMap = new Map(rubroFeatures.map(rf => [rf.feature_id, rf]));
     }
