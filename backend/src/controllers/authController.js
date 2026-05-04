@@ -7,13 +7,20 @@ const coreModels = require('../domains/core/models');
 const billingModels = require('../domains/billing/models');
 const { eventBus } = require('../domains/eventBus');
 const { asyncHandler, ValidationError, ConflictError, AuthenticationError, AuthorizationError, NotFoundError, ServiceUnavailableError } = require('../middleware/errorHandler');
+const logger = require('../utils/logger');
 
 const { Empresa, sequelize } = coreModels;
 const { Usuario, Rol } = authModels;
 const { Plan, Suscripcion } = billingModels;
 const UsuarioAdmin = require('../domains/auth/models/UsuarioAdmin');
+const RevokedToken = require('../domains/auth/models/RevokedToken');
+const AuditoriaAdmin = require('../domains/auth/models/AuditoriaAdmin');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Genera un token de acceso JWT para usuarios de empresa
+ */
 const generarTokenEmpresa = (usuario, rolNombre) =>
   jwt.sign(
     {
@@ -30,6 +37,9 @@ const generarTokenEmpresa = (usuario, rolNombre) =>
     { expiresIn: process.env.JWT_EXPIRES || '8h' }
   );
 
+/**
+ * Genera un token de acceso JWT para administradores
+ */
 const generarTokenAdmin = (admin) =>
   jwt.sign(
     {
@@ -43,6 +53,59 @@ const generarTokenAdmin = (admin) =>
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES || '8h' }
   );
+
+/**
+ * Genera un refresh token seguro (hash almacenado en DB)
+ * @param {Object} userData - Datos del usuario para asociar al token
+ * @param {number} userData.id - ID del usuario
+ * @param {string} userData.userType - Tipo de usuario: 'empresa' o 'admin'
+ * @param {string} userData.email - Email del usuario
+ * @returns {{ refreshToken: string, refreshTokenHash: string, expiresAt: Date }}
+ */
+const generarRefreshToken = (userData = {}) => {
+  const refreshToken = crypto.randomBytes(64).toString('hex');
+  const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS || 30));
+  
+  return { 
+    refreshToken, 
+    refreshTokenHash, 
+    expiresAt,
+    userId: userData.id || null,
+    userType: userData.userType || 'empresa',
+    metadata: {
+      email: userData.email || null,
+      createdAt: new Date().toISOString()
+    }
+  };
+};
+
+/**
+ * Registra actividad de auditoría para autenticación
+ */
+const registrarActividadAuth = async (evento, datos, transaction = null) => {
+  try {
+    await AuditoriaAdmin.create({
+      evento,
+      metadata: datos,
+      fecha: new Date()
+    }, { transaction });
+    
+    logger.info(`[AUDIT] ${evento}`, { 
+      event: evento, 
+      ...datos,
+      component: 'auth_audit'
+    });
+  } catch (error) {
+    logger.error('[AUDIT] Error registrando actividad de autenticación', {
+      error: error.message,
+      evento,
+      datos,
+      component: 'auth_audit'
+    });
+  }
+};
 
 const register = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
@@ -225,8 +288,40 @@ const login = asyncHandler(async (req, res) => {
 
   const rolNombre = usuario.Rol?.nombre || 'admin';
   const token = generarTokenEmpresa(usuario, rolNombre);
+  
+  // Generar refresh token para sesiones de larga duración
+  const { refreshToken, refreshTokenHash, expiresAt, userId, userType, metadata } = generarRefreshToken({
+    id: usuario.id,
+    userType: 'empresa',
+    email: usuario.email
+  });
+  
+  // Almacenar refresh token en la base de datos
+  await RevokedToken.create({
+    user_id: userId,
+    user_type: userType,
+    token_hash: refreshTokenHash,
+    token_type: 'refresh',
+    revoked_at: new Date(), // Usamos revoked_at como fecha de creación
+    expires_at: expiresAt,
+    metadata
+  });
+  
+  // Registrar actividad de auditoría para login exitoso
+  await registrarActividadAuth('LOGIN_SUCCESS', {
+    userId: usuario.id,
+    email: usuario.email,
+    empresaId: usuario.empresa_id,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+    rol: rolNombre
+  });
+  
   return res.json({
     token,
+    refreshToken,
+    tokenExpiresIn: process.env.JWT_EXPIRES || '8h',
+    refreshTokenExpiresAt: expiresAt,
     aviso,
     usuario: {
       id:         usuario.id,
@@ -249,17 +344,63 @@ const loginAdmin = asyncHandler(async (req, res) => {
 
   const admin = await UsuarioAdmin.findOne({ where: { email, estado: 'activo' } });
   if (!admin) {
+    // Registrar intento fallido de login admin para auditoría
+    await registrarActividadAuth('ADMIN_LOGIN_FAILED', {
+      email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      reason: 'Credenciales inválidas - usuario no encontrado'
+    });
     throw new AuthenticationError('Credenciales admin inválidas');
   }
 
   const coincide = await bcrypt.compare(password, admin.password);
   if (!coincide) {
+    // Registrar intento fallido de login admin para auditoría
+    await registrarActividadAuth('ADMIN_LOGIN_FAILED', {
+      adminId: admin.id,
+      email: admin.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      reason: 'Contraseña incorrecta'
+    });
     throw new AuthenticationError('Credenciales admin inválidas');
   }
 
   const token = generarTokenAdmin(admin);
+  
+  // Generar refresh token para sesiones de larga duración
+  const { refreshToken, refreshTokenHash, expiresAt, userId, userType, metadata } = generarRefreshToken({
+    id: admin.id,
+    userType: 'admin',
+    email: admin.email
+  });
+  
+  // Almacenar refresh token en la base de datos
+  await RevokedToken.create({
+    user_id: userId,
+    user_type: userType,
+    token_hash: refreshTokenHash,
+    token_type: 'refresh_admin',
+    revoked_at: new Date(),
+    expires_at: expiresAt,
+    metadata
+  });
+  
+  // Registrar actividad de auditoría para login exitoso
+  await registrarActividadAuth('ADMIN_LOGIN_SUCCESS', {
+    adminId: admin.id,
+    email: admin.email,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+    rol: admin.rol
+  });
+  
   return res.json({
     token,
+    refreshToken,
+    tokenExpiresIn: process.env.JWT_EXPIRES || '8h',
+    refreshTokenExpiresAt: expiresAt,
     admin: { id: admin.id, nombre: admin.nombre, email: admin.email, rol: admin.rol }
   });
 });
@@ -283,6 +424,186 @@ const perfil = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── REFRESH TOKEN ────────────────────────────────────────────────────────────
+/**
+ * Endpoint para obtener nuevo access token usando refresh token
+ */
+const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+  
+  if (!refreshToken) {
+    throw new ValidationError('Refresh token es requerido');
+  }
+  
+  // Calcular hash del refresh token recibido
+  const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  
+  // Buscar el refresh token en la base de datos
+  const storedToken = await RevokedToken.findOne({
+    where: {
+      token_hash: refreshTokenHash,
+      token_type: ['refresh', 'refresh_admin']
+    }
+  });
+  
+  if (!storedToken) {
+    await registrarActividadAuth('REFRESH_TOKEN_INVALID', {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      reason: 'Refresh token no encontrado'
+    });
+    throw new AuthenticationError('Refresh token inválido o expirado');
+  }
+  
+  // Verificar si el token ha expirado
+  const now = new Date();
+  if (now > storedToken.expires_at) {
+    // Eliminar token expirado
+    await storedToken.destroy();
+    
+    await registrarActividadAuth('REFRESH_TOKEN_EXPIRED', {
+      tokenId: storedToken.id,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+    throw new AuthenticationError('Refresh token expirado. Inicia sesión nuevamente.');
+  }
+  
+  // Determinar tipo de token y generar nuevos tokens
+  let newAccessToken, newRefreshTokenData, newExpiresAt;
+  
+  if (storedToken.token_type === 'refresh') {
+    // Token de empresa - buscar usuario y generar nuevo access token
+    const usuario = await Usuario.findOne({
+      where: { id: storedToken.user_id, estado: 'activo' },
+      include: [
+        { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
+        { model: Rol, attributes: ['id', 'nombre'] }
+      ]
+    });
+    
+    if (!usuario) {
+      await registrarActividadAuth('REFRESH_TOKEN_USER_NOT_FOUND', {
+        tokenId: storedToken.id,
+        userId: storedToken.user_id,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      throw new AuthenticationError('Usuario no encontrado. Inicia sesión nuevamente.');
+    }
+    
+    // Verificar si la empresa está suspendida
+    if (usuario.Empresa?.estado === 'suspendido') {
+      await registrarActividadAuth('REFRESH_TOKEN_COMPANY_SUSPENDED', {
+        tokenId: storedToken.id,
+        userId: usuario.id,
+        empresaId: usuario.empresa_id,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      throw new AuthenticationError('Empresa suspendida. Contacta al soporte.');
+    }
+    
+    const rolNombre = usuario.Rol?.nombre || 'admin';
+    newAccessToken = generarTokenEmpresa(usuario, rolNombre);
+    
+    // Generar nuevo refresh token (rotación de tokens)
+    newRefreshTokenData = generarRefreshToken({
+      id: usuario.id,
+      userType: 'empresa',
+      email: usuario.email
+    });
+    
+    // Invalidar el refresh token anterior (rotación)
+    await storedToken.destroy();
+    
+    // Almacenar nuevo refresh token
+    await RevokedToken.create({
+      user_id: newRefreshTokenData.userId,
+      user_type: newRefreshTokenData.userType,
+      token_hash: newRefreshTokenData.refreshTokenHash,
+      token_type: 'refresh',
+      revoked_at: new Date(),
+      expires_at: newRefreshTokenData.expiresAt,
+      metadata: newRefreshTokenData.metadata
+    });
+    
+    await registrarActividadAuth('REFRESH_TOKEN_SUCCESS', {
+      tokenId: storedToken.id,
+      userId: usuario.id,
+      email: usuario.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      tokenType: 'empresa'
+    });
+    
+    return res.json({
+      token: newAccessToken,
+      refreshToken: newRefreshTokenData.refreshToken,
+      tokenExpiresIn: process.env.JWT_EXPIRES || '8h',
+      refreshTokenExpiresAt: newRefreshTokenData.expiresAt
+    });
+    
+  } else if (storedToken.token_type === 'refresh_admin') {
+    // Token de admin - buscar admin y generar nuevo access token
+    const admin = await UsuarioAdmin.findOne({
+      where: { id: storedToken.user_id, estado: 'activo' }
+    });
+    
+    if (!admin) {
+      await registrarActividadAuth('REFRESH_TOKEN_ADMIN_NOT_FOUND', {
+        tokenId: storedToken.id,
+        userId: storedToken.user_id,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      throw new AuthenticationError('Administrador no encontrado. Inicia sesión nuevamente.');
+    }
+    
+    newAccessToken = generarTokenAdmin(admin);
+    
+    // Generar nuevo refresh token (rotación de tokens)
+    newRefreshTokenData = generarRefreshToken({
+      id: admin.id,
+      userType: 'admin',
+      email: admin.email
+    });
+    
+    // Invalidar el refresh token anterior (rotación)
+    await storedToken.destroy();
+    
+    // Almacenar nuevo refresh token
+    await RevokedToken.create({
+      user_id: newRefreshTokenData.userId,
+      user_type: newRefreshTokenData.userType,
+      token_hash: newRefreshTokenData.refreshTokenHash,
+      token_type: 'refresh_admin',
+      revoked_at: new Date(),
+      expires_at: newRefreshTokenData.expiresAt,
+      metadata: newRefreshTokenData.metadata
+    });
+    
+    await registrarActividadAuth('REFRESH_TOKEN_SUCCESS', {
+      tokenId: storedToken.id,
+      adminId: admin.id,
+      email: admin.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      tokenType: 'admin'
+    });
+    
+    return res.json({
+      token: newAccessToken,
+      refreshToken: newRefreshTokenData.refreshToken,
+      tokenExpiresIn: process.env.JWT_EXPIRES || '8h',
+      refreshTokenExpiresAt: newRefreshTokenData.expiresAt
+    });
+  }
+  
+  // Caso no debería ocurrir
+  throw new AuthenticationError('Tipo de token inválido');
+});
+
 // ─── BOOTSTRAP SUPER ADMIN — SOLO DESARROLLO ──────────────────────────────────
 const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
   // ⚠️ CRÍTICO: En producción debe estar SIEMPRE deshabilitado
@@ -298,7 +619,11 @@ const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
   const { secret, nombre, email, password } = req.body;
   if (secret !== bootstrapSecret) {
     // Log de intento fallido para auditoría
-    console.warn('[AUDIT] Intento fallido de bootstrap super admin desde IP:', req.ip);
+    await registrarActividadAuth('BOOTSTRAP_ADMIN_FAILED', {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      reason: 'Secret inválido'
+    });
     throw new AuthorizationError('Secret inválido para bootstrap super admin');
   }
   if (!nombre || !email || !password) {
@@ -310,6 +635,12 @@ const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
     const existente = await UsuarioAdmin.findOne({ where: { email }, transaction: t });
     if (existente) {
       await t.rollback();
+      await registrarActividadAuth('BOOTSTRAP_ADMIN_FAILED', {
+        email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        reason: 'Email ya existe'
+      });
       throw new ConflictError('Ya existe un admin con ese email');
     }
 
@@ -321,7 +652,12 @@ const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
     await t.commit();
 
     // Log de éxito para auditoría
-    console.warn('[AUDIT] Super admin creado exitosamente:', email);
+    await registrarActividadAuth('BOOTSTRAP_ADMIN_SUCCESS', {
+      adminId: admin.id,
+      email: admin.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
 
     return res.status(201).json({
       mensaje:     'Super admin creado. ESTABLECE BOOTSTRAP_DISABLED=true INMEDIATAMENTE.',
@@ -334,4 +670,4 @@ const bootstrapSuperAdmin = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { register, startTrial, login, loginAdmin, perfil, bootstrapSuperAdmin };
+module.exports = { register, startTrial, login, loginAdmin, perfil, refreshToken, bootstrapSuperAdmin };
