@@ -184,6 +184,27 @@ router.put('/planes/:id', async (req, res) => {
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
+// Listar todos los planes
+router.get('/planes', async (req, res) => {
+  try {
+    const planes = await Plan.findAll({
+      include: [
+        { 
+          model: PlanLimit, 
+          attributes: ['limite', 'valor'] 
+        },
+        {
+          model: Feature,
+          attributes: ['id', 'nombre', 'codigo'],
+          through: { attributes: ['activo'] }
+        }
+      ],
+      order: [['precio_mensual', 'ASC']]
+    });
+    return res.json(planes);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
 // ─── SUSCRIPCIONES ────────────────────────────────────────────────────────────
 router.get('/suscripciones', async (req, res) => {
   try {
