@@ -10,8 +10,6 @@ const Register = () => {
   const [form, setForm] = useState({
     empresa_nombre: '',
     empresa_email: '',
-    empresa_ruc: '',
-    empresa_telefono: '',
     nombre: '',
     email: '',
     password: '',
@@ -46,19 +44,9 @@ const Register = () => {
         break;
         
       case 'empresa_email':
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (!value) error = 'El email de la empresa es requerido';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           error = 'Email inválido';
-        }
-        break;
-        
-      case 'empresa_ruc':
-        if (!value) error = 'El RUC es requerido';
-        else if (!/^\d{11}$/.test(value)) error = 'El RUC debe tener 11 dígitos';
-        break;
-        
-      case 'empresa_telefono':
-        if (value && !/^[\d+\-\s()]{8,15}$/.test(value)) {
-          error = 'Teléfono inválido (8-15 caracteres)';
         }
         break;
         
@@ -120,7 +108,7 @@ const Register = () => {
     const nuevosErrores = {};
     let hayErrores = false;
     
-    ['empresa_nombre', 'empresa_email', 'empresa_ruc', 'empresa_telefono', 'nombre', 'email', 'password', 'confirmar_password'].forEach(field => {
+    ['empresa_nombre', 'empresa_email', 'nombre', 'email', 'password', 'confirmar_password'].forEach(field => {
       const error = validarCampo(field, form[field]);
       if (error) {
         nuevosErrores[field] = error;
@@ -144,9 +132,7 @@ const Register = () => {
     try {
       const datosEnvio = {
         empresa_nombre: form.empresa_nombre,
-        empresa_email: form.empresa_email || null,
-        empresa_ruc: form.empresa_ruc,
-        empresa_telefono: form.empresa_telefono || null,
+        empresa_email: form.empresa_email,
         nombre: form.nombre,
         email: form.email,
         password: form.password
@@ -201,9 +187,7 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-wider text-navy-600">Datos de la empresa</p>
             {campo('Nombre de la empresa', 'empresa_nombre', 'text', 'Mi Empresa S.A.')}
-            {campo('Email de la empresa (opcional)', 'empresa_email', 'email', 'empresa@email.com', false)}
-            {campo('RUC', 'empresa_ruc', 'text', '20123456789')}
-            {campo('Teléfono de contacto (opcional)', 'empresa_telefono', 'tel', '+51 999 999 999', false)}
+            {campo('Email de la empresa', 'empresa_email', 'email', 'empresa@email.com')}
 
             <p className="pt-2 text-xs font-bold uppercase tracking-wider text-navy-600">Tu cuenta de administrador</p>
             {campo('Tu nombre', 'nombre', 'text', 'Juan Pérez')}
