@@ -209,6 +209,113 @@ router.get('/pagos', async (req, res) => {
 });
 
 // ─── USUARIOS ADMIN DE EMPRESA ────────────────────────────────────────────────
+// Obtener todos los usuarios con sus detalles
+router.get('/usuarios', async (req, res) => {
+  try {
+    const list = await Usuario.findAll({
+      include: [
+        { model: Empresa, attributes: ['id', 'nombre', 'estado'] },
+        { model: Rol, attributes: ['id', 'nombre', 'descripcion'] }
+      ],
+      order: [['id', 'DESC']]
+    });
+    return res.json(list);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Obtener un usuario específico
+router.get('/usuarios/:id', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id), {
+      include: [
+        { model: Empresa, attributes: ['id', 'nombre', 'estado'] },
+        { model: Rol, attributes: ['id', 'nombre', 'descripcion'] }
+      ]
+    });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+    return res.json(usuario);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Crear nuevo usuario admin de empresa
+router.post('/usuarios', async (req, res) => {
+  try {
+    const { empresa_id, nombre, email, password, rol_id, estado = 'activo' } = req.body;
+    if (!empresa_id || !nombre || !email || !password || !rol_id)
+      return res.status(400).json({ error: 'empresa_id, nombre, email, password y rol_id son obligatorios' });
+    
+    const rol = await Rol.findByPk(rol_id);
+    if (!rol) return res.status(404).json({ error: 'Rol no encontrado' });
+    
+    // Verificar si el email ya existe
+    const existingUser = await Usuario.findOne({ where: { email } });
+    if (existingUser) return res.status(409).json({ error: 'El email ya está registrado' });
+    
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await Usuario.create({
+      empresa_id, rol_id, nombre, email, password: passwordHash, estado
+    });
+    
+    return res.status(201).json({
+      id: user.id,
+      empresa_id: user.empresa_id,
+      rol_id: user.rol_id,
+      nombre: user.nombre,
+      email: user.email,
+      estado: user.estado
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Actualizar usuario
+router.put('/usuarios/:id', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id));
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    const allowed = ['nombre', 'email', 'rol_id', 'estado'];
+    allowed.forEach(key => {
+      if (req.body[key] !== undefined) usuario[key] = req.body[key];
+    });
+    
+    // Si se proporciona nueva contraseña, hashearla
+    if (req.body.password) {
+      usuario.password = await bcrypt.hash(req.body.password, 10);
+    }
+    
+    await usuario.save();
+    return res.json(usuario);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Eliminar usuario
+router.delete('/usuarios/:id', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id));
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    await usuario.destroy();
+    return res.json({ ok: true, message: 'Usuario eliminado correctamente' });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Actualizar estado del usuario
+router.patch('/usuarios/:id/estado', async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(Number(req.params.id));
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    const estadosValidos = ['activo', 'inactivo', 'suspendido'];
+    if (!estadosValidos.includes(req.body.estado))
+      return res.status(400).json({ error: `Estado inválido. Usa: ${estadosValidos.join(', ')}` });
+    
+    usuario.estado = req.body.estado;
+    await usuario.save();
+    return res.json({ id: usuario.id, estado: usuario.estado });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// Endpoint legacy para compatibilidad
 router.post('/admins', async (req, res) => {
   try {
     const { empresa_id, nombre, email, password, rol_id } = req.body;
@@ -232,7 +339,6 @@ router.get('/roles-admin', async (req, res) => {
     return res.json(await Rol.findAll({ order: [['id', 'ASC']] }));
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
-
 // ─── AUDITORÍA ────────────────────────────────────────────────────────────────
 router.get('/auditoria', async (req, res) => {
   try {
