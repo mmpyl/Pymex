@@ -29,6 +29,7 @@ export const AdminPagosPage = lazy(() => import('../pages/admin/PagosPage'));
 export const AdminSuscripcionesPage = lazy(() => import('../pages/admin/SuscripcionesPage'));
 export const AdminAuditoriaPage = lazy(() => import('../pages/admin/AuditoriaPage'));
 export const AdminMetricasPage = lazy(() => import('../pages/admin/MetricasPage'));
+export const AdminUsuariosPage = lazy(() => import('../pages/admin/UsuariosPage'));
 
 // RBAC - Gestión de Roles y Permisos
 export const UsuariosRBACPage = lazy(() => import('../modules/rbac/pages/UsuariosRBACPage'));
