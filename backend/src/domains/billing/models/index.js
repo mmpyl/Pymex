@@ -32,9 +32,9 @@ const DomainEvent     = require('./DomainEvent'); // Outbox pattern para eventos
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Planes y Features
-Plan.hasMany(PlanFeature,    { foreignKey: 'plan_id', as: 'features' });
+Plan.hasMany(PlanFeature,    { foreignKey: 'plan_id', as: 'planFeatures' });
 PlanFeature.belongsTo(Plan,  { foreignKey: 'plan_id', as: 'plan' });
-Feature.hasMany(PlanFeature, { foreignKey: 'feature_id', as: 'planes' });
+Feature.hasMany(PlanFeature, { foreignKey: 'feature_id', as: 'planFeatures' });
 PlanFeature.belongsTo(Feature,{ foreignKey: 'feature_id', as: 'feature' });
 
 Plan.hasMany(PlanLimit,   { foreignKey: 'plan_id', as: 'limits' });
