@@ -992,4 +992,54 @@ router.get('/rubros-disponibles', async (req, res) => {
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
+// ─── RUBROS FEATURES ────────────────────────────────────────────────────────────
+// Obtener todas las features asociadas a rubros
+router.get('/rubros/features', async (req, res) => {
+  try {
+    const rubroFeatures = await RubroFeature.findAll({
+      include: [
+        {
+          model: Rubro,
+          attributes: ['id', 'nombre', 'descripcion']
+        },
+        {
+          model: Feature,
+          attributes: ['id', 'nombre', 'codigo', 'descripcion']
+        }
+      ],
+      order: [[Rubro, 'nombre', 'ASC'], [Feature, 'nombre', 'ASC']]
+    });
+    return res.json(rubroFeatures);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+// ─── AUDIT HEALTH ───────────────────────────────────────────────────────────────
+// Verificar estado del sistema de auditoría
+router.get('/audit/health', async (req, res) => {
+  try {
+    const [totalLogs, logsHoy, ultimaAuditoria] = await Promise.all([
+      AuditLog.count(),
+      AuditLog.count({
+        where: {
+          fecha: {
+            [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        }
+      }),
+      AuditLog.findOne({
+        order: [['fecha', 'DESC']],
+        attributes: ['fecha', 'accion', 'entidad']
+      })
+    ]);
+
+    return res.json({
+      status: 'healthy',
+      audit_enabled: true,
+      total_logs: totalLogs,
+      logs_hoy: logsHoy,
+      ultima_auditoria: ultimaAuditoria ? ultimaAuditoria.fecha : null
+    });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
 module.exports = router;
