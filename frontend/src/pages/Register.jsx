@@ -8,8 +8,6 @@ import toast from 'react-hot-toast';
 
 const Register = () => {
   const [form, setForm] = useState({
-    empresa_nombre: '',
-    empresa_email: '',
     nombre: '',
     email: '',
     password: '',
@@ -38,18 +36,6 @@ const Register = () => {
     let error = '';
     
     switch (name) {
-      case 'empresa_nombre':
-        if (!value.trim()) error = 'El nombre de la empresa es requerido';
-        else if (value.trim().length < 3) error = 'Mínimo 3 caracteres';
-        break;
-        
-      case 'empresa_email':
-        if (!value) error = 'El email de la empresa es requerido';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          error = 'Email inválido';
-        }
-        break;
-        
       case 'nombre':
         if (!value.trim()) error = 'El nombre es requerido';
         else if (value.trim().length < 2) error = 'Mínimo 2 caracteres';
@@ -108,7 +94,7 @@ const Register = () => {
     const nuevosErrores = {};
     let hayErrores = false;
     
-    ['empresa_nombre', 'empresa_email', 'nombre', 'email', 'password', 'confirmar_password'].forEach(field => {
+    ['nombre', 'email', 'password', 'confirmar_password'].forEach(field => {
       const error = validarCampo(field, form[field]);
       if (error) {
         nuevosErrores[field] = error;
@@ -131,15 +117,13 @@ const Register = () => {
     setCargando(true);
     try {
       const datosEnvio = {
-        empresa_nombre: form.empresa_nombre,
-        empresa_email: form.empresa_email,
         nombre: form.nombre,
         email: form.email,
         password: form.password
       };
       
       await api.post('/auth/register', datosEnvio);
-      toast.success('Empresa registrada. Ya puedes iniciar sesión.');
+      toast.success('Usuario registrado. Ya puedes iniciar sesión.');
       navigate('/empresa/login');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Error al registrar');
@@ -176,22 +160,17 @@ const Register = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-navy-50 via-white to-amber-50 p-4">
-      <Card className="w-full max-w-xl border-slate-200 shadow-2xl shadow-navy-900/10">
+      <Card className="w-full max-w-md border-slate-200 shadow-2xl shadow-navy-900/10">
         <CardHeader className="pb-4">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-600 to-navy-700 text-lg font-bold text-white shadow-md">
             SP
           </div>
-          <CardTitle className="text-2xl font-semibold text-navy-900">Registra tu empresa</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-navy-900">Crear cuenta</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-navy-600">Datos de la empresa</p>
-            {campo('Nombre de la empresa', 'empresa_nombre', 'text', 'Mi Empresa S.A.')}
-            {campo('Email de la empresa', 'empresa_email', 'email', 'empresa@email.com')}
-
-            <p className="pt-2 text-xs font-bold uppercase tracking-wider text-navy-600">Tu cuenta de administrador</p>
-            {campo('Tu nombre', 'nombre', 'text', 'Juan Pérez')}
-            {campo('Tu email', 'email', 'email', 'tu@email.com')}
+            {campo('Nombre', 'nombre', 'text', 'Juan Pérez')}
+            {campo('Email', 'email', 'email', 'tu@email.com')}
             
             {/* Campo de contraseña con indicador de fortaleza */}
             <div>
