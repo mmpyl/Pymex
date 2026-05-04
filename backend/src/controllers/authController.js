@@ -44,7 +44,7 @@ const generarTokenAdmin = (admin) =>
 const register = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { empresa_nombre, empresa_email, empresa_ruc, nombre, email, password } = req.body;
+    const { empresa_nombre, empresa_email, nombre, email, password } = req.body;
 
     if (!empresa_nombre || !empresa_email || !nombre || !email || !password) {
       await t.rollback();
@@ -59,8 +59,7 @@ const register = asyncHandler(async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const empresa = await Empresa.create({
-      nombre: empresa_nombre, email: empresa_email,
-      ruc: empresa_ruc || null, plan: 'basico', estado: 'activo'
+      nombre: empresa_nombre, email: empresa_email, plan: 'basico', estado: 'activo'
     }, { transaction: t });
 
     const rolAdmin = await Rol.findOne({
