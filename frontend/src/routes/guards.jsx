@@ -72,7 +72,7 @@ export const FeatureRoute = ({ children, featureCode, fallback = null }) => {
           habilitación manual por el administrador de la plataforma.
         </p>
         <a
-          href="/admin"
+          href="/super-admin"
           className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg no-underline font-semibold hover:bg-indigo-700 transition-colors"
         >
           Ver planes disponibles

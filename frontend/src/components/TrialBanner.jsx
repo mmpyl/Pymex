@@ -55,7 +55,7 @@ export default function TrialBanner() {
           <strong>{info.dias} día{info.dias !== 1 ? 's' : ''}</strong>.
           {urgente ? ' ¡Elige un plan para no perder el acceso!' : ' Aprovecha todas las funciones.'}
         </span>
-        <a href="/admin" className={`px-3.5 py-1.5 rounded-md no-underline font-semibold text-xs whitespace-nowrap transition-colors ${urgente ? 'bg-red-700 hover:bg-red-800 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'}`}>
+        <a href="/super-admin" className={`px-3.5 py-1.5 rounded-md no-underline font-semibold text-xs whitespace-nowrap transition-colors ${urgente ? 'bg-red-700 hover:bg-red-800 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'}`}>
           Ver planes
         </a>
       </div>
