@@ -2,14 +2,14 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const menu = [
-  { to: '/admin', label: 'Dashboard' },
-  { to: '/admin/empresas', label: 'Empresas' },
-  { to: '/admin/suscripciones', label: 'Suscripciones' },
-  { to: '/admin/pagos', label: 'Pagos' },
-  { to: '/admin/planes', label: 'Planes' },
-  { to: '/admin/features', label: 'Features' },
-  { to: '/admin/auditoria', label: 'Auditoría' },
-  { to: '/admin/metricas', label: 'Métricas' }
+  { to: '/super-admin', label: 'Dashboard' },
+  { to: '/super-admin/empresas', label: 'Empresas' },
+  { to: '/super-admin/suscripciones', label: 'Suscripciones' },
+  { to: '/super-admin/pagos', label: 'Pagos' },
+  { to: '/super-admin/planes', label: 'Planes' },
+  { to: '/super-admin/features', label: 'Features' },
+  { to: '/super-admin/auditoria', label: 'Auditoría' },
+  { to: '/super-admin/metricas', label: 'Métricas' }
 ];
 
 const AdminLayout = ({ children }) => {

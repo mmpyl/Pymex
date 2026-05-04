@@ -77,7 +77,7 @@ const AppRouter = () => (
         />
 
         <Route
-          path="/admin"
+          path="/super-admin"
           element={(
             <AdminRoute>
               <RoleRoute roles={['super_admin']}>
@@ -86,20 +86,20 @@ const AppRouter = () => (
             </AdminRoute>
           )}
         />
-        <Route path="/admin/empresas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminEmpresasPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/planes" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPlanesPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/features" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminFeaturesPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/pagos" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPagosPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/suscripciones" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/auditoria" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/metricas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/empresas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminEmpresasPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/planes" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPlanesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/features" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminFeaturesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/pagos" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPagosPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/suscripciones" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminSuscripcionesPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/auditoria" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminAuditoriaPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/metricas" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminMetricasPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
         {/* RBAC - Gestión de Roles y Permisos */}
-        <Route path="/admin/rbac/usuarios" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><UsuariosRBACPage /></AdminLayout></RoleRoute></AdminRoute>} />
-        <Route path="/admin/rbac/roles" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><RolesPermisosPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/rbac/usuarios" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><UsuariosRBACPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/rbac/roles" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><RolesPermisosPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
         {/* Admin - Pagos (Stripe Webhooks) */}
-        <Route path="/admin/payments/events" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPaymentEventsPage /></AdminLayout></RoleRoute></AdminRoute>} />
+        <Route path="/super-admin/payments/events" element={<AdminRoute><RoleRoute roles={['super_admin']}><AdminLayout><AdminPaymentEventsPage /></AdminLayout></RoleRoute></AdminRoute>} />
 
         <Route path="/403" element={<NotAuthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

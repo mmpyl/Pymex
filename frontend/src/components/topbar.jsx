@@ -14,7 +14,7 @@ const PAGE_META = {
   '/facturacion':  { title: 'Facturación SUNAT',     desc: 'Emisión electrónica CPE' },
   '/predicciones': { title: 'Predicciones ML',       desc: 'Inteligencia para tu negocio' },
   '/alertas':      { title: 'Alertas',               desc: 'Notificaciones del sistema' },
-  '/admin':        { title: 'Super Admin',           desc: 'Panel de administración' },
+  '/super-admin':  { title: 'Super Admin',           desc: 'Panel de administración' },
 };
 
 export default function Topbar({ onToggleSidebar, pathname }) {

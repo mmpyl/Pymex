@@ -39,7 +39,7 @@ const NAV_SECTIONS = [
   }
 ];
 
-const ADMIN_ITEM = { path: '/admin', icon: IconAdmin, label: 'Super Admin', role: 'super_admin' };
+const ADMIN_ITEM = { path: '/super-admin', icon: IconAdmin, label: 'Super Admin', role: 'super_admin' };
 
 export default function Sidebar({ collapsed, onToggle }) {
   const { usuario, logout } = useAuth();
@@ -116,7 +116,7 @@ export default function Sidebar({ collapsed, onToggle }) {
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             {!collapsed && <div className="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sistema</div>}
             <NavLink
-              to="/admin"
+              to="/super-admin"
               className={({ isActive }) => 
                 `flex items-center px-4 py-2.5 mx-2 my-1 rounded-lg transition-colors ${
                   isActive 
