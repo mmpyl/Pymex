@@ -1,5 +1,7 @@
+// backend/src/middleware/roles.js — versión mejorada con logging de auditoría
 const { Usuario, Rol, Permiso } = require('../domains/auth/models');
 const eventBus = require('../domains/eventBus');
+const logger = require('../utils/logger');
 
 // Normalización de nombres (quita acentos, minúsculas, trim)
 const normalizar = (valor = '') =>
@@ -95,21 +97,64 @@ const checkRole = (...rolesPermitidos) => {
     try {
       const rolesMap = await cargarRolesMap();
       const rolActual = rolesMap[req.usuario?.rol_id] || '';
-      if (rolActual === 'super_admin') return next();
+      
+      // Logging de auditoría para intentos de acceso
+      logger.info('Intento de acceso por rol', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        rol: rolActual,
+        ruta: req.originalUrl,
+        metodo: req.method,
+        rolesPermitidos: permitidos
+      });
+      
+      if (rolActual === 'super_admin') {
+        logger.info('Acceso concedido por super_admin', {
+          userId: req.usuario?.id,
+          ruta: req.originalUrl
+        });
+        return next();
+      }
 
       const usuario = await getUsuarioConRolYPermisos(req);
       if (!usuario || !usuario.Rol) {
+        logger.warn('Acceso denegado: Rol no asignado o usuario inactivo', {
+          userId: req.usuario?.id,
+          empresaId: req.usuario?.empresa_id,
+          ruta: req.originalUrl
+        });
         return res.status(403).json({ error: 'Rol no asignado o usuario inactivo' });
       }
 
       const rolNorm = normalizar(usuario.Rol.nombre);
+      // Nombres de roles estandarizados para evitar confusión semántica
       const esAdmin = ['admin_empresa', 'admin empresa', 'admin'].includes(rolNorm);
       if (!esAdmin && !permitidos.includes(rolNorm)) {
+        logger.warn('Acceso denegado por rol insuficiente', {
+          userId: req.usuario?.id,
+          empresaId: req.usuario?.empresa_id,
+          rol: rolNorm,
+          ruta: req.originalUrl,
+          rolesRequeridos: permitidos
+        });
         return res.status(403).json({ error: 'No tienes permiso por rol para esta acción' });
       }
 
+      logger.info('Acceso concedido por rol', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        rol: rolNorm,
+        ruta: req.originalUrl
+      });
+      
       next();
     } catch (error) {
+      logger.error('Error verificando rol', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        error: error.message,
+        ruta: req.originalUrl
+      });
       return res.status(500).json({ error: error.message });
     }
   };
@@ -122,28 +167,81 @@ const checkPermission = (permisoCodigo) => {
     try {
       const rolesMap = await cargarRolesMap();
       const rolActual = rolesMap[req.usuario?.rol_id] || '';
-      if (rolActual === 'super_admin') return next();
+      
+      // Logging de auditoría para intentos de acceso por permiso
+      logger.info('Intento de acceso por permiso', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        rol: rolActual,
+        permisoRequerido: permisoCodigo,
+        ruta: req.originalUrl,
+        metodo: req.method
+      });
+      
+      if (rolActual === 'super_admin') {
+        logger.info('Acceso concedido por super_admin (permiso)', {
+          userId: req.usuario?.id,
+          ruta: req.originalUrl
+        });
+        return next();
+      }
 
       const usuario = await getUsuarioConRolYPermisos(req);
 
       if (!usuario || !usuario.Rol) {
+        logger.warn('Acceso denegado: Usuario sin configuración RBAC', {
+          userId: req.usuario?.id,
+          empresaId: req.usuario?.empresa_id,
+          ruta: req.originalUrl
+        });
         return res.status(403).json({ error: 'Usuario sin configuración RBAC' });
       }
 
       const rolNorm = normalizar(usuario.Rol.nombre);
+      // Nombres de roles estandarizados para evitar confusión semántica
       const esAdmin = ['admin_empresa', 'admin empresa', 'admin'].includes(rolNorm);
-      if (esAdmin) return next();
+      if (esAdmin) {
+        logger.info('Acceso concedido por rol admin (permiso)', {
+          userId: req.usuario?.id,
+          empresaId: req.usuario?.empresa_id,
+          rol: rolNorm,
+          ruta: req.originalUrl
+        });
+        return next();
+      }
 
       const permisos = (usuario.Rol.Permisos || []).map(p => normalizar(p.codigo));
       if (!permisos.includes(permiso)) {
+        logger.warn('Acceso denegado por permiso insuficiente', {
+          userId: req.usuario?.id,
+          empresaId: req.usuario?.empresa_id,
+          rol: rolNorm,
+          permisoRequerido: permisoCodigo,
+          permisosUsuario: permisos,
+          ruta: req.originalUrl
+        });
         return res.status(403).json({
           error: 'Permiso denegado',
           permiso_requerido: permisoCodigo
         });
       }
 
+      logger.info('Acceso concedido por permiso', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        rol: rolNorm,
+        permiso: permisoCodigo,
+        ruta: req.originalUrl
+      });
+      
       next();
     } catch (error) {
+      logger.error('Error verificando permiso', {
+        userId: req.usuario?.id,
+        empresaId: req.usuario?.empresa_id,
+        error: error.message,
+        ruta: req.originalUrl
+      });
       return res.status(500).json({ error: error.message });
     }
   };
