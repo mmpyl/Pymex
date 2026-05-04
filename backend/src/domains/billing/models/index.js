@@ -41,10 +41,12 @@ Plan.hasMany(PlanLimit,   { foreignKey: 'plan_id', as: 'limits' });
 PlanLimit.belongsTo(Plan, { foreignKey: 'plan_id', as: 'plan' });
 
 // Suscripciones
-// Nota: La relación Suscripción ↔ Empresa cruza el límite del dominio CORE.
-// Se maneja como referencia externa (empresa_id) sin relación directa de Sequelize.
 Plan.hasMany(Suscripcion,      { foreignKey: 'plan_id', as: 'suscripciones' });
 Suscripcion.belongsTo(Plan,    { foreignKey: 'plan_id', as: 'plan' });
+// Relación cross-domain con Empresa (requerida para includes en rutas admin)
+const Empresa = require('../core/models').Empresa;
+Empresa.hasMany(Suscripcion,   { foreignKey: 'empresa_id', as: 'suscripciones' });
+Suscripcion.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
 
 // Feature Overrides
 // Nota: La relación FeatureOverride ↔ Empresa cruza el límite del dominio CORE.
@@ -52,9 +54,11 @@ Feature.hasMany(FeatureOverride,   { foreignKey: 'feature_id', as: 'overrides' }
 FeatureOverride.belongsTo(Feature, { foreignKey: 'feature_id', as: 'feature' });
 
 // Pagos
-// Nota: La relación Pago ↔ Empresa cruza el límite del dominio CORE.
 Suscripcion.hasMany(Pago,   { foreignKey: 'suscripcion_id', as: 'pagos' });
 Pago.belongsTo(Suscripcion, { foreignKey: 'suscripcion_id', as: 'suscripcion' });
+// Relación cross-domain con Empresa a través de Suscripción (requerida para includes en rutas admin)
+Empresa.hasMany(Pago,   { foreignKey: 'empresa_id', as: 'pagos' });
+Pago.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
 
 // Comprobantes
 // Nota: La relación Comprobante ↔ Empresa cruza el límite del dominio CORE.
