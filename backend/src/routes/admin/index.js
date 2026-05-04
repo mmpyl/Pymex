@@ -195,15 +195,34 @@ router.get('/planes', async (req, res) => {
           attributes: ['limite', 'valor'] 
         },
         {
-          model: Feature,
-          as: 'features',
-          attributes: ['id', 'nombre', 'codigo'],
-          through: { attributes: ['activo'] }
+          model: PlanFeature,
+          as: 'planFeatures',
+          attributes: ['activo'],
+          include: [{
+            model: Feature,
+            as: 'feature',
+            attributes: ['id', 'nombre', 'codigo']
+          }]
         }
       ],
       order: [['precio_mensual', 'ASC']]
     });
-    return res.json(planes);
+
+    // Transformar la respuesta para que sea compatible con el frontend
+    const planosTransformados = planes.map(plan => {
+      const planData = plan.toJSON();
+      const features = (planData.planFeatures || [])
+        .filter(pf => pf.activo)
+        .map(pf => ({ ...pf.feature, activo: pf.activo }));
+      
+      return {
+        ...planData,
+        features,
+        planFeatures: undefined // Eliminar campo intermedio
+      };
+    });
+
+    return res.json(planosTransformados);
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
