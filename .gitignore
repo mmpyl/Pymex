@@ -1,1 +1,1 @@
-Nothing needs to be added to the .gitignore file since the only change is a modification to a JavaScript source file (`backend/src/routes/superAdmin.js`) which should not be ignored.
+Nothing should be ignored since the changes only include source code files (.js, .jsx) and there are no build artifacts, dependencies, or temporary files in the change list.

@@ -14,13 +14,14 @@ const { Plan, Suscripcion } = billingModels;
 const UsuarioAdmin = require('../domains/auth/models/UsuarioAdmin');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const generarTokenEmpresa = (usuario) =>
+const generarTokenEmpresa = (usuario, rolNombre) =>
   jwt.sign(
     {
       token_type: 'empresa',
       id:         usuario.id,
       empresa_id: usuario.empresa_id,
       rol_id:     usuario.rol_id,
+      rol:        rolNombre, // Incluir nombre del rol en el token
       nombre:     usuario.nombre,
       jti:        crypto.randomUUID()
     },
@@ -201,7 +202,10 @@ const login = asyncHandler(async (req, res) => {
 
   const usuario = await Usuario.findOne({
     where:   { email, estado: 'activo' },
-    include: [{ model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] }]
+    include: [
+      { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
+      { model: Rol, attributes: ['id', 'nombre'] }
+    ]
   });
 
   if (!usuario) {
@@ -217,7 +221,8 @@ const login = asyncHandler(async (req, res) => {
     ? 'Tu empresa está suspendida. Contacta al soporte.'
     : null;
 
-  const token = generarTokenEmpresa(usuario);
+  const rolNombre = usuario.Rol?.nombre || 'admin';
+  const token = generarTokenEmpresa(usuario, rolNombre);
   return res.json({
     token,
     aviso,
@@ -225,6 +230,7 @@ const login = asyncHandler(async (req, res) => {
       id:         usuario.id,
       empresa_id: usuario.empresa_id,
       rol_id:     usuario.rol_id,
+      rol:        rolNombre,
       nombre:     usuario.nombre,
       email:      usuario.email,
       empresa:    usuario.Empresa
@@ -261,12 +267,18 @@ const perfil = asyncHandler(async (req, res) => {
   const usuario = await Usuario.findOne({
     where:      { id: req.usuario.id, empresa_id: req.usuario.empresa_id },
     attributes: ['id', 'empresa_id', 'rol_id', 'nombre', 'email', 'estado'],
-    include:    [{ model: Empresa, attributes: ['id', 'nombre', 'plan', 'estado'] }]
+    include:    [
+      { model: Empresa, attributes: ['id', 'nombre', 'plan', 'estado'] },
+      { model: Rol, attributes: ['id', 'nombre'] }
+    ]
   });
   if (!usuario) {
     throw new NotFoundError('Usuario no encontrado');
   }
-  return res.json(usuario);
+  return res.json({
+    ...usuario.toJSON(),
+    rol: usuario.Rol?.nombre || 'admin'
+  });
 });
 
 // ─── BOOTSTRAP SUPER ADMIN — SOLO DESARROLLO ──────────────────────────────────
