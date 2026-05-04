@@ -12,7 +12,7 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
-const { verificarTokenAdmin } = require('../middleware/auth');
+const { verificarTokenAdmin } = require('../../middleware/auth');
 const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
 const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin } = require('../domains/auth/models');
