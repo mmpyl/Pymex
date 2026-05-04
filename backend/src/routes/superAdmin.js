@@ -5,22 +5,34 @@
 // FIX: Suscripcion.update usa fecha_fin (no periodo_fin).
 // FIX: Pago.create usa fecha_vencimiento (requerida en v3).
 //
-// NOTA ARQUITECTURA: Esta ruta usa verificarToken + checkSuperAdminRol para mantener
-// compatibilidad con usuarios de empresa que tienen rol super_admin.
-// Para nuevas funcionalidades de admin del SaaS, considerar migrar a /api/admin con tokens admin dedicados.
+// NOTA ARQUITECTURA: Esta ruta usa verificarTokenAdmin para usar tokens de administradores del SaaS.
+// Los administradores del SaaS usan tokens de tipo 'admin' (tabla usuarios_admin),
+// NO tokens de empresa. Para verificar rol super_admin, se valida contra usuarios_admin.
 
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
-const { verificarToken } = require('../middleware/auth');
-const { checkSuperAdminRol } = require('../middleware/superAdmin');
+const { verificarTokenAdmin } = require('../middleware/auth');
 const { Empresa, Rubro, AuditLog } = require('../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../domains/billing/models');
-const { Usuario, Rol } = require('../domains/auth/models');
+const { UsuarioAdmin } = require('../domains/auth/models');
 
-router.use(verificarToken, checkSuperAdminRol);
+router.use(verificarTokenAdmin);
 
 // ─── EMPRESAS ─────────────────────────────────────────────────────────────────
+router.get('/empresas', async (req, res) => {
+  try {
+    const list = await Empresa.findAll({
+      include: [
+        { model: Plan, attributes: ['id', 'nombre', 'codigo'] },
+        { model: Rubro, attributes: ['id', 'nombre'] }
+      ],
+      order: [['id', 'DESC']]
+    });
+    return res.json(list);
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
 router.post('/empresas', async (req, res) => {
   try {
     const { nombre, email, ruc = null, plan_id = null, rubro_id = null, estado = 'activo' } = req.body;
@@ -51,6 +63,15 @@ router.patch('/empresas/:id/estado', async (req, res) => {
     empresa.estado = req.body.estado;
     await empresa.save();
     return res.json({ id: empresa.id, estado: empresa.estado });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+});
+
+router.delete('/empresas/:id', async (req, res) => {
+  try {
+    const empresa = await Empresa.findByPk(Number(req.params.id));
+    if (!empresa) return res.status(404).json({ error: 'Empresa no encontrada' });
+    await empresa.destroy();
+    return res.json({ mensaje: 'Empresa eliminada correctamente' });
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
 
