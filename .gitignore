@@ -1,34 +1,49 @@
-# Examples where backend/server.js might be modified alongside these types of files:
-# Compiled/build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.out
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
 dist/
 build/
 target/
 
-# Dependencies
-node_modules/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+.Python
+env/
 venv/
 .venv/
+.ENV
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Logs
+*.log
+
+# Environment variables
 .env
 .env.local
-*.env.*
+.env.*
 
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.swo
-
-# Editors/IDE
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# System files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Coverage
@@ -36,9 +51,10 @@ coverage/
 htmlcov/
 .coverage
 
-# Python specific
-.mypy_cache/
-.pytest_cache/
+# Temporary files
+*.tmp
+*.temp
+*.bak
 
 # Compressed files
 *.zip
@@ -63,3 +79,4 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```
