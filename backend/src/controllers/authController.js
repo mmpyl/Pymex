@@ -290,7 +290,7 @@ const login = asyncHandler(async (req, res) => {
   const token = generarTokenEmpresa(usuario, rolNombre);
   
   // Generar refresh token para sesiones de larga duración
-  const { refreshToken, refreshTokenHash, expiresAt, userId, userType, metadata } = generarRefreshToken({
+  const { refreshToken, refreshTokenHash, expiresAt } = generarRefreshToken({
     id: usuario.id,
     userType: 'empresa',
     email: usuario.email
@@ -298,13 +298,10 @@ const login = asyncHandler(async (req, res) => {
   
   // Almacenar refresh token en la base de datos
   await RevokedToken.create({
-    user_id: userId,
-    user_type: userType,
     token_hash: refreshTokenHash,
     token_type: 'refresh',
     revoked_at: new Date(), // Usamos revoked_at como fecha de creación
-    expires_at: expiresAt,
-    metadata
+    expires_at: expiresAt
   });
   
   // Registrar actividad de auditoría para login exitoso
@@ -370,7 +367,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
   const token = generarTokenAdmin(admin);
   
   // Generar refresh token para sesiones de larga duración
-  const { refreshToken, refreshTokenHash, expiresAt, userId, userType, metadata } = generarRefreshToken({
+  const { refreshToken, refreshTokenHash, expiresAt } = generarRefreshToken({
     id: admin.id,
     userType: 'admin',
     email: admin.email
@@ -378,13 +375,10 @@ const loginAdmin = asyncHandler(async (req, res) => {
   
   // Almacenar refresh token en la base de datos
   await RevokedToken.create({
-    user_id: userId,
-    user_type: userType,
     token_hash: refreshTokenHash,
     token_type: 'refresh_admin',
     revoked_at: new Date(),
-    expires_at: expiresAt,
-    metadata
+    expires_at: expiresAt
   });
   
   // Registrar actividad de auditoría para login exitoso
@@ -472,10 +466,13 @@ const refreshToken = asyncHandler(async (req, res) => {
   // Determinar tipo de token y generar nuevos tokens
   let newAccessToken, newRefreshTokenData, newExpiresAt;
   
+  const tokenPayload = verifyRefreshToken(refreshToken);
+  const tokenUserId = tokenPayload?.userId;
+
   if (storedToken.token_type === 'refresh') {
     // Token de empresa - buscar usuario y generar nuevo access token
     const usuario = await Usuario.findOne({
-      where: { id: storedToken.user_id, estado: 'activo' },
+      where: { id: tokenUserId, estado: 'activo' },
       include: [
         { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
         { model: Rol, attributes: ['id', 'nombre'] }
@@ -485,7 +482,7 @@ const refreshToken = asyncHandler(async (req, res) => {
     if (!usuario) {
       await registrarActividadAuth('REFRESH_TOKEN_USER_NOT_FOUND', {
         tokenId: storedToken.id,
-        userId: storedToken.user_id,
+        userId: tokenUserId,
         ip: req.ip,
         userAgent: req.headers['user-agent']
       });
@@ -519,13 +516,10 @@ const refreshToken = asyncHandler(async (req, res) => {
     
     // Almacenar nuevo refresh token
     await RevokedToken.create({
-      user_id: newRefreshTokenData.userId,
-      user_type: newRefreshTokenData.userType,
       token_hash: newRefreshTokenData.refreshTokenHash,
       token_type: 'refresh',
       revoked_at: new Date(),
-      expires_at: newRefreshTokenData.expiresAt,
-      metadata: newRefreshTokenData.metadata
+      expires_at: newRefreshTokenData.expiresAt
     });
     
     await registrarActividadAuth('REFRESH_TOKEN_SUCCESS', {
@@ -547,13 +541,13 @@ const refreshToken = asyncHandler(async (req, res) => {
   } else if (storedToken.token_type === 'refresh_admin') {
     // Token de admin - buscar admin y generar nuevo access token
     const admin = await UsuarioAdmin.findOne({
-      where: { id: storedToken.user_id, estado: 'activo' }
+      where: { id: tokenUserId, estado: 'activo' }
     });
     
     if (!admin) {
       await registrarActividadAuth('REFRESH_TOKEN_ADMIN_NOT_FOUND', {
         tokenId: storedToken.id,
-        userId: storedToken.user_id,
+        userId: tokenUserId,
         ip: req.ip,
         userAgent: req.headers['user-agent']
       });
@@ -574,13 +568,10 @@ const refreshToken = asyncHandler(async (req, res) => {
     
     // Almacenar nuevo refresh token
     await RevokedToken.create({
-      user_id: newRefreshTokenData.userId,
-      user_type: newRefreshTokenData.userType,
       token_hash: newRefreshTokenData.refreshTokenHash,
       token_type: 'refresh_admin',
       revoked_at: new Date(),
-      expires_at: newRefreshTokenData.expiresAt,
-      metadata: newRefreshTokenData.metadata
+      expires_at: newRefreshTokenData.expiresAt
     });
     
     await registrarActividadAuth('REFRESH_TOKEN_SUCCESS', {
