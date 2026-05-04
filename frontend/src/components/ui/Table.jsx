@@ -14,7 +14,7 @@ const Table = ({ columns = [], rows = [] }) => (
         {rows.map((row, idx) => (
           <tr key={idx} className="border-t border-slate-100">
             {columns.map((c) => (
-              <td key={c.key} className="px-3.5 py-3 text-sm text-slate-800">
+              <td key={c.key} className="px-3.5 py-3 text-sm text-gray-800">
                 {row[c.key]}
               </td>
             ))}

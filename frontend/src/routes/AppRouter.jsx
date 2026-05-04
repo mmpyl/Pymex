@@ -33,6 +33,8 @@ import {
   AdminSuscripcionesPage,
   AdminAuditoriaPage,
   AdminMetricasPage,
+  AdminUsuariosPage,
+  AdminUsuariosPage,
   UsuariosRBACPage,
   RolesPermisosPage,
   AdminPaymentEventsPage,
