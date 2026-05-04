@@ -21,7 +21,7 @@ export const paymentsModuleConfig = {
   icon: 'credit-card',
   routes: [
     {
-      path: '/admin/payments/events',
+      path: '/super-admin/payments/events',
       component: 'PaymentEventsPage',
       label: 'Eventos de Pagos',
       exact: true

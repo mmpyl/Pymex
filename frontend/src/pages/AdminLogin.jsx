@@ -46,7 +46,7 @@ export default function AdminLogin() {
       if (token) {
         loginAdmin({ token, admin }, form.remember);
       }
-      navigate('/admin');
+      navigate('/super-admin');
     } catch (err) {
       setError(err.response?.data?.error || 'No se pudo iniciar sesión staff');
     } finally {
