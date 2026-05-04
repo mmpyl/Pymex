@@ -176,7 +176,6 @@ app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/features', require('./routes/features'));
 app.use('/api/rbac', require('./routes/rbac'));
-app.use('/api/super-admin', require('./routes/superAdmin'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 
