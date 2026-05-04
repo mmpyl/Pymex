@@ -41,7 +41,7 @@ async function iniciar() {
         // Sincronizar base de datos (crear tablas si no existen) - solo en desarrollo
         if (process.env.NODE_ENV !== 'production') {
             console.log('🔄 Sincronizando modelos con la base de datos...');
-            await sequelize.sync({ force: false, alter: true });
+            await sequelize.sync({ force: false, alter: false });
             console.log('✅ Modelos sincronizados correctamente');
             
             // Insertar datos de prueba si las tablas están vacías
