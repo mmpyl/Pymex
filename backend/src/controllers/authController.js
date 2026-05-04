@@ -44,22 +44,28 @@ const generarTokenAdmin = (admin) =>
 const register = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { empresa_nombre, empresa_email, nombre, email, password } = req.body;
+    const { nombre, email, password } = req.body;
 
-    if (!empresa_nombre || !empresa_email || !nombre || !email || !password) {
+    if (!nombre || !email || !password) {
       await t.rollback();
       throw new ValidationError('Faltan campos obligatorios para el registro');
     }
 
-    const existente = await Empresa.findOne({ where: { email: empresa_email }, transaction: t });
-    if (existente) {
+    // Verificar si ya existe un usuario con ese email
+    const usuarioExistente = await Usuario.findOne({ where: { email }, transaction: t });
+    if (usuarioExistente) {
       await t.rollback();
-      throw new ConflictError('Ya existe una empresa registrada con ese email');
+      throw new ConflictError('Ya existe un usuario registrado con ese email');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    
+    // Crear empresa automáticamente con datos generados
     const empresa = await Empresa.create({
-      nombre: empresa_nombre, email: empresa_email, plan: 'basico', estado: 'activo'
+      nombre: `${nombre}'s Empresa`,
+      email: email,
+      plan: 'basico',
+      estado: 'activo'
     }, { transaction: t });
 
     const rolAdmin = await Rol.findOne({
