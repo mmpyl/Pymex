@@ -417,12 +417,12 @@ INSERT INTO permisos (nombre, codigo, descripcion) VALUES
 ('Configurar predicciones', 'predicciones_configurar', 'Permiso para configurar modelos predictivos')
 ON CONFLICT (codigo) DO NOTHING;
 
-INSERT INTO planes (nombre, codigo, precio_mensual) VALUES
-('Trial', 'trial', 0),
-('Básico', 'basico', 79),
-('Pro', 'pro', 149),
-('Business', 'business', 299),
-('Enterprise', 'enterprise', 999)
+INSERT INTO planes (nombre, codigo, descripcion, precio_mensual) VALUES
+('Trial', 'trial', 'Plan de prueba', 0),
+('Básico', 'basico', 'Plan básico', 79),
+('Pro', 'pro', 'Plan profesional', 149),
+('Business', 'business', 'Plan empresarial', 299),
+('Enterprise', 'enterprise', 'Plan empresarial avanzado', 999)
 ON CONFLICT (codigo) DO NOTHING;
 
 INSERT INTO features (nombre, codigo, descripcion) VALUES
