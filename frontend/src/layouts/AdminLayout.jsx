@@ -9,7 +9,11 @@ const menu = [
   { to: '/super-admin/planes', label: 'Planes' },
   { to: '/super-admin/features', label: 'Features' },
   { to: '/super-admin/auditoria', label: 'Auditoría' },
-  { to: '/super-admin/metricas', label: 'Métricas' }
+  { to: '/super-admin/metricas', label: 'Métricas' },
+  { to: '/super-admin/reportes', label: 'Reportes' },
+  { to: '/super-admin/usuarios', label: 'Usuarios' },
+  { to: '/super-admin/configuracion', label: 'Configuración' },
+  { to: '/super-admin/soporte', label: 'Soporte' }  
 ];
 
 const AdminLayout = ({ children }) => {

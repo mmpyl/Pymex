@@ -53,7 +53,6 @@ const AppRouter = () => (
         <Route path="/staff/login" element={<AdminLoginPage />} />
         <Route path="/super-admin/login" element={<Navigate to="/staff/login" replace />} />
         <Route path="/register" element={<RegisterPage />} />
-
         <Route path="/dashboard" element={<ProtectedRoute><SaasLayout><SaasDashboardPage /></SaasLayout></ProtectedRoute>} />
         <Route path="/productos" element={<ProtectedRoute><SaasLayout><ProductosPage /></SaasLayout></ProtectedRoute>} />
         <Route path="/categorias" element={<ProtectedRoute><SaasLayout><CategoriasPage /></SaasLayout></ProtectedRoute>} />
