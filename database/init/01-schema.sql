@@ -191,6 +191,7 @@ CREATE TABLE IF NOT EXISTS planes (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     codigo VARCHAR(30) NOT NULL UNIQUE,
+    descripcion VARCHAR(300),
     precio_mensual DECIMAL(10,2) NOT NULL DEFAULT 0,
     estado VARCHAR(20) NOT NULL DEFAULT 'activo',
     creado_en TIMESTAMP DEFAULT NOW(),

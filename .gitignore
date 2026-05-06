@@ -1,3 +1,6 @@
-```javascript
-
+```
+# Database files
+*.sql
+database/*.sql
+database/init/*.sql
 ```
