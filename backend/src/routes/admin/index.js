@@ -15,8 +15,11 @@ const { Op, fn, col } = require('sequelize');
 const { verificarTokenAdmin } = require('../../middleware/auth');
 const { Empresa, Rubro, AuditLog, EmpresaRubro } = require('../../domains/core/models');
 const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../../domains/billing/models');
-const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin } = require('../../domains/auth/models');
+const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin, initializeCrossDomainRelations } = require('../../domains/auth/models');
 const eventBus = require('../../domains/eventBus');
+
+// Asegurar que las relaciones cross-domain estén inicializadas
+initializeCrossDomainRelations();
 
 router.use(verificarTokenAdmin);
 
