@@ -312,8 +312,8 @@ router.get('/usuarios', async (req, res) => {
   try {
     const list = await Usuario.findAll({
       include: [
-        { model: Empresa, attributes: ['id', 'nombre', 'estado'] },
-        { model: Rol, attributes: ['id', 'nombre', 'descripcion'] }
+        { model: Empresa, as: 'empresa', attributes: ['id', 'nombre', 'estado'] },
+        { model: Rol, as: 'rol', attributes: ['id', 'nombre', 'descripcion'] }
       ],
       order: [['id', 'DESC']]
     });
@@ -326,8 +326,8 @@ router.get('/usuarios/:id', async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(Number(req.params.id), {
       include: [
-        { model: Empresa, attributes: ['id', 'nombre', 'estado'] },
-        { model: Rol, attributes: ['id', 'nombre', 'descripcion'] }
+        { model: Empresa, as: 'empresa', attributes: ['id', 'nombre', 'estado'] },
+        { model: Rol, as: 'rol', attributes: ['id', 'nombre', 'descripcion'] }
       ]
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -443,8 +443,8 @@ router.get('/auditoria', async (req, res) => {
     const limit = Math.min(Number(req.query.limit || 200), 1000);
     const logs = await AuditLog.findAll({
       include: [
-        { model: Empresa, attributes: ['id', 'nombre'] },
-        { model: Usuario, attributes: ['id', 'nombre', 'email'] }
+        { model: Empresa, as: 'empresa', attributes: ['id', 'nombre'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] }
       ],
       order: [['fecha', 'DESC']],
       limit
@@ -681,16 +681,18 @@ router.get('/usuarios-gestion', async (req, res) => {
       include: [
         { 
           model: Empresa, 
+          as: 'empresa',
           attributes: ['id', 'nombre', 'email', 'estado'],
           include: [
-            { model: Plan, attributes: ['id', 'nombre', 'codigo', 'precio_mensual'] },
-            { model: Rubro, attributes: ['id', 'nombre'] }
+            { model: Plan, as: 'plan', attributes: ['id', 'nombre', 'codigo', 'precio_mensual'] },
+            { model: Rubro, as: 'rubros', attributes: ['id', 'nombre'] }
           ]
         },
         { 
           model: Rol, 
+          as: 'rol',
           attributes: ['id', 'nombre', 'descripcion'],
-          include: [{ model: Permiso, attributes: ['id', 'nombre', 'codigo'], through: { attributes: [] } }]
+          include: [{ model: Permiso, as: 'permisos', attributes: ['id', 'nombre', 'codigo'], through: { attributes: [] } }]
         }
       ],
       order: [['id', 'DESC']]
@@ -703,7 +705,7 @@ router.get('/usuarios-gestion', async (req, res) => {
 router.post('/usuarios/:id/asignar-plan', async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(Number(req.params.id), {
-      include: [{ model: Empresa }]
+      include: [{ model: Empresa, as: 'empresa' }]
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
@@ -714,8 +716,8 @@ router.post('/usuarios/:id/asignar-plan', async (req, res) => {
     if (!plan) return res.status(404).json({ error: 'Plan no encontrado' });
 
     // Actualizar plan de la empresa
-    usuario.Empresa.plan_id = plan_id;
-    await usuario.Empresa.save();
+    usuario.empresa.plan_id = plan_id;
+    await usuario.empresa.save();
 
     // Actualizar o crear suscripción
     let suscripcion = await Suscripcion.findOne({ where: { empresa_id: usuario.empresa_id } });
@@ -801,7 +803,7 @@ router.post('/usuarios/:id/asignar-rol', async (req, res) => {
 router.post('/usuarios/:id/asignar-rubro', async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(Number(req.params.id), {
-      include: [{ model: Empresa }]
+      include: [{ model: Empresa, as: 'empresa' }]
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
@@ -839,7 +841,7 @@ router.post('/usuarios/:id/asignar-rubro', async (req, res) => {
 router.put('/usuarios/:id/configuracion', async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(Number(req.params.id), {
-      include: [{ model: Empresa }]
+      include: [{ model: Empresa, as: 'empresa' }]
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
@@ -899,7 +901,7 @@ router.put('/usuarios/:id/configuracion', async (req, res) => {
         cambios.push(`rubro: ${rubro.nombre}`);
       }
       
-      await usuario.Empresa.update(empresaUpdates);
+      await usuario.empresa.update(empresaUpdates);
     }
 
     // Actualizar suscripción si cambió el plan

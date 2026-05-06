@@ -63,10 +63,15 @@ const initializeCrossDomainRelations = () => {
 
   try {
     const Empresa = require('../../core/models/Empresa');
+    const AuditLog = require('../../core/models/AuditLog');
 
     // Usuario pertenece a una Empresa
     Empresa.hasMany(Usuario, { foreignKey: 'empresa_id', as: 'usuarios' });
-    Usuario.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'Empresa' });
+    Usuario.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
+
+    // AuditLog pertenece a Usuario (relación cross-domain CORE -> AUTH)
+    AuditLog.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+    Usuario.hasMany(AuditLog, { foreignKey: 'usuario_id', as: 'auditLogs' });
 
     _crossDomainRelationsInitialized = true;
     console.log('[AUTH] Relaciones cross-domain con CORE inicializadas');
