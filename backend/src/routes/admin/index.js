@@ -44,11 +44,11 @@ router.get('/empresas', async (req, res) => {
 
 router.post('/empresas', async (req, res) => {
   try {
-    const { nombre, email, ruc = null, plan_id = null, rubro_id = null, estado = 'activo' } = req.body;
-    if (!nombre || !email) return res.status(400).json({ error: 'nombre y email son obligatorios' });
+    const { nombre, ruc = null, plan_id = null, rubro_id = null, estado = 'activo' } = req.body;
+    if (!nombre) return res.status(400).json({ error: 'nombre es obligatorio' });
     
     // Crear empresa sin rubro_id directo
-    const empresa = await Empresa.create({ nombre, email, ruc, plan_id, estado });
+    const empresa = await Empresa.create({ nombre, ruc, plan_id, estado });
     
     // Si se proporciona rubro_id, crear la relación en la tabla intermedia
     if (rubro_id) {
@@ -69,7 +69,7 @@ router.put('/empresas/:id', async (req, res) => {
     const empresa = await Empresa.findByPk(Number(req.params.id));
     if (!empresa) return res.status(404).json({ error: 'Empresa no encontrada' });
     
-    const allowed = ['nombre', 'email', 'ruc', 'plan_id', 'estado'];
+    const allowed = ['nombre', 'ruc', 'plan_id', 'estado'];
     allowed.forEach(key => { if (req.body[key] !== undefined) empresa[key] = req.body[key]; });
     await empresa.save();
     

@@ -10,7 +10,6 @@ const EmpresasPage = () => {
   const [editingEmpresa, setEditingEmpresa] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
-    email: '',
     ruc: '',
     plan_id: '',
     rubro_id: '',
@@ -47,7 +46,7 @@ const EmpresasPage = () => {
       }
       setShowModal(false);
       setEditingEmpresa(null);
-      setFormData({ nombre: '', email: '', ruc: '', plan_id: '', rubro_id: '', estado: 'activo' });
+      setFormData({ nombre: '', ruc: '', plan_id: '', rubro_id: '', estado: 'activo' });
       loadEmpresas();
     } catch (error) {
       console.error('Error saving empresa:', error);
@@ -61,7 +60,6 @@ const EmpresasPage = () => {
     setEditingEmpresa(empresa);
     setFormData({
       nombre: empresa.nombre,
-      email: empresa.email,
       ruc: empresa.ruc || '',
       plan_id: empresa.plan_id || '',
       rubro_id: empresa.rubro_id || '',

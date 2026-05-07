@@ -30,7 +30,6 @@ const { validate } = require('../middleware/validation');
  *             type: object
  *             required:
  *               - empresa_nombre
- *               - empresa_email
  *               - nombre
  *               - email
  *               - password
@@ -38,10 +37,6 @@ const { validate } = require('../middleware/validation');
  *               empresa_nombre:
  *                 type: string
  *                 example: "Mi Empresa S.A."
- *               empresa_email:
- *                 type: string
- *                 format: email
- *                 example: "contacto@miempresa.com"
  *               nombre:
  *                 type: string
  *                 example: "Juan Pérez"
@@ -289,11 +284,6 @@ const empresaNombreValido = check('empresa_nombre')
   .isLength({ min: 2, max: 150 })
   .withMessage('El nombre de la empresa debe tener entre 2 y 150 caracteres');
 
-const empresaEmailValido = check('empresa_email')
-  .isEmail()
-  .normalizeEmail()
-  .withMessage('Email de empresa inválido');
-
 const refreshTokenValido = check('refreshToken')
   .isLength({ min: 128, max: 128 }) // 64 bytes hex = 128 caracteres
   .trim()
@@ -303,12 +293,12 @@ const authRules = [emailValido, passwordValido];
 
 // ─── Empresas ─────────────────────────────────────────────────────────────────
 router.post('/register',
-  validate([empresaNombreValido, empresaEmailValido, nombreValido, ...authRules]),
+  validate([empresaNombreValido, nombreValido, ...authRules]),
   register
 );
 
 router.post('/start-trial',
-  validate([empresaNombreValido, empresaEmailValido, nombreValido, ...authRules]),
+  validate([empresaNombreValido, nombreValido, ...authRules]),
   startTrial
 );
 
