@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../../config/database');
 const Rubro = require('./Rubro');
-const Feature = require('../../billing/models/Feature');
 
 const RubroFeature = sequelize.define('RubroFeature', {
   rubro_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
@@ -12,8 +11,8 @@ const RubroFeature = sequelize.define('RubroFeature', {
   timestamps: false
 });
 
-// Definir relaciones para que los includes funcionen correctamente
-RubroFeature.belongsTo(Rubro, { foreignKey: 'rubro_id', as: 'rubro' });
-RubroFeature.belongsTo(Feature, { foreignKey: 'feature_id', as: 'feature' });
+// Las relaciones se definen en initializeCrossDomainRelations() para evitar condiciones de carrera
+// RubroFeature.belongsTo(Rubro, { foreignKey: 'rubro_id', as: 'rubro' });
+// RubroFeature.belongsTo(Feature, { foreignKey: 'feature_id', as: 'feature' });
 
 module.exports = RubroFeature;
