@@ -14,7 +14,8 @@ const bcrypt = require('bcryptjs');
 const { Op, fn, col } = require('sequelize');
 const { verificarTokenAdmin } = require('../../middleware/auth');
 const { Empresa, Rubro, AuditLog, EmpresaRubro } = require('../../domains/core/models');
-const { Plan, PlanLimit, Feature, PlanFeature, RubroFeature, FeatureOverride, Suscripcion, Pago } = require('../../domains/billing/models');
+const { Plan, PlanLimit, Feature, PlanFeature, FeatureOverride, Suscripcion, Pago } = require('../../domains/billing/models');
+const { RubroFeature } = require('../../domains/core/models');
 const { UsuarioAdmin, Usuario, Rol, Permiso, RolPermiso, AuditoriaAdmin, initializeCrossDomainRelations } = require('../../domains/auth/models');
 const eventBus = require('../../domains/eventBus');
 
