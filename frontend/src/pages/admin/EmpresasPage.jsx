@@ -4,15 +4,18 @@ import toast from 'react-hot-toast';
 
 const EmpresasPage = () => {
   const [empresas, setEmpresas] = useState([]);
+  const [planes, setPlanes] = useState([]);
+  const [rubros, setRubros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
+    email: '',
     ruc: '',
-    plan_id: '',
-    rubro_id: '',
+    plan_id: null,
+    rubro_id: null,
     estado: 'activo'
   });
 
@@ -29,8 +32,28 @@ const EmpresasPage = () => {
     }
   };
 
+  const loadPlanes = async () => {
+    try {
+      const response = await apiClient.get('/super-admin/planes-disponibles');
+      setPlanes(response.data);
+    } catch (error) {
+      console.error('Error loading planes:', error);
+    }
+  };
+
+  const loadRubros = async () => {
+    try {
+      const response = await apiClient.get('/super-admin/rubros-disponibles');
+      setRubros(response.data);
+    } catch (error) {
+      console.error('Error loading rubros:', error);
+    }
+  };
+
   useEffect(() => {
     loadEmpresas();
+    loadPlanes();
+    loadRubros();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -46,7 +69,7 @@ const EmpresasPage = () => {
       }
       setShowModal(false);
       setEditingEmpresa(null);
-      setFormData({ nombre: '', ruc: '', plan_id: '', rubro_id: '', estado: 'activo' });
+      setFormData({ nombre: '', email: '', ruc: '', plan_id: null, rubro_id: null, estado: 'activo' });
       loadEmpresas();
     } catch (error) {
       console.error('Error saving empresa:', error);
@@ -60,9 +83,10 @@ const EmpresasPage = () => {
     setEditingEmpresa(empresa);
     setFormData({
       nombre: empresa.nombre,
+      email: empresa.email || '',
       ruc: empresa.ruc || '',
-      plan_id: empresa.plan_id || '',
-      rubro_id: empresa.rubro_id || '',
+      plan_id: empresa.plan_id || null,
+      rubro_id: empresa.rubro_id || null,
       estado: empresa.estado
     });
     setShowModal(true);
@@ -118,7 +142,7 @@ const EmpresasPage = () => {
         <button
           onClick={() => {
             setEditingEmpresa(null);
-            setFormData({ nombre: '', email: '', ruc: '', plan_id: '', rubro_id: '', estado: 'activo' });
+            setFormData({ nombre: '', email: '', ruc: '', plan_id: null, rubro_id: null, estado: 'activo' });
             setShowModal(true);
           }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -229,6 +253,36 @@ const EmpresasPage = () => {
                     <option value="activo">Activo</option>
                     <option value="suspendido">Suspendido</option>
                     <option value="eliminado">Eliminado</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-800">Plan</label>
+                  <select
+                    value={formData.plan_id || ''}
+                    onChange={(e) => setFormData({ ...formData, plan_id: e.target.value ? Number(e.target.value) : null })}
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
+                  >
+                    <option value="">Sin plan</option>
+                    {planes.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.nombre} - ${plan.precio_mensual}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-800">Rubro</label>
+                  <select
+                    value={formData.rubro_id || ''}
+                    onChange={(e) => setFormData({ ...formData, rubro_id: e.target.value ? Number(e.target.value) : null })}
+                    className="mt-1 block w-full rounded-md border-slate-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 font-medium"
+                  >
+                    <option value="">Sin rubro</option>
+                    {rubros.map((rubro) => (
+                      <option key={rubro.id} value={rubro.id}>
+                        {rubro.nombre}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
