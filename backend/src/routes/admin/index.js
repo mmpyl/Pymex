@@ -1053,14 +1053,14 @@ router.get('/audit/health', async (req, res) => {
       AuditLog.count(),
       AuditLog.count({
         where: {
-          fecha: {
+          createdAt: {
             [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
           }
         }
       }),
       AuditLog.findOne({
-        order: [['fecha', 'DESC']],
-        attributes: ['fecha', 'accion', 'entidad']
+        order: [['createdAt', 'DESC']],
+        attributes: ['createdAt', 'metodo', 'ruta']
       })
     ]);
 
@@ -1069,7 +1069,7 @@ router.get('/audit/health', async (req, res) => {
       audit_enabled: true,
       total_logs: totalLogs,
       logs_hoy: logsHoy,
-      ultima_auditoria: ultimaAuditoria ? ultimaAuditoria.fecha : null
+      ultima_auditoria: ultimaAuditoria ? ultimaAuditoria.createdAt : null
     });
   } catch (error) { return res.status(500).json({ error: error.message }); }
 });
