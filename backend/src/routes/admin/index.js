@@ -1030,10 +1030,12 @@ router.get('/rubros/features', async (req, res) => {
       include: [
         {
           model: Rubro,
+          as: 'rubro', 
           attributes: ['id', 'nombre', 'descripcion']
         },
         {
           model: Feature,
+          as: 'feature',
           attributes: ['id', 'nombre', 'codigo', 'descripcion']
         }
       ],
