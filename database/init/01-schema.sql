@@ -191,6 +191,7 @@ CREATE TABLE IF NOT EXISTS planes (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     codigo VARCHAR(30) NOT NULL UNIQUE,
+    descripcion VARCHAR(300),
     precio_mensual DECIMAL(10,2) NOT NULL DEFAULT 0,
     estado VARCHAR(20) NOT NULL DEFAULT 'activo',
     creado_en TIMESTAMP DEFAULT NOW(),
@@ -332,12 +333,12 @@ INSERT INTO roles (nombre, descripcion) VALUES
 ('soporte', 'Soporte de operaciones del panel admin')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO planes (nombre, codigo, precio_mensual) VALUES
-('Trial', 'trial', 0),
-('Básico', 'basico', 79),
-('Pro', 'pro', 149),
-('Business', 'business', 299),
-('Enterprise', 'enterprise', 999)
+INSERT INTO planes (nombre, codigo, descripcion, precio_mensual) VALUES
+('Trial', 'trial', 'Plan de prueba', 0),
+('Básico', 'basico', 'Plan básico', 79),
+('Pro', 'pro', 'Plan profesional', 149),
+('Business', 'business', 'Plan empresarial', 299),
+('Enterprise', 'enterprise', 'Plan empresarial avanzado', 999)
 ON CONFLICT (codigo) DO NOTHING;
 
 INSERT INTO features (nombre, codigo, descripcion) VALUES
