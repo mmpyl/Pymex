@@ -132,6 +132,17 @@ const initializeCrossDomainRelations = () => {
       otherKey: 'feature_id',
       as: 'features'
     });
+
+    Feature.belongsToMany(Rubro, {
+      through: RubroFeature,
+      foreignKey: 'feature_id',
+      otherKey: 'rubro_id',
+      as: 'rubros'
+    });
+    
+    // Relaciones directas para includes simples
+    RubroFeature.belongsTo(Rubro, { foreignKey: 'rubro_id', as: 'rubro' });
+    RubroFeature.belongsTo(Feature, { foreignKey: 'feature_id', as: 'feature' });
     
     _crossDomainRelationsInitialized = true;
   } catch (error) {
