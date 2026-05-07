@@ -44,20 +44,20 @@ router.get('/empresas', async (req, res) => {
 
 router.post('/empresas', async (req, res) => {
   try {
-    const { nombre, ruc = null, plan_id = null, rubro_id = null, estado = 'activo' } = req.body;
+    const { nombre, email = null, ruc = null, plan_id = null, rubro_ids = [], estado = 'activo' } = req.body;
     if (!nombre) return res.status(400).json({ error: 'nombre es obligatorio' });
     
-    // Crear empresa sin rubro_id directo
-    const empresa = await Empresa.create({ nombre, ruc, plan_id, estado });
+    // Crear empresa con email y plan_id
+    const empresa = await Empresa.create({ nombre, email, ruc, plan_id, estado });
     
-    // Si se proporciona rubro_id, crear la relación en la tabla intermedia
-    if (rubro_id) {
-      const rubro = await Rubro.findByPk(rubro_id);
-      if (!rubro) {
+    // Si se proporcionan rubro_ids, crear las relaciones en la tabla intermedia
+    if (Array.isArray(rubro_ids) && rubro_ids.length > 0) {
+      const rubros = await Rubro.findAll({ where: { id: rubro_ids } });
+      if (rubros.length !== rubro_ids.length) {
         await empresa.destroy();
-        return res.status(404).json({ error: 'Rubro no encontrado' });
+        return res.status(404).json({ error: 'Uno o más rubros no encontrados' });
       }
-      await EmpresaRubro.create({ empresa_id: empresa.id, rubro_id });
+      await EmpresaRubro.bulkCreate(rubro_ids.map((rubroId) => ({ empresa_id: empresa.id, rubro_id: rubroId })));
     }
     
     return res.status(201).json(empresa);
@@ -69,17 +69,21 @@ router.put('/empresas/:id', async (req, res) => {
     const empresa = await Empresa.findByPk(Number(req.params.id));
     if (!empresa) return res.status(404).json({ error: 'Empresa no encontrada' });
     
-    const allowed = ['nombre', 'ruc', 'plan_id', 'estado'];
+    const allowed = ['nombre', 'email', 'ruc', 'plan_id', 'estado'];
     allowed.forEach(key => { if (req.body[key] !== undefined) empresa[key] = req.body[key]; });
     await empresa.save();
     
-    // Manejar actualización de rubro a través de la tabla intermedia
-    if (req.body.rubro_id !== undefined) {
-      const rubro = await Rubro.findByPk(req.body.rubro_id);
-      if (!rubro) return res.status(404).json({ error: 'Rubro no encontrado' });
-      
+    // Manejar actualización de rubros a través de la tabla intermedia
+    if (req.body.rubro_ids !== undefined) {
       await EmpresaRubro.destroy({ where: { empresa_id: empresa.id } });
-      await EmpresaRubro.create({ empresa_id: empresa.id, rubro_id: req.body.rubro_id });
+      
+      if (Array.isArray(req.body.rubro_ids) && req.body.rubro_ids.length > 0) {
+        const rubros = await Rubro.findAll({ where: { id: req.body.rubro_ids } });
+        if (rubros.length !== req.body.rubro_ids.length) {
+          return res.status(404).json({ error: 'Uno o más rubros no encontrados' });
+        }
+        await EmpresaRubro.bulkCreate(req.body.rubro_ids.map((rubroId) => ({ empresa_id: empresa.id, rubro_id: rubroId })));
+      }
     }
     
     return res.json(empresa);
