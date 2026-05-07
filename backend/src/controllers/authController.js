@@ -129,7 +129,6 @@ const register = asyncHandler(async (req, res) => {
     // Crear empresa automáticamente con datos generados
     const empresa = await Empresa.create({
       nombre: `${nombre}'s Empresa`,
-      email: email,
       plan: 'basico',
       estado: 'activo'
     }, { transaction: t });
@@ -176,7 +175,7 @@ const register = asyncHandler(async (req, res) => {
 
     return res.status(201).json({
       mensaje:  'Registro completado',
-      empresa:  { id: empresa.id, nombre: empresa.nombre, email: empresa.email },
+      empresa:  { id: empresa.id, nombre: empresa.nombre },
       usuario:  { id: usuario.id, nombre: usuario.nombre, email: usuario.email },
       trial:    suscripcionCreada
         ? { plan: planTrial.nombre, dias: TRIAL_DIAS, expira: suscripcionCreada.fecha_fin }
@@ -192,17 +191,11 @@ const register = asyncHandler(async (req, res) => {
 const startTrial = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { empresa_nombre, empresa_email, empresa_ruc, nombre, email, password, dias_trial = 14 } = req.body;
+    const { empresa_nombre, empresa_ruc, nombre, email, password, dias_trial = 14 } = req.body;
 
-    if (!empresa_nombre || !empresa_email || !nombre || !email || !password) {
+    if (!empresa_nombre || !nombre || !email || !password) {
       await t.rollback();
       throw new ValidationError('Faltan campos obligatorios para iniciar trial');
-    }
-
-    const empresaExistente = await Empresa.findOne({ where: { email: empresa_email }, transaction: t });
-    if (empresaExistente) {
-      await t.rollback();
-      throw new ConflictError('Ya existe una empresa registrada con ese email');
     }
 
     let planUsado = await Plan.findOne({ where: { codigo: 'trial', estado: 'activo' }, transaction: t });
@@ -215,7 +208,7 @@ const startTrial = asyncHandler(async (req, res) => {
     }
 
     const empresa = await Empresa.create({
-      nombre: empresa_nombre, email: empresa_email,
+      nombre: empresa_nombre,
       ruc: empresa_ruc || null, plan: planUsado.codigo, estado: 'activo'
     }, { transaction: t });
 
@@ -240,7 +233,7 @@ const startTrial = asyncHandler(async (req, res) => {
     eventBus.publish('TRIAL_STARTED', {
       userId: usuario.id,
       empresaId: empresa.id,
-      email: empresa.email,
+      email: usuario.email,
       planCodigo: planUsado.codigo,
       diasTrial: dias_trial,
       fechaFin: fin,

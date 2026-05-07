@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS empresas (
     ruc              VARCHAR(20)   UNIQUE,
     direccion        VARCHAR(200),
     telefono         VARCHAR(20),
-    email            VARCHAR(100)  UNIQUE NOT NULL,
     plan             VARCHAR(20)   DEFAULT 'basico',
     estado           VARCHAR(10)   DEFAULT 'activo',
     fecha_registro   TIMESTAMP     DEFAULT NOW()
@@ -307,7 +306,6 @@ CREATE TABLE IF NOT EXISTS revoked_tokens (
 );
 
 -- SECCIÓN 4: ÍNDICES
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_empresas_email ON empresas(email);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_empresa ON usuarios(empresa_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_admin_email ON usuarios_admin(email);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_productos_empresa_estado ON productos(empresa_id, estado);
