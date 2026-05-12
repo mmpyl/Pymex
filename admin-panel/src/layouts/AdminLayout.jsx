@@ -1,59 +1,144 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
-const menu = [
-  { to: '/super-admin', label: 'Dashboard' },
-  { to: '/super-admin/empresas', label: 'Empresas' },
-  { to: '/super-admin/suscripciones', label: 'Suscripciones' },
-  { to: '/super-admin/pagos', label: 'Pagos' },
-  { to: '/super-admin/planes', label: 'Planes' },
-  { to: '/super-admin/features', label: 'Features' },
-  { to: '/super-admin/auditoria', label: 'Auditoría' },
-  { to: '/super-admin/metricas', label: 'Métricas' },
-  { to: '/super-admin/reportes', label: 'Reportes' },
-  { to: '/super-admin/usuarios', label: 'Usuarios' },
-  { to: '/super-admin/configuracion', label: 'Configuración' },
-  { to: '/super-admin/soporte', label: 'Soporte' }  
+const menuSections = [
+  {
+    title: 'Principal',
+    items: [
+      { to: '/super-admin', label: 'Dashboard', icon: '📊' },
+    ]
+  },
+  {
+    title: 'Gestión',
+    items: [
+      { to: '/super-admin/empresas', label: 'Empresas', icon: '🏢' },
+      { to: '/super-admin/usuarios', label: 'Usuarios', icon: '👥' },
+      { to: '/super-admin/planes', label: 'Planes', icon: '📦' },
+      { to: '/super-admin/features', label: 'Features', icon: '✨' },
+    ]
+  },
+  {
+    title: 'Finanzas',
+    items: [
+      { to: '/super-admin/suscripciones', label: 'Suscripciones', icon: '🔄' },
+      { to: '/super-admin/pagos', label: 'Pagos', icon: '💳' },
+      { to: '/super-admin/facturas', label: 'Facturas', icon: '📄' },
+      { to: '/super-admin/reportes', label: 'Reportes', icon: '📈' },
+    ]
+  },
+  {
+    title: 'Control',
+    items: [
+      { to: '/super-admin/auditoria', label: 'Auditoría', icon: '🔍' },
+      { to: '/super-admin/metricas', label: 'Métricas', icon: '📉' },
+      { to: '/super-admin/soporte', label: 'Soporte', icon: '🎧' },
+    ]
+  },
+  {
+    title: 'Sistema',
+    items: [
+      { to: '/super-admin/configuracion', label: 'Configuración', icon: '⚙️' },
+    ]
+  }
 ];
 
 const AdminLayout = ({ children }) => {
-  const { logoutAdmin } = useAuth();
+  const { logoutAdmin, admin } = useAuth();
   const navigate = useNavigate();
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const handleLogout = async () => {
     await logoutAdmin();
     navigate('/staff/login');
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+  
   return (
-    <div className="flex min-h-screen bg-slate-900 text-slate-200">
-      <aside className="w-[280px] p-5 border-r border-slate-600/20">
-        <h2 className="mt-0 mb-6">Super Admin</h2>
-        <nav className="grid gap-2">
-          {menu.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => 
-                `px-3 py-2.5 rounded-lg no-underline text-slate-200 transition-colors duration-200 ${
-                  isActive ? 'bg-blue-500/25' : 'bg-transparent hover:bg-slate-800'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
+    <div className="app-shell">
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        {/* Brand */}
+        <div className="sidebar-brand">
+          <div className="sidebar-logo">S</div>
+          <span className="sidebar-brand-name">SAPYME Admin</span>
+        </div>
+        
+        {/* Navigation */}
+        <nav className="sidebar-nav">
+          {menuSections.map((section) => (
+            <div key={section.title}>
+              <div className="sidebar-section-title">{section.title}</div>
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => 
+                    `nav-item ${isActive ? 'active' : ''}`
+                  }
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                  {item.badge && (
+                    <span className="nav-badge">{item.badge}</span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           ))}
+        </nav>
+        
+        {/* Footer with User */}
+        <div className="sidebar-footer">
+          <div className="sidebar-user" onClick={toggleSidebar}>
+            <div className="user-avatar">
+              {admin?.nombre?.charAt(0) || 'A'}
+            </div>
+            <div className="user-info">
+              <div className="user-name">{admin?.nombre || 'Administrador'}</div>
+              <div className="user-role">Super Admin</div>
+            </div>
+          </div>
           <button
             onClick={handleLogout}
-            className="px-3 py-2.5 rounded-lg no-underline text-slate-200 transition-colors duration-200 bg-transparent hover:bg-red-600/20 text-left mt-4"
+            className="nav-item mt-2"
           >
-            Cerrar sesión
+            <span className="nav-icon">🚪</span>
+            <span className="nav-label">Cerrar sesión</span>
           </button>
-        </nav>
+        </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">{children}</div>
-      </main>
+      
+      {/* Main Content Area */}
+      <div className="app-content">
+        {/* Topbar */}
+        <header className="topbar">
+          <div className="topbar-breadcrumb">
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">Panel de control del sistema</p>
+          </div>
+          <div className="topbar-actions">
+            <button className="topbar-icon-btn" title="Buscar">
+              🔍
+            </button>
+            <button className="topbar-icon-btn" title="Notificaciones">
+              🔔
+              <span className="notif-dot"></span>
+            </button>
+            <button className="topbar-icon-btn" title="Ayuda">
+              ❓
+            </button>
+          </div>
+        </header>
+        
+        {/* Page Content */}
+        <main className="page-body">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

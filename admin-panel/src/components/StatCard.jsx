@@ -1,9 +1,45 @@
-const StatCard = ({ label, value, trend }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4">
-    <p className="m-0 text-slate-500 text-sm">{label}</p>
-    <h3 className="my-2 text-2xl">{value}</h3>
-    {trend && <p className="m-0" style={{ color: trend > 0 ? '#16a34a' : '#dc2626' }}>{trend > 0 ? '+' : ''}{trend}%</p>}
-  </div>
-);
+import React from 'react';
+
+/**
+ * Componente StatCard - Tarjeta de estadísticas con trend e ícono
+ */
+const StatCard = ({ title, value, trend, icon, accentColor = 'var(--navy-500)' }) => {
+  const isPositive = trend?.up ?? true;
+  const trendValue = trend?.value ?? '';
+
+  return (
+    <div className="stat-card">
+      {/* Accent bar on top */}
+      <div 
+        className="stat-card-accent" 
+        style={{ background: accentColor }}
+      />
+      
+      {/* Icon */}
+      <div 
+        className="stat-card-icon"
+        style={{ 
+          background: `${accentColor}15`,
+          color: accentColor 
+        }}
+      >
+        <span className="text-xl">{icon}</span>
+      </div>
+      
+      {/* Label */}
+      <div className="stat-label">{title}</div>
+      
+      {/* Value */}
+      <div className="stat-value">{value}</div>
+      
+      {/* Trend */}
+      {trendValue && (
+        <div className={`stat-trend ${isPositive ? 'up' : 'down'}`}>
+          {isPositive ? '↑' : '↓'} {trendValue}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default StatCard;
