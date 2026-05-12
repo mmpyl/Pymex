@@ -1,9 +1,33 @@
-// backend/src/middleware/auth.js — versión consolidada
+// backend/src/middleware/auth.js — versión consolidada con secrets separados
 // Usa Redis para blacklist de tokens (multi-instancia) con fallback en memoria.
 // Para revocación persistente real en despliegues con load balancer.
 
 const jwt    = require('jsonwebtoken');
 const crypto = require('crypto');
+
+// ─── SEPARACIÓN CRIPTOGRÁFICA: Secrets diferentes para empresa y admin ────────
+// Cada tipo de token usa un secret diferente para aislamiento criptográfico completo
+const JWT_SECRET_EMPRESA = process.env.JWT_SECRET_EMPRESA || process.env.JWT_SECRET;
+const JWT_SECRET_ADMIN = process.env.JWT_SECRET_ADMIN || process.env.JWT_SECRET;
+
+// Validar que los secrets estén configurados en producción
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.JWT_SECRET_EMPRESA || !process.env.JWT_SECRET_ADMIN) {
+    console.warn('[AUTH] ADVERTENCIA: En producción se deben usar JWT_SECRET_EMPRESA y JWT_SECRET_ADMIN separados');
+  }
+  if (process.env.JWT_SECRET_EMPRESA === process.env.JWT_SECRET_ADMIN) {
+    console.error('[AUTH] CRÍTICO: JWT_SECRET_EMPRESA y JWT_SECRET_ADMIN son iguales. Esto reduce la seguridad.');
+  }
+}
+
+/**
+ * Obtiene el secret correcto según el tipo de token
+ * @param {'empresa' | 'admin'} tokenType 
+ * @returns {string} El secret correspondiente
+ */
+const getSecretForTokenType = (tokenType) => {
+  return tokenType === 'admin' ? JWT_SECRET_ADMIN : JWT_SECRET_EMPRESA;
+};
 
 // Intentar cargar Redis, fallback a memoria si no está disponible
 let redisClient = null;
@@ -155,7 +179,8 @@ const verificarTokenEmpresa = async (req, res, next) => {
     const token = parseBearer(req);
     if (!token) return res.status(401).json({ error: 'Token requerido' });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Usar el secret específico para tokens de empresa
+    const decoded = jwt.verify(token, JWT_SECRET_EMPRESA);
 
     if (decoded.token_type !== 'empresa') {
       return res.status(403).json({ error: 'Token no válido para esta ruta' });
@@ -187,7 +212,8 @@ const verificarTokenAdmin = async (req, res, next) => {
     const token = parseBearer(req);
     if (!token) return res.status(401).json({ error: 'Token requerido' });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Usar el secret específico para tokens de admin
+    const decoded = jwt.verify(token, JWT_SECRET_ADMIN);
 
     if (decoded.token_type !== 'admin') {
       return res.status(403).json({ error: 'Token no válido para panel admin' });
@@ -223,5 +249,6 @@ module.exports = {
   revokeToken,
   isBlacklisted,
   parseBearer,
-  getRedisStatus
+  getRedisStatus,
+  getSecretForTokenType
 };

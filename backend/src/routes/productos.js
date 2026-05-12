@@ -214,7 +214,11 @@ const { Producto } = require('../domains/core/models');
  *         description: Producto no encontrado
  */
 
+const { ensureTenantAccess } = require('../middleware/tenant');
+
 router.use(verificarToken);
+// Asegurar aislamiento tenant en todas las operaciones de empresa
+router.use(ensureTenantAccess());
 router.use(checkFeature('inventario'));
 
 router.get('/', listar);
