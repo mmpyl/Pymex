@@ -188,7 +188,7 @@ app.use('/api/public', require('./routes/public'));
 app.use('/api/features', require('./routes/features'));
 
 // Rutas del dominio PAYMENTS
-app.use('/api/payments', require('./routes/payments'));
+app.use('/api/payments', require('./domains/payments/routes/payments'));
 
 // Ruta de super-admin (pendiente de migrar a dominio)
 app.use('/api/super-admin', require('./routes/admin'));

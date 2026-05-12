@@ -12,7 +12,7 @@ const { Plan, Feature, PlanFeature, PlanLimit, Suscripcion, FeatureOverride, Pag
 
 const { clearFeatureCache, getEffectiveFeaturesForEmpresa } = require('../../services/featureGateService');
 const { runBillingCollection, applyPaymentAndReactivate } = require('../../services/billingService');
-const { createCheckoutForPago } = require('../../services/paymentGatewayService');
+const { createCheckoutForPago } = require('../../domains/payments/services/paymentGatewayService');
 
 const ESTADOS_EMPRESA = ['activo', 'suspendido', 'eliminado'];
 const ESTADOS_PAGO = ['pagado', 'pendiente', 'vencido'];

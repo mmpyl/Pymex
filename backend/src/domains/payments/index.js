@@ -14,6 +14,7 @@ const publicInterfaces = require('./interfaces/public');
 // Servicios internos
 const WebhookEventHandler = require('./services/WebhookEventHandler');
 const webhookSignatureService = require('./services/WebhookSignatureService');
+const paymentGatewayService = require('./services/paymentGatewayService');
 
 module.exports = {
   // Modelos
@@ -29,6 +30,7 @@ module.exports = {
   // Servicios internos (solo uso dentro del dominio)
   services: {
     WebhookEventHandler,
-    webhookSignature: webhookSignatureService
+    webhookSignature: webhookSignatureService,
+    paymentGateway: paymentGatewayService
   }
 };
