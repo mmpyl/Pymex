@@ -1,0 +1,119 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useEmpresaAuth } from '../hooks/useAuth';
+import { Button, Input, Card, Alert } from '../../../components';
+
+/**
+ * Componente de Login para Empresas
+ */
+const EmpresaLoginForm = () => {
+  const navigate = useNavigate();
+  const { login, isLoading, error, clearError } = useEmpresaAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [formError, setFormError] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    if (error) clearError();
+    if (formError) setFormError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!formData.email || !formData.password) {
+      setFormError('Email y contraseña son requeridos');
+      return;
+    }
+
+    try {
+      await login(formData);
+      navigate('/empresa/dashboard');
+    } catch (err) {
+      // El error ya está en el store
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Portal Empresa
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Inicia sesión para acceder a tu panel
+          </p>
+        </div>
+
+        {(error || formError) && (
+          <Alert variant="error" className="mb-4">
+            {formError || error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="tu@empresa.com"
+            required
+          />
+
+          <Input
+            label="Contraseña"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="••••••••"
+            required
+          />
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link
+                to="/empresa/recuperar-password"
+                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </Button>
+
+          <div className="text-center text-sm">
+            <span className="text-gray-600 dark:text-gray-400">
+              ¿No tienes cuenta?{' '}
+            </span>
+            <Link
+              to="/empresa/registro"
+              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            >
+              Regístrate
+            </Link>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+export default EmpresaLoginForm;

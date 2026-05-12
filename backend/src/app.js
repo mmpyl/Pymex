@@ -156,7 +156,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // ─── 11. Rutas ────────────────────────────────────────────────────────────────
 // Nota: limiterAuth ya se aplica en la sección 5 para /api/auth/login y /api/auth/register
 // El limiterGlobal se aplica en /api/auth para el resto de endpoints de autenticación
-app.use('/api/auth', require('./routes/auth'));
+
+// Rutas organizadas por Dominios (DDD)
+const authDomain = require('./domains/auth');
+app.use('/api/auth', authDomain.routes.auth);
+app.use('/api/rbac', authDomain.routes.rbac);
+
+// Rutas del dominio CORE (por migrar)
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/categorias', require('./routes/categorias'));
@@ -168,6 +174,8 @@ app.use('/api/inventario', require('./routes/inventario'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/alertas', require('./routes/alertas'));
 app.use('/api/reportes', require('./routes/reportes'));
+
+// Rutas del dominio BILLING (parcialmente migrado)
 app.use('/api/ml', require('./routes/ml'));
 app.use('/api/facturacion', require('./routes/facturacion'));
 app.use('/api/saas', require('./routes/saas'));
@@ -175,9 +183,12 @@ app.use('/api/suspensiones',require('./routes/suspensiones'));
 app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/features', require('./routes/features'));
-app.use('/api/rbac', require('./routes/rbac'));
-app.use('/api/super-admin', require('./routes/admin'));
+
+// Rutas del dominio PAYMENTS
 app.use('/api/payments', require('./routes/payments'));
+
+// Ruta de super-admin (pendiente de migrar a dominio)
+app.use('/api/super-admin', require('./routes/admin'));
 
 // ─── 12. 404 ──────────────────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({
