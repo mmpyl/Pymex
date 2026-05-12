@@ -16,6 +16,9 @@ const WebhookEventHandler = require('./services/WebhookEventHandler');
 const webhookSignatureService = require('./services/WebhookSignatureService');
 const paymentGatewayService = require('./services/paymentGatewayService');
 
+// Rutas del dominio
+const paymentsRoutes = require('./routes/payments');
+
 module.exports = {
   // Modelos
   models: {
@@ -32,5 +35,10 @@ module.exports = {
     WebhookEventHandler,
     webhookSignature: webhookSignatureService,
     paymentGateway: paymentGatewayService
+  },
+
+  // Rutas del dominio
+  routes: {
+    payments: paymentsRoutes
   }
 };

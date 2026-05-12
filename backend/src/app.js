@@ -166,29 +166,33 @@ app.use('/api/rbac', authDomain.routes.rbac);
 const mlDomain = require('./domains/ml');
 app.use('/api/ml', mlDomain.routes);
 
-// Rutas del dominio CORE (por migrar)
-app.use('/api/usuarios', require('./routes/usuarios'));
-app.use('/api/productos', require('./routes/productos'));
-app.use('/api/categorias', require('./routes/categorias'));
-app.use('/api/ventas', require('./routes/ventas'));
-app.use('/api/gastos', require('./routes/gastos'));
-app.use('/api/clientes', require('./routes/clientes'));
-app.use('/api/proveedores', require('./routes/proveedores'));
-app.use('/api/inventario', require('./routes/inventario'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/alertas', require('./routes/alertas'));
-app.use('/api/reportes', require('./routes/reportes'));
+// Rutas del dominio CORE
+const coreDomain = require('./domains/core');
+app.use('/api/productos', coreDomain.routes.productos);
+app.use('/api/categorias', coreDomain.routes.categorias);
+app.use('/api/ventas', coreDomain.routes.ventas);
+app.use('/api/gastos', coreDomain.routes.gastos);
+app.use('/api/clientes', coreDomain.routes.clientes);
+app.use('/api/proveedores', coreDomain.routes.proveedores);
+app.use('/api/inventario', coreDomain.routes.inventario);
+app.use('/api/dashboard', coreDomain.routes.dashboard);
+app.use('/api/alertas', coreDomain.routes.alertas);
+app.use('/api/reportes', coreDomain.routes.reportes);
 
-// Rutas del dominio BILLING (parcialmente migrado)
-app.use('/api/facturacion', require('./routes/facturacion'));
-app.use('/api/saas', require('./routes/saas'));
-app.use('/api/suspensiones',require('./routes/suspensiones'));
-app.use('/api/pagos', require('./routes/pagos'));
-app.use('/api/public', require('./routes/public'));
-app.use('/api/features', require('./routes/features'));
+// Rutas del dominio BILLING
+const billingDomain = require('./domains/billing');
+app.use('/api/facturacion', billingDomain.routes.facturacion);
+app.use('/api/saas', billingDomain.routes.saas);
+app.use('/api/suspensiones', billingDomain.routes.suspensiones);
+app.use('/api/pagos', billingDomain.routes.pagos);
+app.use('/api/features', billingDomain.routes.features);
 
 // Rutas del dominio PAYMENTS
-app.use('/api/payments', require('./domains/payments/routes/payments'));
+const paymentsDomain = require('./domains/payments');
+app.use('/api/payments', paymentsDomain.routes.payments);
+
+// Ruta pública para comprobantes (del dominio billing)
+app.use('/api/public', require('./routes/public'));
 
 // Ruta de super-admin (pendiente de migrar a dominio)
 app.use('/api/super-admin', require('./routes/admin'));
