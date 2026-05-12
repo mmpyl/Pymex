@@ -15,24 +15,70 @@ build/
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
+*.tmp
 
 # Logs
 *.log
 
-# Temporary files
-*.tmp
-*.swp
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage*
+.nox/
+.pytest_cache/
+.mypy_cache/
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.tar.gz
+target/
+.gradle/
+build/
+
+# C/C++
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+coverage.out
+go.sum
+go.mod~
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # OS
 .DS_Store
