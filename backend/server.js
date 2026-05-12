@@ -25,8 +25,8 @@ const initializeServices = () => {
   featureGateService.initialize();
   
   // 3. Inicializar servicio de email (suscripciones al eventBus y transporter)
-  const emailService = require('./src/services/emailService');
-  emailService.initialize();
+  const { services: sharedKernelServices } = require('./src/domains/shared-kernel');
+  sharedKernelServices.emailService.initialize();
 };
 
 async function iniciar() {

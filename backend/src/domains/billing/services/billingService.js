@@ -185,8 +185,8 @@ const runBillingCollection = async () => {
         // Intentar enviar emails de notificación (no bloquea si falla)
         if (affectedEmpresas.length) {
           try {
-            const { emailPagoVencido } = require('./emailService');
-            const authModels = require('../domains/auth/models');
+            const { emailPagoVencido } = require('../../shared-kernel/services/emailService');
+            const authModels = require('../auth/models');
             const { Usuario } = authModels;
             for (const empresaId of affectedEmpresas) {
               const admin = await Usuario.findOne({
