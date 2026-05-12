@@ -1,10 +1,10 @@
-// backend/src/services/paymentGatewayService.js
+// backend/src/domains/payments/services/paymentGatewayService.js
 // Integración con pasarela de pagos (Stripe, mock, etc.)
 // MIGRACIÓN: Imports separados por dominio (billingModels), publica eventos PAYMENT_COMPLETED/FAILED
 
 const axios = require('axios');
-const billingModels = require('../domains/billing/models');
-const eventBus = require('../domains/eventBus');
+const billingModels = require('../../billing/models');
+const eventBus = require('../../eventBus');
 
 const { Pago, PaymentEvent } = billingModels;
 

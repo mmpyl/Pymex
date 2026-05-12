@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const paymentsDomain = require('../domains/payments');
+const paymentsDomain = require('../index');
 
 // Crear controller con dependencias inyectadas desde el dominio
 const webhookController = paymentsDomain.interfaces.public.controllers.createWebhookController({
