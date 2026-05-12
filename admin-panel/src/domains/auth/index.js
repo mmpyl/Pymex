@@ -4,6 +4,9 @@ export { default as EmpresaRoute } from './components/EmpresaRoute';
 export { default as AdminLoginForm } from './components/AdminLoginForm';
 export { default as EmpresaLoginForm } from './components/EmpresaLoginForm';
 
+// Auth Domain Pages
+export { LoginPage, AdminDashboardPage } from './pages';
+
 // Auth Domain Hooks
 export { useAdminAuth, useEmpresaAuth, useRBAC, useHasPermission } from './hooks/useAuth';
 
