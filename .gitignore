@@ -6,11 +6,12 @@ node_modules/
 dist/
 build/
 *.js.map
+*.css.map
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editors
 .vscode/
@@ -18,37 +19,42 @@ build/
 *.swp
 *.swo
 
-# Logs and temp files
+# Logs
 *.log
-*.tmp
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Compiled files
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Caching
-.mypy_cache/
-.pytest_cache/
-target/
-.gradle/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
 
-# System
+# Temporary files
+*.tmp
+*~
 .DS_Store
 Thumbs.db
+
+# Testing
+.mypy_cache/
+.pytest_cache/
+.nyc_output/
+coverage/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
 ```
