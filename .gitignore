@@ -2,9 +2,9 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-build/
+# Build artifacts
 dist/
+build/
 *.js.map
 
 # Environment
@@ -15,17 +15,26 @@ dist/
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # Logs
 *.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Temporary files
-*.tmp
+# OS
+.DS_Store
+Thumbs.db
 ```
