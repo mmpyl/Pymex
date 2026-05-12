@@ -19,6 +19,27 @@ const AuditoriaAdmin = require('../domains/auth/models/AuditoriaAdmin');
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
+ * Verifica y decodifica un refresh token para obtener su payload
+ * @param {string} refreshToken - El refresh token a verificar
+ * @returns {Object|null} - El payload del token o null si es inválido
+ */
+const verifyRefreshToken = (refreshToken) => {
+  try {
+    // Los refresh tokens no son JWT, son strings aleatorios
+    // Pero necesitamos extraer el userId asociado desde la DB
+    // Esta función solo existe para compatibilidad con la lógica actual
+    // La validación real se hace contra la base de datos
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    
+    // Retornamos el hash para que pueda ser usado en la búsqueda
+    return { refreshTokenHash };
+  } catch (error) {
+    logger.error('[AUTH] Error al procesar refresh token', { error: error.message });
+    return null;
+  }
+};
+
+/**
  * Genera un token de acceso JWT para usuarios de empresa
  * Usa el secret específico para tokens de empresa
  */
