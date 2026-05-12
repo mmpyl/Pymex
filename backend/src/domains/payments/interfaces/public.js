@@ -8,6 +8,7 @@
 const WebhookController = require('../controllers/WebhookController');
 const webhookSignatureService = require('../services/WebhookSignatureService');
 const WebhookEventHandler = require('../services/WebhookEventHandler');
+const paymentGatewayService = require('../services/paymentGatewayService');
 
 // Factory para crear instancia del controller con dependencias inyectadas
 const createWebhookController = (models) => {
@@ -27,6 +28,7 @@ module.exports = {
    */
   services: {
     webhookSignature: webhookSignatureService,
-    WebhookEventHandler
+    WebhookEventHandler,
+    paymentGateway: paymentGatewayService
   }
 };
