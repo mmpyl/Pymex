@@ -20,6 +20,7 @@ const AuditoriaAdmin = require('../domains/auth/models/AuditoriaAdmin');
 
 /**
  * Genera un token de acceso JWT para usuarios de empresa
+ * Usa el secret específico para tokens de empresa
  */
 const generarTokenEmpresa = (usuario, rolNombre) =>
   jwt.sign(
@@ -33,12 +34,13 @@ const generarTokenEmpresa = (usuario, rolNombre) =>
       nombre:     usuario.nombre,
       jti:        crypto.randomUUID()
     },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET_EMPRESA || process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES || '8h' }
   );
 
 /**
  * Genera un token de acceso JWT para administradores
+ * Usa el secret específico para tokens de admin
  */
 const generarTokenAdmin = (admin) =>
   jwt.sign(
@@ -50,7 +52,7 @@ const generarTokenAdmin = (admin) =>
       nombre:     admin.nombre,
       jti:        crypto.randomUUID()
     },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET_ADMIN || process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES || '8h' }
   );
 

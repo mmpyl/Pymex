@@ -1,9 +1,10 @@
-// backend/src/routes/ventas.js — versión consolidada
+// backend/src/routes/ventas.js — versión consolidada con tenant enforcement
 // Combina checkPermission (RBAC) + checkLimit (plan) sin conflictos de merge
 const router = require('express').Router();
 const { check } = require('express-validator');
 const { listar, crear } = require('../controllers/ventaController');
 const { verificarToken } = require('../middleware/auth');
+const { ensureTenantAccess } = require('../middleware/tenant');
 const { checkPermission } = require('../middleware/roles');
 const { checkLimit }      = require('../middleware/featureGate');
 const { validate }        = require('../middleware/validation');
@@ -11,6 +12,8 @@ const { Venta }           = require('../domains/core/models');
 const { Op }              = require('sequelize');
 
 router.use(verificarToken);
+// Asegurar aislamiento tenant en todas las operaciones de empresa
+router.use(ensureTenantAccess());
 
 // Validación para items de venta
 const itemsValidation = check('items')
