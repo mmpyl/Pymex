@@ -9,6 +9,7 @@
  * 2. BILLING (Facturación, Pagos, Suscripciones)
  * 3. ML (Machine Learning Orchestration)
  * 4. CORE (Gestión de Empresas, Usuarios, Productos, Ventas, Inventario)
+ * 5. SHARED_KERNEL (Servicios transversales compartidos)
  * 
  * REGLAS DE ACOPLAMIENTO:
  * - Los dominios NO pueden hacer JOINs directos entre sus tablas

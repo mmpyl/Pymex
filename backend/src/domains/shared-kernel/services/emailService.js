@@ -1,9 +1,10 @@
-// backend/src/services/emailService.js
-// Servicio de emails transaccionales con Nodemailer.
+// backend/src/domains/shared-kernel/services/emailService.js
+// Servicio de emails transaccionales con Nodemailer - SHARED KERNEL
 // Configura las variables de entorno de EMAIL_* para activarlo.
 // Si no están configuradas, los emails se loguean en consola (útil para desarrollo).
 // MIGRACIÓN: Este servicio NO importa modelos directamente, solo escucha eventos del eventBus
 // REFACTOR: Las suscripciones al eventBus se realizan explícitamente mediante initialize()
+// UBICACIÓN: Shared Kernel - servicio transversal utilizado por múltiples dominios
 
 const nodemailer = require('nodemailer');
 
@@ -73,7 +74,7 @@ const initialize = () => {
   // Crear transporter
   _transporter = crearTransporter();
 
-  const eventBus = require('../domains/eventBus');
+  const eventBus = require('../../eventBus');
 
   // USER_REGISTERED → email de bienvenida
   eventBus.subscribe('USER_REGISTERED', async (data) => {
