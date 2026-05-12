@@ -162,6 +162,10 @@ const authDomain = require('./domains/auth');
 app.use('/api/auth', authDomain.routes.auth);
 app.use('/api/rbac', authDomain.routes.rbac);
 
+// Rutas del dominio ML (Machine Learning)
+const mlDomain = require('./domains/ml');
+app.use('/api/ml', mlDomain.routes);
+
 // Rutas del dominio CORE (por migrar)
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/productos', require('./routes/productos'));
@@ -176,7 +180,6 @@ app.use('/api/alertas', require('./routes/alertas'));
 app.use('/api/reportes', require('./routes/reportes'));
 
 // Rutas del dominio BILLING (parcialmente migrado)
-app.use('/api/ml', require('./routes/ml'));
 app.use('/api/facturacion', require('./routes/facturacion'));
 app.use('/api/saas', require('./routes/saas'));
 app.use('/api/suspensiones',require('./routes/suspensiones'));
