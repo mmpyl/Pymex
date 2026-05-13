@@ -1,0 +1,4 @@
+{"level":"warn","message":"[Redis] No disponible, usando fallback en memoria","metadata":{"metadata":{"component":"redis","event":"connection_check"}},"timestamp":"2026-05-13 12:51:48.320"}
+{"level":"warn","message":"[Redis] No disponible, usando fallback en memoria","metadata":{"metadata":{"component":"redis","event":"connection_check"}},"timestamp":"2026-05-13 12:51:51.265"}
+{"level":"warn","message":"[Redis] No disponible, usando fallback en memoria","metadata":{"metadata":{"component":"redis","event":"connection_check"}},"timestamp":"2026-05-13 12:51:54.023"}
+{"level":"warn","message":"[Redis] No disponible, usando fallback en memoria","metadata":{"metadata":{"component":"redis","event":"connection_check"}},"timestamp":"2026-05-13 12:52:54.599"}
