@@ -83,7 +83,7 @@ const revokeTokenMemory = (jti, expiresAtMs) => {
 };
 
 // Cleanup expired entries every 15 minutes (solo para fallback en memoria)
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   if (!useRedis && tokenBlacklist.size > 0) {
     const now = Date.now();
     for (const [jti, exp] of tokenBlacklist.entries()) {
@@ -91,6 +91,11 @@ setInterval(() => {
     }
   }
 }, 15 * 60 * 1000);
+
+// Permitir que Jest termine sin esperar el intervalo
+if (typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref();
+}
 
 // ─── MODO ESTRICTO PARA PRODUCCIÓN ────────────────────────────────────────────
 // En producción, SI Redis falla, se debe rechazar la operación de revocación

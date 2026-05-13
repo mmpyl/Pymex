@@ -118,4 +118,8 @@ router.post('/api/entrenar', checkFeature('api_access'), mlController.entrenarMo
  */
 router.get('/api/health', checkFeature('api_access'), mlController.healthCheck.bind(mlController));
 
-module.exports = router;
+const express = require('express');
+const routerFn = express.Router();
+routerFn.use(router);
+
+module.exports = routerFn;

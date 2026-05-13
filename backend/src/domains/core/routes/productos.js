@@ -1,10 +1,10 @@
-// backend/src/routes/productos.js  — con límites completos
+// backend/src/domains/core/routes/productos.js  — con límites completos
 const router  = require('express').Router();
-const { listar, crear, actualizar, eliminar } = require('../domains/core/controllers/productoController');
+const { listar, crear, actualizar, eliminar } = require('../controllers/productoController');
 
-const { verificarToken } = require('../middleware/auth');
-const { checkFeature, checkLimit } = require('../middleware/featureGate');
-const { Producto } = require('../domains/core/models');
+const { verificarToken } = require('../../../middleware/auth');
+const { checkFeature, checkLimit } = require('../../../middleware/featureGate');
+const { Producto } = require('../models');
 
 /**
  * @swagger
@@ -214,7 +214,7 @@ const { Producto } = require('../domains/core/models');
  *         description: Producto no encontrado
  */
 
-const { ensureTenantAccess } = require('../middleware/tenant');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
 
 router.use(verificarToken);
 // Asegurar aislamiento tenant en todas las operaciones de empresa

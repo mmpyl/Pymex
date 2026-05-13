@@ -1,8 +1,4 @@
 ```
-# Logs
-*.log
-backend/logs/
-
 # Coverage reports
 backend/coverage/
 
@@ -11,41 +7,15 @@ backend/coverage/
 .env.local
 *.env.*
 
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Build artifacts
-dist/
-build/
-target/
-*.o
-*.obj
-*.so
-*.a
-*.dll
-*.exe
-
-# Editor/IDE files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
 
-# Testing and coverage
-.coverage
-htmlcov/
-.mypy_cache/
-.pytest_cache/
-nyc_output/
-coverage/
+# Dependencies (if any exist)
+node_modules/
 ```

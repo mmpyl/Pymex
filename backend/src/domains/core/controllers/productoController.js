@@ -1,6 +1,6 @@
-const coreModels = require('../domains/core/models');
-const { eventBus } = require('../domains/eventBus');
-const { asyncHandler, NotFoundError } = require('../middleware/errorHandler');
+const coreModels = require('../models');
+const { eventBus } = require('../../eventBus');
+const { asyncHandler, NotFoundError } = require('../../../middleware/errorHandler');
 
 const { Producto } = coreModels;
 
