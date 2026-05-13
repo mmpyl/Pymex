@@ -10,7 +10,7 @@
 const router = require('express').Router();
 const { verificarToken } = require('../../../middleware/auth');
 const { checkFeature } = require('../../../middleware/featureGate');
-const { getMLPremiumService } = require('../index');
+const { getInstance: getMLPremiumService } = require('../services/mlPremiumService');
 const MLController = require('../controllers/mlController');
 
 // Configuración del servicio ML
