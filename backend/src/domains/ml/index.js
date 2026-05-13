@@ -21,7 +21,10 @@
  */
 
 // Servicios
-const { MLPremiumService, getInstance: getMLPremiumService } = require('./services/mlPremiumService');
+const { MLPremiumService, getInstance } = require('./services/mlPremiumService');
+
+// Alias para compatibilidad
+const getMLPremiumService = getInstance;
 
 // Controladores
 const MLController = require('./controllers/mlController');
@@ -43,11 +46,12 @@ module.exports = {
   // Controladores
   MLController,
   
-  // Rutas
+  // Rutas (exportar directamente el router)
   routes: mlRoutes,
   
-  // Modelos
-  ...mlModels,
+  // Modelos (excluir 'default' para evitar conflictos)
+  sequelize: mlModels.sequelize,
+  ...(mlModels.Prediccion && { Prediccion: mlModels.Prediccion }),
   
   // Interfaz pública completa
   ...publicInterface,
