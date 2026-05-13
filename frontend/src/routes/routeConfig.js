@@ -6,6 +6,7 @@ export const LoginHubPage = lazy(() => import('../pages/LoginHub'));
 export const EmpresaLoginPage = lazy(() => import('../pages/EmpresaLogin'));
 export const AdminLoginPage = lazy(() => import('../pages/AdminLogin'));
 export const RegisterPage = lazy(() => import('../pages/Register'));
+export const ForgotPasswordPage = lazy(() => import('../modules/auth/pages/ForgotPasswordPage'));
 
 // SaaS App - Empresas clientes
 export const SaasDashboardPage = lazy(() => import('../pages/Dashboard'));
