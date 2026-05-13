@@ -22,9 +22,7 @@ const mlModels = require('../models');
 
 module.exports = {
   // Rutas
-  routes: {
-    ml: mlRoutes
-  },
+  routes: mlRoutes,
   
   // Controladores
   controllers: {
