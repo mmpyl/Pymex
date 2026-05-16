@@ -1,38 +1,32 @@
 ```
 # Coverage reports
 coverage/
-**/coverage/**
+backend/coverage/
 
-# Test reports
-**/test-results/
-**/jest-coverage/
-
-# Node.js
+# Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+backend/node_modules/
 
-# Logs
-*.log
-
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.*
+backend/.env
+backend/.env.local
+backend/.env.*
 
 # IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+backend/*.log
 
-# Build outputs
-dist/
-build/
-target/
+# Package lock files
+package-lock.json
+backend/package-lock.json
 ```
