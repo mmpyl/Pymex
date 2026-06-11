@@ -1,16 +1,20 @@
 import os
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 from dotenv import load_dotenv
 import pandas as pd
 
 load_dotenv()
 
-# Obtener variables con valores por defecto seguros
+# Obtener variables desde el entorno; las credenciales no deben tener defaults hardcodeados.
 db_user = os.getenv('DB_USER', 'postgres')
-db_password = os.getenv('DB_PASSWORD', 'admin123_secure_local_2024')
+db_password = os.getenv('DB_PASSWORD')
 db_host = os.getenv('DB_HOST', 'database')
 db_port_raw = os.getenv('DB_PORT', '5432')
 db_name = os.getenv('DB_NAME', 'saas_pymes')
+
+if not db_password:
+    raise RuntimeError('DB_PASSWORD is required for ml_service')
 
 # Validar que DB_PORT no sea None o cadena inválida
 if not db_port_raw or db_port_raw.lower() in ('none', 'null', ''):
@@ -18,9 +22,13 @@ if not db_port_raw or db_port_raw.lower() in ('none', 'null', ''):
 else:
     db_port = db_port_raw
 
-DATABASE_URL = (
-    f"postgresql://{db_user}:{db_password}"
-    f"@{db_host}:{db_port}/{db_name}"
+DATABASE_URL = URL.create(
+    drivername='postgresql',
+    username=db_user,
+    password=db_password,
+    host=db_host,
+    port=int(db_port),
+    database=db_name,
 )
 
 engine = create_engine(DATABASE_URL)

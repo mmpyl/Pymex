@@ -56,7 +56,7 @@ Este directorio contiene todos los archivos necesarios para desplegar la aplicac
 cp .env.example .env
 
 # Editar el archivo .env con tus valores
-# ¡IMPORTANTE! Cambiar JWT_SECRET en producción
+# ¡IMPORTANTE! Reemplazar todos los valores REEMPLAZAR_* con secretos únicos
 ```
 
 ### 2. Construir y Levantar Servicios
@@ -150,15 +150,18 @@ docker-compose restart backend
 
 ### Para Producción:
 
-1. **Cambiar contraseñas por defecto** en el archivo `.env`
-2. **Generar un JWT_SECRET seguro**:
+1. **Rotar credenciales expuestas y limpiar historial Git** siguiendo `docs/security/secret-rotation-and-history-purge.md`
+2. **Cambiar todos los valores `REEMPLAZAR_*`** en el archivo `.env` antes de iniciar servicios
+3. **Generar secretos seguros**:
    ```bash
-   openssl rand -base64 32
+   openssl rand -base64 32  # DB_PASSWORD, REDIS_PASSWORD, API keys
+   openssl rand -base64 64  # JWT secrets
    ```
-3. **Usar HTTPS** configurando un reverse proxy (Nginx/Traefik)
-4. **Restringir acceso** a puertos sensibles (5432, 6379)
-5. **Configurar firewall** para solo permitir tráfico necesario
-6. **Actualizar imágenes regularmente** para parches de seguridad
+4. **No versionar archivos `.env` reales**; solo se permiten plantillas `.env.example`
+5. **Usar HTTPS** configurando un reverse proxy (Nginx/Traefik)
+6. **Restringir acceso** a puertos sensibles (5432, 6379)
+7. **Configurar firewall** para solo permitir tráfico necesario
+8. **Actualizar imágenes regularmente** para parches de seguridad
 
 ## 🐛 Troubleshooting
 

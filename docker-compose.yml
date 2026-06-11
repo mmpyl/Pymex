@@ -5,18 +5,18 @@ services:
     image: postgres:16-alpine
     container_name: sapyme-database
     env_file:
-      - ./backend/.env
+      - ./.env
     environment:
-      POSTGRES_DB: saas_pymes
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123_secure_local_2024
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: sapyme-backend
     env_file:
-      - ./backend/.env
+      - ./.env
     ports:
       - "3001:3000"
     depends_on:
@@ -64,12 +64,14 @@ services:
       context: ./ml_service
       dockerfile: Dockerfile
     container_name: sapyme-ml-service
+    env_file:
+      - ./.env
     environment:
-      DB_HOST: database
-      DB_PORT: "5432"
-      DB_NAME: saas_pymes
-      DB_USER: postgres
-      DB_PASSWORD: admin123_secure_local_2024
+      DB_HOST: ${DB_HOST:-database}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
       - "8000:8000"
     depends_on:
@@ -93,13 +95,15 @@ services:
   redis:
     image: redis:7-alpine
     container_name: sapyme-redis
+    env_file:
+      - ./.env
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --requirepass redis_secure_pass_2024
+    command: ["sh", "-c", "redis-server --requirepass \"$${REDIS_PASSWORD:?REDIS_PASSWORD is required}\""]
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" --raw incr ping"]
       interval: 10s
       timeout: 5s
       retries: 5
