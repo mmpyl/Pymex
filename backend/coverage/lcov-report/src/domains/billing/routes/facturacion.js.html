@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -107,12 +107,14 @@
 <a name='L42'></a><a href='#L42'>42</a>
 <a name='L43'></a><a href='#L43'>43</a>
 <a name='L44'></a><a href='#L44'>44</a>
-<a name='L45'></a><a href='#L45'>45</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -153,44 +155,45 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Rutas de Facturación - Dominio BILLING
- * 
+ *
  * Define las rutas para operaciones de facturación electrónica.
  */
 &nbsp;
 const router = <span class="cstat-no" title="statement not covered" >require('express').Router();</span>
 const { verificarToken } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/auth');</span>
+const { ensureTenantAccess } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/tenant');</span>
 const facturacionController = <span class="cstat-no" title="statement not covered" >require('../controllers/facturacionController');</span>
 &nbsp;
 // Todas las rutas requieren autenticación
-<span class="cstat-no" title="statement not covered" >router.use(verificarToken);</span>
+<span class="cstat-no" title="statement not covered" >router.use(verificarToken, ensureTenantAccess());</span>
 &nbsp;
 // POST /api/facturacion/factura/:venta_id - Emitir factura
-<span class="cstat-no" title="statement not covered" >router.post('/factura/:venta_id', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.post('/factura/:venta_id', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.emitirFactura(req, res, next)</span>
 );
 &nbsp;
 // POST /api/facturacion/boleta/:venta_id - Emitir boleta
-<span class="cstat-no" title="statement not covered" >router.post('/boleta/:venta_id', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.post('/boleta/:venta_id', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.emitirBoleta(req, res, next)</span>
 );
 &nbsp;
 // POST /api/facturacion/nota-credito - Emitir nota de crédito
-<span class="cstat-no" title="statement not covered" >router.post('/nota-credito', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.post('/nota-credito', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.emitirNotaCredito(req, res, next)</span>
 );
 &nbsp;
 // GET /api/facturacion/comprobantes - Listar comprobantes
-<span class="cstat-no" title="statement not covered" >router.get('/comprobantes', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.get('/comprobantes', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.listarComprobantes(req, res, next)</span>
 );
 &nbsp;
 // GET /api/facturacion/pdf/:id/:tipo - Obtener PDF de comprobante
-<span class="cstat-no" title="statement not covered" >router.get('/pdf/:id/:tipo', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.get('/pdf/:id/:tipo', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.obtenerPdf(req, res, next)</span>
 );
 &nbsp;
 // GET /api/facturacion/health - Health check del servicio
-<span class="cstat-no" title="statement not covered" >router.get('/health', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt; </span>
+<span class="cstat-no" title="statement not covered" >router.get('/health', <span class="fstat-no" title="function not covered" >(r</span>eq, res, next) =&gt;</span>
 <span class="cstat-no" title="statement not covered" >  facturacionController.healthCheck(req, res, next)</span>
 );
 &nbsp;
@@ -202,7 +205,7 @@ const facturacionController = <span class="cstat-no" title="statement not covere
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-04T18:07:04.015Z
+                at 2026-06-11T19:28:37.699Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

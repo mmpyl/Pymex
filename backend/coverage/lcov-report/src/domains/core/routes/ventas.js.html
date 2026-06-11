@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>0/23</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>0/23</span>
             </div>
         
             
@@ -132,8 +132,7 @@
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
-<a name='L70'></a><a href='#L70'>70</a>
-<a name='L71'></a><a href='#L71'>71</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -146,7 +145,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -207,18 +205,17 @@
 // Combina checkPermission (RBAC) + checkLimit (plan) sin conflictos de merge
 const router = <span class="cstat-no" title="statement not covered" >require('express').Router();</span>
 const { check } = <span class="cstat-no" title="statement not covered" >require('express-validator');</span>
-const { listar, crear } = <span class="cstat-no" title="statement not covered" >require('../domains/core/controllers/ventaController');</span>
-const { verificarToken } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
-const { ensureTenantAccess } = <span class="cstat-no" title="statement not covered" >require('../middleware/tenant');</span>
-const { checkPermission } = <span class="cstat-no" title="statement not covered" >require('../middleware/roles');</span>
-const { checkLimit }      = <span class="cstat-no" title="statement not covered" >require('../middleware/featureGate');</span>
-const { validate }        = <span class="cstat-no" title="statement not covered" >require('../middleware/validation');</span>
-const { Venta }           = <span class="cstat-no" title="statement not covered" >require('../domains/core/models');</span>
-const { Op }              = <span class="cstat-no" title="statement not covered" >require('sequelize');</span>
+const { listar, crear } = <span class="cstat-no" title="statement not covered" >require('../controllers/ventaController');</span>
+const { verificarToken } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/auth');</span>
+const { ensureTenantAccess } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/tenant');</span>
+const { checkPermission } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/roles');</span>
+const { checkLimit } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/featureGate');</span>
+const { validate } = <span class="cstat-no" title="statement not covered" >require('../../../middleware/validation');</span>
+const { Venta } = <span class="cstat-no" title="statement not covered" >require('../models');</span>
+const { Op } = <span class="cstat-no" title="statement not covered" >require('sequelize');</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.use(verificarToken);</span>
 // Asegurar aislamiento tenant en todas las operaciones de empresa
-<span class="cstat-no" title="statement not covered" >router.use(ensureTenantAccess());</span>
+<span class="cstat-no" title="statement not covered" >router.use(verificarToken, ensureTenantAccess());</span>
 &nbsp;
 // Validación para items de venta
 const itemsValidation = <span class="cstat-no" title="statement not covered" >check('items')</span>
@@ -257,7 +254,7 @@ const precioUnitarioValido = <span class="cstat-no" title="statement not covered
     check('metodo_pago').optional().trim().escape(),
     check('notas').optional().trim().escape()
   ]),
-  checkLimit('max_ventas_mes', <span class="fstat-no" title="function not covered" >as</span>ync (req) =&gt; {
+  checkLimit('max_ventas_mes', <span class="fstat-no" title="function not covered" >(r</span>eq) =&gt; {
     const inicioMes = <span class="cstat-no" title="statement not covered" >new Date();</span>
 <span class="cstat-no" title="statement not covered" >    inicioMes.setDate(1);</span>
 <span class="cstat-no" title="statement not covered" >    inicioMes.setHours(0, 0, 0, 0);</span>
@@ -280,7 +277,7 @@ const precioUnitarioValido = <span class="cstat-no" title="statement not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-04T18:07:04.015Z
+                at 2026-06-11T19:28:37.699Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
