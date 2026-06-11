@@ -113,15 +113,15 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ventas_estado_empresa
 ON ventas(estado, empresa_id);
 
 -- ----------------------------------------------------------------------------
--- 8. ÍNDICES PARA TABLA USUARIOS
+-- 8. ÍNDICES PARA TABLA USUARIOS_BUSINESS
 -- ----------------------------------------------------------------------------
 -- Índice para login rápido por email
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_email_empresa 
-ON usuarios(empresa_id, email);
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_business_email_empresa 
+ON usuarios_business(empresa_id, email);
 
 -- Índice para filtrado por rol dentro de empresa
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_empresa_rol 
-ON usuarios(empresa_id, rol);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_business_empresa_rol 
+ON usuarios_business(empresa_id, rol_id);
 
 -- ----------------------------------------------------------------------------
 -- 9. ÍNDICES PARA TABLA MOVIMIENTOS_INVENTARIO
@@ -163,5 +163,5 @@ ANALYZE gastos;
 ANALYZE alertas;
 ANALYZE productos;
 ANALYZE ventas;
-ANALYZE usuarios;
+ANALYZE usuarios_business;
 ANALYZE movimientos_inventario;
