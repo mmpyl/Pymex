@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS roles (
     UNIQUE(nombre)
 );
 
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE IF NOT EXISTS usuarios_business (
     id               SERIAL PRIMARY KEY,
     empresa_id       INT          NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
     rol_id           INT          NOT NULL REFERENCES roles(id),
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     id          SERIAL PRIMARY KEY,
     empresa_id  INT           NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
     cliente_id  INT           REFERENCES clientes(id),
-    usuario_id  INT           NOT NULL REFERENCES usuarios(id),
+    usuario_id  INT           NOT NULL REFERENCES usuarios_business(id),
     fecha       TIMESTAMP     DEFAULT NOW(),
     total       DECIMAL(10,2) NOT NULL,
     metodo_pago VARCHAR(30)   DEFAULT 'efectivo',
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS detalle_ventas (
 CREATE TABLE IF NOT EXISTS gastos (
     id          SERIAL PRIMARY KEY,
     empresa_id  INT           NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
-    usuario_id  INT           NOT NULL REFERENCES usuarios(id),
+    usuario_id  INT           NOT NULL REFERENCES usuarios_business(id),
     categoria   VARCHAR(100)  NOT NULL,
     descripcion VARCHAR(300),
     monto       DECIMAL(10,2) NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS movimientos_inventario (
     id          SERIAL PRIMARY KEY,
     empresa_id  INT         NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
     producto_id INT         NOT NULL REFERENCES productos(id),
-    usuario_id  INT         NOT NULL REFERENCES usuarios(id),
+    usuario_id  INT         NOT NULL REFERENCES usuarios_business(id),
     tipo        VARCHAR(20) NOT NULL,
     cantidad    INT         NOT NULL,
     motivo      VARCHAR(200),
@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS revoked_tokens (
 );
 
 -- SECCIÓN 4: ÍNDICES
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_empresa ON usuarios(empresa_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_business_empresa ON usuarios_business(empresa_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usuarios_admin_email ON usuarios_admin(email);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_productos_empresa_estado ON productos(empresa_id, estado);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ventas_empresa_fecha ON ventas(empresa_id, fecha DESC);
