@@ -1,4 +1,4 @@
-const coreModels = require('../domains/core/models');
+const coreModels = require('../models');
 
 const { Alerta, Producto, Venta, sequelize } = coreModels;
 const { Op } = require('sequelize');

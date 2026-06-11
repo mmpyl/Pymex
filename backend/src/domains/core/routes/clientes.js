@@ -1,8 +1,9 @@
 const router = require('express').Router();
-const { listar, crear, actualizar, eliminar } = require('../domains/core/controllers/clienteController');
-const { verificarToken } = require('../middleware/auth');
+const { listar, crear, actualizar, eliminar } = require('../controllers/clienteController');
+const { verificarToken } = require('../../../middleware/auth');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 router.get('/', listar);
 router.post('/', crear);
 router.put('/:id', actualizar);

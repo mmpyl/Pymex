@@ -2,18 +2,17 @@
 // Combina checkPermission (RBAC) + checkLimit (plan) sin conflictos de merge
 const router = require('express').Router();
 const { check } = require('express-validator');
-const { listar, crear } = require('../domains/core/controllers/ventaController');
-const { verificarToken } = require('../middleware/auth');
-const { ensureTenantAccess } = require('../middleware/tenant');
-const { checkPermission } = require('../middleware/roles');
-const { checkLimit }      = require('../middleware/featureGate');
-const { validate }        = require('../middleware/validation');
-const { Venta }           = require('../domains/core/models');
-const { Op }              = require('sequelize');
+const { listar, crear } = require('../controllers/ventaController');
+const { verificarToken } = require('../../../middleware/auth');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
+const { checkPermission } = require('../../../middleware/roles');
+const { checkLimit } = require('../../../middleware/featureGate');
+const { validate } = require('../../../middleware/validation');
+const { Venta } = require('../models');
+const { Op } = require('sequelize');
 
-router.use(verificarToken);
 // Asegurar aislamiento tenant en todas las operaciones de empresa
-router.use(ensureTenantAccess());
+router.use(verificarToken, ensureTenantAccess());
 
 // Validación para items de venta
 const itemsValidation = check('items')
@@ -52,7 +51,7 @@ router.post(
     check('metodo_pago').optional().trim().escape(),
     check('notas').optional().trim().escape()
   ]),
-  checkLimit('max_ventas_mes', async (req) => {
+  checkLimit('max_ventas_mes', (req) => {
     const inicioMes = new Date();
     inicioMes.setDate(1);
     inicioMes.setHours(0, 0, 0, 0);

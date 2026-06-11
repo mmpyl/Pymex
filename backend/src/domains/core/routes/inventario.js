@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { listar, registrarMovimiento, historial, stockBajo } = require('../domains/core/controllers/inventarioController');
-const { verificarToken } = require('../middleware/auth');
-const { checkPermission } = require('../middleware/roles');
+const { listar, registrarMovimiento, historial, stockBajo } = require('../controllers/inventarioController');
+const { verificarToken } = require('../../../middleware/auth');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
+const { checkPermission } = require('../../../middleware/roles');
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 router.get('/', checkPermission('inventario_ver'), listar);
 router.get('/historial', checkPermission('inventario_ver'), historial);
 router.get('/stock-bajo', checkPermission('inventario_ver'), stockBajo);
