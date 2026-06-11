@@ -15,10 +15,14 @@ Esta guía te permitirá desplegar el proyecto SaPyme en Docker Desktop de maner
 
 ```bash
 # Copiar el archivo de ejemplo
-cp .env.example backend/.env
+cp .env.example .env
+
+# Generar secretos únicos y reemplazar los valores REEMPLAZAR_* antes de levantar servicios
+openssl rand -base64 32  # DB_PASSWORD y REDIS_PASSWORD
+openssl rand -base64 64  # JWT_SECRET_EMPRESA, JWT_SECRET_ADMIN y JWT_SECRET
 ```
 
-> **Nota:** El archivo `backend/.env` ya está configurado con valores seguros para desarrollo local.
+> **Nota:** `backend/.env` no se versiona. Solo créalo desde `backend/.env.example` si ejecutas el backend fuera de Docker.
 
 ### Paso 2: Construir y Levantar los Servicios
 
@@ -145,12 +149,14 @@ services:
 
 ### Variables de Entorno
 
-Las variables críticas están en `backend/.env`:
+Las variables críticas están en `.env` en la raíz del repositorio y se inyectan en Docker Compose sin hardcodearlas en YAML:
 
-- **JWT_SECRET**: Clave secreta para tokens JWT
-- **DB_PASSWORD**: Contraseña de PostgreSQL
-- **REDIS_PASSWORD**: Contraseña de Redis
+- **JWT_SECRET_EMPRESA / JWT_SECRET_ADMIN / JWT_SECRET**: claves secretas para tokens JWT
+- **DB_PASSWORD**: contraseña de PostgreSQL
+- **REDIS_PASSWORD**: contraseña de Redis
 - **ML_SERVICE_API_KEY**: API key para el servicio ML
+
+No subas `.env` ni `backend/.env` al repositorio. Usa `.env.example` y `backend/.env.example` como plantillas sin secretos reales.
 
 ## 🐛 Solución de Problemas
 
@@ -218,15 +224,19 @@ docker inspect --format='{{.State.Health.Status}}' sapyme-redis
 
 Antes de desplegar en producción:
 
-1. ✅ Cambiar todas las contraseñas por defecto
-2. ✅ Generar un nuevo `JWT_SECRET` seguro:
+0. **Rotar credenciales expuestas** y limpiar historial siguiendo `docs/security/secret-rotation-and-history-purge.md`.
+
+1. ✅ Reemplazar todos los valores `REEMPLAZAR_*` del `.env` con secretos únicos
+2. ✅ Generar secretos fuertes:
    ```bash
-   openssl rand -base64 32
+   openssl rand -base64 32  # DB_PASSWORD, REDIS_PASSWORD, API keys
+   openssl rand -base64 64  # JWT secrets
    ```
-3. ✅ Configurar HTTPS con un reverse proxy (Nginx/Traefik)
-4. ✅ Restringir acceso a puertos sensibles (5432, 6379)
-5. ✅ Usar Docker secrets o vault para credenciales
-6. ✅ Actualizar imágenes regularmente
+3. ✅ No versionar `.env` ni `backend/.env`
+4. ✅ Configurar HTTPS con un reverse proxy (Nginx/Traefik)
+5. ✅ Restringir acceso a puertos sensibles (5432, 6379)
+6. ✅ Usar Docker secrets o vault para credenciales
+7. ✅ Actualizar imágenes regularmente
 
 ## 📝 Notas Adicionales
 

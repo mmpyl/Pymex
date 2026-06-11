@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  secret-guard-and-compose:
+    name: Secret guard and Docker Compose validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fail if real env files are tracked
+        run: |
+          tracked_env_files=$(git ls-files | grep -E '(^|/)\.env$|(^|/)\.env\.local$|\.env\.[^.]+$' | grep -vE '(^|/)\.env\.example$' || true)
+          if [ -n "$tracked_env_files" ]; then
+            echo "Real environment files must not be committed:"
+            echo "$tracked_env_files"
+            exit 1
+          fi
+
+      - name: Validate Docker Compose configuration
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+
+      - name: Ensure Compose does not hardcode datastore passwords
+        run: |
+          if grep -nE 'POSTGRES_PASSWORD:\s*[^${[:space:]]|DB_PASSWORD:\s*[^${[:space:]]|--requirepass\s+[^"$]' docker-compose.yml; then
+            echo "docker-compose.yml must read datastore passwords from environment variables."
+            exit 1
+          fi
+
+  backend-regression:
+    name: Backend regression suite (non-blocking legacy gate)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint backend
+        run: npx eslint .
+
+      - name: Test backend
+        run: npm test -- --runInBand
+
+  web-apps:
+    name: Web app lint and build (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [frontend, admin-panel, client-app]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint app
+        run: npm run lint
+
+      - name: Build app
+        run: npm run build
