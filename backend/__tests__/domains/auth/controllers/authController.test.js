@@ -1,6 +1,7 @@
+
 /**
  * Pruebas Unitarias para authController.js
- * 
+ *
  * Estas pruebas validan los endpoints HTTP del controlador de autenticación
  */
 
@@ -35,6 +36,7 @@ jest.mock('../../../../src/domains/auth/services/authService', () => ({
 jest.mock('../../../../src/domains/auth/models', () => ({
   Usuario: {
     findOne: jest.fn(),
+    findByPk: jest.fn(),
     create: jest.fn()
   },
   Rol: {
@@ -90,31 +92,16 @@ jest.mock('../../../../src/middleware/auth', () => {
   });
 });
 
-// Mock del middleware de validación
-jest.mock('../../../../src/middleware/validation', () => {
-  return jest.fn((req, res, next) => {
-    next();
-  });
-});
-
-// Mock del controlador - CRÍTICO: debe ir antes de importar las rutas
-const mockRegister = jest.fn((req, res) => res.status(201).json({ mensaje: 'Registro completado' }));
-const mockLogin = jest.fn((req, res) => res.status(200).json({ token: 'mock_token' }));
-const mockLoginAdmin = jest.fn((req, res) => res.status(200).json({ token: 'mock_admin_token' }));
-const mockPerfil = jest.fn((req, res) => res.status(200).json({ nombre: 'Test User', email: 'test@pymex.com' }));
-const mockRefreshToken = jest.fn((req, res) => res.status(200).json({ token: 'new_token', refreshToken: 'new_refresh' }));
-const mockBootstrapSuperAdmin = jest.fn((req, res) => res.status(201).json({ mensaje: 'Bootstrap completado' }));
-const mockStartTrial = jest.fn((req, res) => res.status(201).json({ mensaje: 'Trial iniciado' }));
-
-jest.mock('../../../../src/domains/auth/controllers/authController', () => ({
-  register: mockRegister,
-  login: mockLogin,
-  loginAdmin: mockLoginAdmin,
-  perfil: mockPerfil,
-  refreshToken: mockRefreshToken,
-  bootstrapSuperAdmin: mockBootstrapSuperAdmin,
-  startTrial: mockStartTrial
+// Mock del middleware de validación - debe retornar array de middleware
+jest.mock('../../../../src/middleware/validation', () => ({
+  validate: (rules) => [
+    ...rules,
+    (req, res, next) => next()
+  ],
+  sanitizeString: jest.fn(),
+  sanitizeQuery: jest.fn()
 }));
+
 
 // ============================================
 // IMPORTS - Ahora sí podemos importar todo
@@ -127,117 +114,55 @@ const { Usuario, Rol, sequelize, RevokedToken } = require('../../../../src/domai
 const { Empresa } = require('../../../../src/domains/core/models');
 const { Plan, Suscripcion } = require('../../../../src/domains/billing/models');
 const { eventBus } = require('../../../../src/domains/eventBus');
-const authController = require('../../../../src/domains/auth/controllers/authController');
+
+// Importar las rutas reales
+const authRoutes = require('../../../../src/domains/auth/routes/auth');
 
 // Crear app de test
-const app = express();
-app.use(express.json());
-const router = require('express').Router();
-app.use('/auth', router);
+const createApp = () => {
+  const app = express();
+  app.use(express.json());
+  app.use('/auth', authRoutes);
+  return app;
+};
 
 describe('AuthController - Unit Tests', () => {
+  let app;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    app = createApp();
+
     process.env.JWT_SECRET = 'test_secret';
     process.env.JWT_EXPIRES = '1h';
     process.env.TRIAL_DIAS = '14';
-    
-    // Configurar mocks por defecto para el controlador
-    authController.register.mockImplementation(async (req, res) => {
-      const mockTransaction = {
-        commit: jest.fn().mockResolvedValue(undefined),
-        rollback: jest.fn().mockResolvedValue(undefined)
-      };
-      
-      if (!req.body.nombre || !req.body.email || !req.body.password) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios' });
-      }
-      
-      if (Usuario.findOne.mock.results[0]?.value) {
-        await mockTransaction.rollback();
-        return res.status(409).json({ error: 'Email ya existe' });
-      }
-      
-      await mockTransaction.commit();
-      return res.status(201).json({ 
-        mensaje: 'Registro completado',
-        empresa: { id: 1, nombre: "Test's Empresa" },
-        usuario: { id: 1, nombre: req.body.nombre, email: req.body.email }
-      });
-    });
-    
-    authController.login.mockImplementation(async (req, res) => {
-      try {
-        const result = await authService.authenticateUser(req.body.email, req.body.password);
-        const token = authService.generarTokenEmpresa(result.usuario);
-        const refreshTokenResult = authService.generarRefreshToken(result.usuario.empresa_id);
-        await RevokedToken.create({ token: refreshTokenResult.refreshTokenHash });
-        await authService.registrarActividadAuth(result.usuario.id, 'login');
-        return res.status(200).json({
-          token,
-          refreshToken: refreshTokenResult.refreshToken,
-          aviso: result.aviso
-        });
-      } catch (error) {
-        return res.status(401).json({ error: error.message });
-      }
-    });
-    
-    authController.perfil.mockImplementation(async (req, res) => {
-      const usuario = await Usuario.findOne({
-        where: { id: req.usuario.id, empresa_id: req.usuario.empresa_id }
-      });
-      return res.status(200).json(usuario);
-    });
-    
-    authController.refreshToken.mockImplementation(async (req, res) => {
-      try {
-        const storedToken = await authService.validateRefreshToken(req.body.refreshToken);
-        const usuario = await Usuario.findOne({ where: { id: storedToken.userId } });
-        const newToken = authService.generarTokenEmpresa(usuario);
-        const newRefreshToken = authService.generarRefreshToken(usuario.empresa_id);
-        await RevokedToken.create({ token: newRefreshToken.refreshTokenHash });
-        await storedToken.destroy();
-        return res.status(200).json({
-          token: newToken,
-          refreshToken: newRefreshToken.refreshToken
-        });
-      } catch (error) {
-        return res.status(401).json({ error: error.message });
-      }
-    });
-    
-    authController.startTrial.mockImplementation(async (req, res) => {
-      const mockTransaction = {
-        commit: jest.fn().mockResolvedValue(undefined),
-        rollback: jest.fn().mockResolvedValue(undefined)
-      };
-      
-      if (!req.body.empresa_nombre || !req.body.nombre || !req.body.email || !req.body.password) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios' });
-      }
-      
-      await mockTransaction.commit();
-      eventBus.publish('TRIAL_STARTED', { userId: 1, empresaId: 1 }, 'AUTH');
-      return res.status(201).json({ mensaje: 'Trial iniciado' });
-    });
-    
-    // Resetear mocks a comportamientos por defecto
+
+    // Configurar mocks de transacción por defecto
     sequelize.transaction.mockImplementation(async (fn) => {
-      if (typeof fn === 'function') {
-        const mockTransaction = {
-          commit: jest.fn().mockResolvedValue(undefined),
-          rollback: jest.fn().mockResolvedValue(undefined)
-        };
-        return fn(mockTransaction);
-      }
       const mockTransaction = {
         commit: jest.fn().mockResolvedValue(undefined),
         rollback: jest.fn().mockResolvedValue(undefined)
       };
+      if (typeof fn === 'function') return fn(mockTransaction);
       return Promise.resolve(mockTransaction);
     });
+
+    // Default stubs para evitar errores por llamados no configurados
+    Usuario.findOne.mockResolvedValue(null);
+    Usuario.findByPk.mockResolvedValue(null);
+    Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
+    Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa" });
+    Plan.findOne.mockResolvedValue(null);
+    Suscripcion.create.mockResolvedValue({ id: 1, fecha_fin: new Date() });
+    RevokedToken.create.mockResolvedValue({ id: 1 });
+    authService.validateRefreshToken.mockResolvedValue({
+      token_type: 'refresh',
+      userId: 1,
+      expires_at: new Date(Date.now() + 86400000),
+      destroy: jest.fn().mockResolvedValue(undefined)
+    });
   });
+
 
   describe('POST /auth/register', () => {
     it('debería registrar un nuevo usuario y empresa exitosamente', async () => {
@@ -246,13 +171,13 @@ describe('AuthController - Unit Tests', () => {
         rollback: jest.fn().mockResolvedValue(undefined)
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
-      
+
       Usuario.findOne.mockResolvedValue(null);
       Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
       Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa", plan: 'basico', estado: 'activo' });
-      Usuario.create.mockResolvedValue({ 
-        id: 1, 
-        nombre: 'Test User', 
+      Usuario.create.mockResolvedValue({
+        id: 1,
+        nombre: 'Test User',
         email: 'test@pymex.com',
         empresa_id: 1,
         rol_id: 1
@@ -297,7 +222,7 @@ describe('AuthController - Unit Tests', () => {
         rollback: jest.fn().mockResolvedValue(undefined)
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
-      
+
       Usuario.findOne.mockResolvedValue({ id: 1, email: 'test@pymex.com' });
 
       const response = await request(app)
@@ -432,7 +357,6 @@ describe('AuthController - Unit Tests', () => {
 
       Usuario.findOne.mockResolvedValue(mockUsuario);
 
-      // Mock de middleware de autenticación
       const response = await request(app)
         .get('/auth/perfil')
         .set('Authorization', 'Bearer valid_token');

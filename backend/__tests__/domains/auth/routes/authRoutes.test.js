@@ -1,12 +1,22 @@
 /**
  * Pruebas de Integración para rutas de autenticación
- * 
+ *
  * Estas pruebas validan la integración completa de las rutas HTTP
  */
 
 const request = require('supertest');
 const express = require('express');
 const router = require('../../../../src/domains/auth/routes/auth');
+
+// Mock del middleware de validación - debe retornar array de middleware
+jest.mock('../../../../src/middleware/validation', () => ({
+  validate: (rules) => [
+    ...rules,
+    (req, res, next) => next()
+  ],
+  sanitizeString: jest.fn(),
+  sanitizeQuery: jest.fn()
+}));
 
 // Mocks mínimos para integración
 jest.mock('../../../../src/domains/auth/services/authService', () => ({
@@ -24,7 +34,7 @@ jest.mock('../../../../src/domains/auth/models', () => {
     commit: jest.fn().mockResolvedValue(undefined),
     rollback: jest.fn().mockResolvedValue(undefined)
   };
-  
+
   return {
     Usuario: {
       findOne: jest.fn(),
@@ -91,13 +101,13 @@ describe('Auth Routes - Integration Tests', () => {
         rollback: jest.fn().mockResolvedValue(undefined)
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
-      
+
       Usuario.findOne.mockResolvedValue(null);
       Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
       Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa", plan: 'basico', estado: 'activo' });
-      Usuario.create.mockResolvedValue({ 
-        id: 1, 
-        nombre: 'Test User', 
+      Usuario.create.mockResolvedValue({
+        id: 1,
+        nombre: 'Test User',
         email: 'test@pymex.com',
         empresa_id: 1,
         rol_id: 1
@@ -215,11 +225,11 @@ describe('Auth Routes - Integration Tests', () => {
         rollback: jest.fn().mockResolvedValue(undefined)
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
-      
+
       Usuario.findOne.mockResolvedValue(null);
       Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
       Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa" });
-      
+
       // Simular error al crear usuario
       const error = new Error('Database constraint violation');
       error.name = 'SequelizeUniqueConstraintError';
@@ -325,11 +335,11 @@ describe('Auth Routes - Integration Tests', () => {
       Plan.findOne.mockResolvedValue({ id: 1, codigo: 'trial', nombre: 'Trial', estado: 'activo', precio_mensual: 0 });
       Empresa.create.mockResolvedValue({ id: 1, nombre: 'Trial Enterprise', ruc: '123456789', plan: 'trial', estado: 'activo' });
       Usuario.create.mockResolvedValue({ id: 1, nombre: 'Trial User', email: 'trial@pymex.com' });
-      Suscripcion.create.mockResolvedValue({ 
-        id: 1, 
-        estado: 'trial', 
-        fecha_inicio: new Date(), 
-        fecha_fin: new Date(Date.now() + 14 * 86400000) 
+      Suscripcion.create.mockResolvedValue({
+        id: 1,
+        estado: 'trial',
+        fecha_inicio: new Date(),
+        fecha_fin: new Date(Date.now() + 14 * 86400000)
       });
 
       const response = await request(app)
