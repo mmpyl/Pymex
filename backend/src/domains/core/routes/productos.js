@@ -1,5 +1,5 @@
 // backend/src/domains/core/routes/productos.js  — con límites completos
-const router  = require('express').Router();
+const router = require('express').Router();
 const { listar, crear, actualizar, eliminar } = require('../controllers/productoController');
 
 const { verificarToken } = require('../../../middleware/auth');
@@ -216,15 +216,14 @@ const { Producto } = require('../models');
 
 const { ensureTenantAccess } = require('../../../middleware/tenant');
 
-router.use(verificarToken);
 // Asegurar aislamiento tenant en todas las operaciones de empresa
-router.use(ensureTenantAccess());
+router.use(verificarToken, ensureTenantAccess());
 router.use(checkFeature('inventario'));
 
 router.get('/', listar);
 router.post(
   '/',
-  checkLimit('max_productos', async (req) => Producto.count({ where: { empresa_id: req.usuario.empresa_id, estado: 'activo' } })),
+  checkLimit('max_productos', (req) => Producto.count({ where: { empresa_id: req.usuario.empresa_id, estado: 'activo' } })),
   crear
 );
 router.put('/:id', actualizar);

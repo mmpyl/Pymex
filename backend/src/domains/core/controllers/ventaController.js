@@ -8,9 +8,9 @@
 //   - ✅ MIGRADO: Manejo consistente de errores con AppError
 
 const { Op } = require('sequelize');
-const coreModels = require('../domains/core/models');
-const { eventBus } = require('../domains/eventBus');
-const { asyncHandler, ValidationError, NotFoundError, ConflictError } = require('../middleware/errorHandler');
+const coreModels = require('../models');
+const { eventBus } = require('../../eventBus');
+const { asyncHandler, ValidationError, NotFoundError, ConflictError } = require('../../../middleware/errorHandler');
 
 const { Venta, DetalleVenta, Producto, Cliente, sequelize } = coreModels;
 

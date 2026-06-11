@@ -8,13 +8,14 @@ const {
   reporteVentasPDF,
   reporteVentasExcel,
   reporteGastosExcel
-} = require('../domains/core/controllers/reporteController');
+} = require('../controllers/reporteController');
 
-const { verificarToken } = require('../middleware/auth');
-const { checkPermission } = require('../middleware/roles');
-const { checkFeature } = require('../middleware/featureGate');
+const { verificarToken } = require('../../../middleware/auth');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
+const { checkPermission } = require('../../../middleware/roles');
+const { checkFeature } = require('../../../middleware/featureGate');
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 router.use(checkPermission('reportes_ver'));
 
 router.get('/ventas/pdf', checkFeature('reportes'), reporteVentasPDF);

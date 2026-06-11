@@ -1,5 +1,5 @@
-const coreModels = require('../domains/core/models');
-const eventBus = require('../domains/eventBus');
+const coreModels = require('../models');
+const eventBus = require('../../eventBus');
 
 const { Proveedor } = coreModels;
 
