@@ -6,12 +6,13 @@
  */
 
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { asyncHandler, ValidationError, ConflictError, AuthenticationError, NotFoundError, ServiceUnavailableError } = require('../../../middleware/errorHandler');
 const logger = require('../../../utils/logger');
 
 // Servicios del dominio
 const authService = require('../services/authService');
-const { Usuario, Rol, sequelize } = require('../models');
+const { UsuarioBusiness, Rol, sequelize } = require('../models');
 const coreModels = require('../../core/models');
 const billingModels = require('../../billing/models');
 const { eventBus } = require('../../eventBus');
@@ -33,7 +34,7 @@ const register = asyncHandler(async (req, res) => {
     }
 
     // Verificar si ya existe un usuario con ese email
-    const usuarioExistente = await Usuario.findOne({ where: { email }, transaction: t });
+    const usuarioExistente = await UsuarioBusiness.findOne({ where: { email }, transaction: t });
     if (usuarioExistente) {
       await t.rollback();
       throw new ConflictError('Ya existe un usuario registrado con ese email');
@@ -53,7 +54,7 @@ const register = asyncHandler(async (req, res) => {
       transaction: t
     });
 
-    const usuario = await Usuario.create({
+    const usuario = await UsuarioBusiness.create({
       empresa_id: empresa.id,
       rol_id:     rolAdmin?.id || 1,
       nombre, email, password: passwordHash, estado: 'activo'
@@ -207,7 +208,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
  * Obtiene el perfil del usuario autenticado
  */
 const perfil = asyncHandler(async (req, res) => {
-  const usuario = await Usuario.findOne({
+  const usuario = await UsuarioBusiness.findOne({
     where:      { id: req.usuario.id, empresa_id: req.usuario.empresa_id },
     attributes: ['id', 'empresa_id', 'rol_id', 'nombre', 'email', 'estado'],
     include:    [
@@ -250,7 +251,7 @@ const refreshToken = asyncHandler(async (req, res) => {
   
   if (storedToken.token_type === 'refresh') {
     // Token de empresa
-    const usuario = await Usuario.findOne({
+    const usuario = await UsuarioBusiness.findOne({
       where: { id: tokenUserId, estado: 'activo' },
       include: [
         { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
@@ -437,7 +438,7 @@ const startTrial = asyncHandler(async (req, res) => {
 
     const bcrypt = require('bcryptjs');
     const passwordHash = await bcrypt.hash(password, 10);
-    const usuario = await Usuario.create({
+    const usuario = await UsuarioBusiness.create({
       empresa_id: empresa.id, rol_id: 1,
       nombre, email, password: passwordHash, estado: 'activo'
     }, { transaction: t });

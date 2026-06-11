@@ -13,21 +13,21 @@
 const sequelize = require('../../../config/database');
 
 // Importación de modelos del dominio AUTH
-const Usuario      = require('./Usuario');
-const Rol          = require('./Rol');
-const Permiso      = require('./Permiso');
-const RolPermiso   = require('./RolPermiso');
-const UsuarioAdmin = require('./UsuarioAdmin');
-const RevokedToken = require('./RevokedToken');
-const AuditoriaAdmin = require('./AuditoriaAdmin');
+const UsuarioBusiness  = require('./UsuarioBusiness');
+const Rol              = require('./Rol');
+const Permiso          = require('./Permiso');
+const RolPermiso       = require('./RolPermiso');
+const UsuarioAdmin     = require('./UsuarioAdmin');
+const RevokedToken     = require('./RevokedToken');
+const AuditoriaAdmin   = require('./AuditoriaAdmin');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // RELACIONES DENTRO DEL DOMINIO AUTH
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // RBAC: Roles y Permisos
-Rol.hasMany(Usuario,      { foreignKey: 'rol_id', as: 'usuarios' });
-Usuario.belongsTo(Rol,    { foreignKey: 'rol_id', as: 'rol' });
+Rol.hasMany(UsuarioBusiness,      { foreignKey: 'rol_id', as: 'usuarios_business' });
+UsuarioBusiness.belongsTo(Rol,    { foreignKey: 'rol_id', as: 'rol' });
 
 Rol.belongsToMany(Permiso, { 
   through: RolPermiso, 
@@ -65,13 +65,13 @@ const initializeCrossDomainRelations = () => {
     const Empresa = require('../../core/models/Empresa');
     const AuditLog = require('../../core/models/AuditLog');
 
-    // Usuario pertenece a una Empresa
-    Empresa.hasMany(Usuario, { foreignKey: 'empresa_id', as: 'usuarios' });
-    Usuario.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
+    // UsuarioBusiness pertenece a una Empresa
+    Empresa.hasMany(UsuarioBusiness, { foreignKey: 'empresa_id', as: 'usuarios_business' });
+    UsuarioBusiness.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });
 
-    // AuditLog pertenece a Usuario (relación cross-domain CORE -> AUTH)
-    AuditLog.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
-    Usuario.hasMany(AuditLog, { foreignKey: 'usuario_id', as: 'auditLogs' });
+    // AuditLog pertenece a UsuarioBusiness (relación cross-domain CORE -> AUTH)
+    AuditLog.belongsTo(UsuarioBusiness, { foreignKey: 'usuario_id', as: 'usuario' });
+    UsuarioBusiness.hasMany(AuditLog, { foreignKey: 'usuario_id', as: 'auditLogs' });
 
     _crossDomainRelationsInitialized = true;
     console.log('[AUTH] Relaciones cross-domain con CORE inicializadas');
@@ -89,7 +89,7 @@ const initializeCrossDomainRelations = () => {
 module.exports = {
   sequelize,
   // Entidades principales
-  Usuario,
+  UsuarioBusiness,
   Rol,
   Permiso,
   RolPermiso,

@@ -1,20 +1,20 @@
 /**
- * Repositorio de Usuarios - Dominio AUTH
+ * Repositorio de UsuarioBusiness - Dominio AUTH
  * 
- * Implementa las operaciones de acceso a datos para la entidad Usuario
+ * Implementa las operaciones de acceso a datos para la entidad UsuarioBusiness
  */
 
 const BaseRepository = require('../../shared/repositories/BaseRepository');
-const { Usuario } = require('../models');
+const { UsuarioBusiness } = require('../models');
 
-class UsuarioRepository extends BaseRepository {
+class UsuarioBusinessRepository extends BaseRepository {
   /**
    * Busca un usuario por su ID
    * @param {number} id - ID del usuario
    * @returns {Promise<Object|null>}
    */
   async findById(id) {
-    return await Usuario.findByPk(id, {
+    return await UsuarioBusiness.findByPk(id, {
       include: [{
         model: require('../models/Rol'),
         as: 'rol',
@@ -31,7 +31,7 @@ class UsuarioRepository extends BaseRepository {
   async findAll(options = {}) {
     const { where = {}, include = [], limit, offset, order } = options;
     
-    return await Usuario.findAll({
+    return await UsuarioBusiness.findAll({
       where,
       include: [
         ...include,
@@ -53,7 +53,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<Object>}
    */
   async create(data) {
-    return await Usuario.create(data);
+    return await UsuarioBusiness.create(data);
   }
 
   /**
@@ -63,7 +63,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<Object>}
    */
   async update(id, data) {
-    const usuario = await Usuario.findByPk(id);
+    const usuario = await UsuarioBusiness.findByPk(id);
     if (!usuario) {
       throw new Error(`Usuario con ID ${id} no encontrado`);
     }
@@ -77,7 +77,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<boolean>}
    */
   async delete(id) {
-    const usuario = await Usuario.findByPk(id);
+    const usuario = await UsuarioBusiness.findByPk(id);
     if (!usuario) {
       throw new Error(`Usuario con ID ${id} no encontrado`);
     }
@@ -91,7 +91,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<number>}
    */
   async count(where = {}) {
-    return await Usuario.count({ where });
+    return await UsuarioBusiness.count({ where });
   }
 
   /**
@@ -118,7 +118,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<Object|null>}
    */
   async findByEmail(email) {
-    return await Usuario.findOne({
+    return await UsuarioBusiness.findOne({
       where: { email },
       include: [{
         model: require('../models/Rol'),
@@ -134,7 +134,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<Array>}
    */
   async findByEmpresa(empresaId) {
-    return await Usuario.findAll({
+    return await UsuarioBusiness.findAll({
       where: { empresa_id: empresaId },
       include: [{
         model: require('../models/Rol'),
@@ -150,7 +150,7 @@ class UsuarioRepository extends BaseRepository {
    * @returns {Promise<Object|null>}
    */
   async findActiveById(id) {
-    return await Usuario.findOne({
+    return await UsuarioBusiness.findOne({
       where: { id, estado: 'activo' },
       include: [{
         model: require('../models/Rol'),
@@ -161,4 +161,4 @@ class UsuarioRepository extends BaseRepository {
   }
 }
 
-module.exports = UsuarioRepository;
+module.exports = UsuarioBusinessRepository;
