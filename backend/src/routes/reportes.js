@@ -13,8 +13,9 @@ const {
 const { verificarToken } = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
 const { checkFeature } = require('../middleware/featureGate');
+const { ensureTenantAccess } = require('../middleware/tenant');
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 router.use(checkPermission('reportes_ver'));
 
 router.get('/ventas/pdf', checkFeature('reportes'), reporteVentasPDF);

@@ -2,11 +2,12 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { verificarToken } = require('../middleware/auth');
 const { checkPermission } = require('../middleware/roles');
+const { ensureTenantAccess } = require('../middleware/tenant');
 const authModels = require('../domains/auth/models');
 
 const { Usuario, Rol, Permiso, RolPermiso } = authModels;
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 
 router.get('/roles', checkPermission('usuarios_gestionar'), async (req, res) => {
   try {
