@@ -13,7 +13,7 @@ const logger = require('../../../utils/logger');
 
 // Modelos del dominio AUTH
 const authModels = require('../models');
-const { Usuario, Rol, RevokedToken } = authModels;
+const { UsuarioBusiness, Rol, RevokedToken } = authModels;
 
 // Modelos de otros dominios (solo consulta a través de interfaces públicas)
 const coreModels = require('../../core/models');
@@ -114,7 +114,7 @@ const authenticateUser = async (email, password) => {
     throw new ValidationError('Email y contraseña son obligatorios');
   }
 
-  const usuario = await Usuario.findOne({
+  const usuario = await UsuarioBusiness.findOne({
     where:   { email, estado: 'activo' },
     include: [
       { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
