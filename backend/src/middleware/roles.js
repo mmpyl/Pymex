@@ -1,5 +1,5 @@
 // backend/src/middleware/roles.js — versión mejorada con logging de auditoría
-const { Usuario, Rol, Permiso } = require('../domains/auth/models');
+const { UsuarioBusiness, Rol, Permiso } = require('../domains/auth/models');
 const eventBus = require('../domains/eventBus');
 const logger = require('../utils/logger');
 
@@ -73,7 +73,7 @@ eventBus.subscribe('USER_ROLE_UPDATED', (data) => {
 const getUsuarioConRolYPermisos = async (req) => {
   if (req._usuarioRbac) return req._usuarioRbac;
 
-  const usuario = await Usuario.findOne({
+  const usuario = await UsuarioBusiness.findOne({
     where: {
       id: req.usuario?.id,
       empresa_id: req.usuario?.empresa_id,

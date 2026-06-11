@@ -7,7 +7,7 @@ const billingModels = require('../../domains/billing/models');
 
 // Extraer modelos de cada dominio
 const { sequelize, Empresa, Rubro, EmpresaRubro, RubroFeature } = coreModels;
-const { Usuario, AuditoriaAdmin } = authModels;
+const { UsuarioBusiness, AuditoriaAdmin } = authModels;
 const { Plan, Feature, PlanFeature, PlanLimit, Suscripcion, FeatureOverride, Pago } = billingModels;
 
 const { clearFeatureCache, getEffectiveFeaturesForEmpresa } = require('../../services/featureGateService');
@@ -209,7 +209,7 @@ const detalleEmpresa = async (req, res) => {
   try {
     const empresa = await Empresa.findByPk(req.params.id, {
       include: [
-        { model: Usuario, attributes: ['id', 'nombre', 'email', 'estado', 'rol_id'] },
+        { model: UsuarioBusiness, attributes: ['id', 'nombre', 'email', 'estado', 'rol_id'] },
         { model: Suscripcion, include: [Plan] },
         { model: FeatureOverride, include: [Feature] },
         { model: Rubro, through: { attributes: [] } }
@@ -225,7 +225,7 @@ const detalleEmpresa = async (req, res) => {
 
 const listarUsuariosEmpresa = async (req, res) => {
   try {
-    const users = await Usuario.findAll({
+    const users = await UsuarioBusiness.findAll({
       where: { empresa_id: req.params.id },
       order: [['id', 'DESC']]
     });
@@ -237,7 +237,7 @@ const listarUsuariosEmpresa = async (req, res) => {
 
 const actualizarUsuario = async (req, res) => {
   try {
-    const user = await Usuario.findByPk(req.params.usuarioId);
+    const user = await UsuarioBusiness.findByPk(req.params.usuarioId);
     if (!user || String(user.empresa_id) !== String(req.params.id)) {
       return res.status(404).json({ error: 'Usuario no encontrado para la empresa indicada' });
     }

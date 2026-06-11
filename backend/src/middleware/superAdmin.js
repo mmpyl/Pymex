@@ -1,4 +1,4 @@
-const { Usuario, Rol } = require('../domains/auth/models');
+const { UsuarioBusiness, Rol } = require('../domains/auth/models');
 
 const normalize = (value = '') => value
   .toString()
@@ -10,7 +10,7 @@ const normalize = (value = '') => value
 /**
  * Middleware para verificar rol Super Admin en usuarios de empresa.
  * 
- * IMPORTANTE: Este middleware verifica el rol en la tabla de usuarios de EMPRESA,
+ * IMPORTANTE: Este middleware verifica el rol en la tabla de usuarios de EMPRESA (usuarios_business),
  * NO debe usarse para rutas del panel admin (/api/admin/*).
  * 
  * Para rutas del panel admin que usan tokens de tipo 'admin' (tabla usuarios_admin),
@@ -23,7 +23,7 @@ const checkSuperAdminRol = async (req, res, next) => {
     const userId = req.usuario?.id;
     if (!userId) return res.status(401).json({ error: 'Token inválido' });
 
-    const usuario = await Usuario.findByPk(userId, {
+    const usuario = await UsuarioBusiness.findByPk(userId, {
       include: [{ model: Rol, attributes: ['nombre'] }],
       attributes: ['id', 'estado']
     });
