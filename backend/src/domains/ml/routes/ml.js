@@ -1,6 +1,6 @@
 /**
  * ML Routes
- * 
+ *
  * Define las rutas HTTP para el dominio ML (Machine Learning).
  * Las rutas están organizadas en:
  * - Endpoints básicos (con feature gate 'predicciones')
@@ -9,6 +9,7 @@
 
 const router = require('express').Router();
 const { verificarToken } = require('../../../middleware/auth');
+const { ensureTenantAccess } = require('../../../middleware/tenant');
 const { checkFeature } = require('../../../middleware/featureGate');
 const { getInstance: getMLPremiumService } = require('../services/mlPremiumService');
 const MLController = require('../controllers/mlController');
@@ -21,7 +22,7 @@ const mlPremiumService = getMLPremiumService();
 const mlController = new MLController(mlPremiumService);
 
 // Middleware global: verificar autenticación
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 
 // Feature gate para predicciones (Business/Enterprise o override manual)
 router.use(checkFeature('predicciones'));
@@ -29,8 +30,8 @@ router.use(checkFeature('predicciones'));
 // Validar que ML_API_KEY esté configurada
 router.use((req, res, next) => {
   if (!ML_API_KEY) {
-    return res.status(503).json({ 
-      error: 'ML_SERVICE_API_KEY no configurada en backend' 
+    return res.status(503).json({
+      error: 'ML_SERVICE_API_KEY no configurada en backend'
     });
   }
   return next();

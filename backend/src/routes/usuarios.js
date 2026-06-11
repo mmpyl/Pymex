@@ -7,6 +7,7 @@
 const router  = require('express').Router();
 const bcrypt  = require('bcryptjs');
 const { verificarToken }  = require('../middleware/auth');
+const { ensureTenantAccess } = require('../middleware/tenant');
 const { verificarRol }    = require('../middleware/roles');
 const { checkLimit }      = require('../middleware/featureGate');
 const authModels = require('../domains/auth/models');
@@ -15,7 +16,7 @@ const billingModels = require('../domains/billing/models');
 const { Usuario } = authModels;
 const { Suscripcion, Plan } = billingModels;
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 
 // ─── GET /api/usuarios/trial-status ──────────────────────────────────────────
 router.get('/trial-status', async (req, res) => {

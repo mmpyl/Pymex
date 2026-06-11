@@ -9,6 +9,7 @@ const router = require('express').Router();
 const axios  = require('axios');
 const CircuitBreaker = require('opossum');
 const { verificarToken } = require('../middleware/auth');
+const { ensureTenantAccess } = require('../middleware/tenant');
 
 const { Venta, Producto, DetalleVenta, Cliente } = require('../domains/core/models');
 const { Comprobante } = require('../domains/billing/models');
@@ -58,7 +59,7 @@ const factRequest = async (method, endpoint, data = null, config = {}) => {
   return factCircuit.fire(method, endpoint, data, config);
 };
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 
 // ─── Helpers de validación ────────────────────────────────────────────────────
 const esSerieValida   = (serie, prefijo) =>

@@ -8,11 +8,12 @@
 const router = require('express').Router();
 const crypto = require('crypto');
 const { verificarToken } = require('../middleware/auth');
+const { ensureTenantAccess } = require('../middleware/tenant');
 const { idempotencyMiddleware } = require('../middleware/idempotency');
 const { Empresa } = require('../domains/core/models');
 const { Suscripcion, Pago } = require('../domains/billing/models');
 
-router.use(verificarToken);
+router.use(verificarToken, ensureTenantAccess());
 
 // POST /api/pagos/checkout — genera un checkout mock (desarrollo)
 router.post('/checkout', async (req, res) => {

@@ -2,7 +2,7 @@
 // FIX: se añade manejo consistente de errores en todos los handlers,
 // incluyendo el caso donde el stream PDF ya empezó cuando ocurre un error.
 
-const coreModels = require('../domains/core/models');
+const coreModels = require('../models');
 
 const { Venta, DetalleVenta, Gasto, Producto } = coreModels;
 const { Op } = require('sequelize');
