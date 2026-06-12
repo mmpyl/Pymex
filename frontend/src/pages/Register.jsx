@@ -117,6 +117,7 @@ const Register = () => {
     setCargando(true);
     try {
       const datosEnvio = {
+        empresa_nombre: form.nombre, // Usar el nombre como nombre de la empresa
         nombre: form.nombre,
         email: form.email,
         password: form.password
@@ -126,7 +127,8 @@ const Register = () => {
       toast.success('Usuario registrado. Ya puedes iniciar sesión.');
       navigate('/empresa/login');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Error al registrar');
+      console.error('[Register] Error:', error);
+      toast.error(error.response?.data?.error || error.response?.data?.mensaje || 'Error al registrar');
     } finally {
       setCargando(false);
     }
