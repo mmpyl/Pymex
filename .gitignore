@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Database
 *.sql.bak
 *.sql~
@@ -64,3 +65,6 @@ __pycache__/
 *.orig
 *.backup
 *.cache
+=======
+Nothing should be ignored in this case, as the changes only include source code files (.js and .jsx) without any build artifacts, dependencies, or temporary files.
+>>>>>>> 97a2367c4b59c3a2d72a980de4965ecfb6864bdf
