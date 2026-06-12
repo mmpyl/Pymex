@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import api from '../api/axios';
+import api from '../../../api/axios';
 
 const Reportes = () => {
   const [desde, setDesde] = useState('');
