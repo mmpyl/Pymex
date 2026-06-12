@@ -7,53 +7,40 @@ dist/
 build/
 target/
 
-# Environment variables
-.env
-.env.local
-.env.*
-
-# Python specific
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.py~
 *.py.class
-*.py.obj
-*.py.out
+.Python
+env/
+venv/
+.venv/
+.env
+.env.local
+.env.*
 
 # Logs
 *.log
 
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# IDE specific
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# OS specific
+# OS
 .DS_Store
 Thumbs.db
 
-# Testing
-.mypy_cache/
-.pytest_cache/
-.nyc_output/
+# Coverage
 coverage/
+htmlcov/
+.coverage
 
-# Distribution / packaging
-*.tar.gz
-*.whl
-*.egg
-*.egg-info/
-
-# Compression formats
+# Compressed
 *.zip
 *.gz
 *.tar
@@ -72,4 +59,8 @@ coverage/
 *.Z
 *.lz
 *.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
