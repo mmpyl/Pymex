@@ -294,21 +294,21 @@
 const sequelize = <span class="cstat-no" title="statement not covered" >require('../../../config/database');</span>
 &nbsp;
 // Importación de modelos del dominio AUTH
-const Usuario      = <span class="cstat-no" title="statement not covered" >require('./Usuario');</span>
-const Rol          = <span class="cstat-no" title="statement not covered" >require('./Rol');</span>
-const Permiso      = <span class="cstat-no" title="statement not covered" >require('./Permiso');</span>
-const RolPermiso   = <span class="cstat-no" title="statement not covered" >require('./RolPermiso');</span>
-const UsuarioAdmin = <span class="cstat-no" title="statement not covered" >require('./UsuarioAdmin');</span>
-const RevokedToken = <span class="cstat-no" title="statement not covered" >require('./RevokedToken');</span>
-const AuditoriaAdmin = <span class="cstat-no" title="statement not covered" >require('./AuditoriaAdmin');</span>
+const UsuarioBusiness  = <span class="cstat-no" title="statement not covered" >require('./UsuarioBusiness');</span>
+const Rol              = <span class="cstat-no" title="statement not covered" >require('./Rol');</span>
+const Permiso          = <span class="cstat-no" title="statement not covered" >require('./Permiso');</span>
+const RolPermiso       = <span class="cstat-no" title="statement not covered" >require('./RolPermiso');</span>
+const UsuarioAdmin     = <span class="cstat-no" title="statement not covered" >require('./UsuarioAdmin');</span>
+const RevokedToken     = <span class="cstat-no" title="statement not covered" >require('./RevokedToken');</span>
+const AuditoriaAdmin   = <span class="cstat-no" title="statement not covered" >require('./AuditoriaAdmin');</span>
 &nbsp;
 // ═══════════════════════════════════════════════════════════════════════════════
 // RELACIONES DENTRO DEL DOMINIO AUTH
 // ═══════════════════════════════════════════════════════════════════════════════
 &nbsp;
 // RBAC: Roles y Permisos
-<span class="cstat-no" title="statement not covered" >Rol.hasMany(Usuario,      { foreignKey: 'rol_id', as: 'usuarios' });</span>
-<span class="cstat-no" title="statement not covered" >Usuario.belongsTo(Rol,    { foreignKey: 'rol_id', as: 'rol' });</span>
+<span class="cstat-no" title="statement not covered" >Rol.hasMany(UsuarioBusiness,      { foreignKey: 'rol_id', as: 'usuarios_business' });</span>
+<span class="cstat-no" title="statement not covered" >UsuarioBusiness.belongsTo(Rol,    { foreignKey: 'rol_id', as: 'rol' });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >Rol.belongsToMany(Permiso, { </span>
   through: RolPermiso, 
@@ -346,13 +346,13 @@ const initializeCrossDomainRelations = <span class="cstat-no" title="statement n
     const Empresa = <span class="cstat-no" title="statement not covered" >require('../../core/models/Empresa');</span>
     const AuditLog = <span class="cstat-no" title="statement not covered" >require('../../core/models/AuditLog');</span>
 &nbsp;
-    // Usuario pertenece a una Empresa
-<span class="cstat-no" title="statement not covered" >    Empresa.hasMany(Usuario, { foreignKey: 'empresa_id', as: 'usuarios' });</span>
-<span class="cstat-no" title="statement not covered" >    Usuario.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });</span>
+    // UsuarioBusiness pertenece a una Empresa
+<span class="cstat-no" title="statement not covered" >    Empresa.hasMany(UsuarioBusiness, { foreignKey: 'empresa_id', as: 'usuarios_business' });</span>
+<span class="cstat-no" title="statement not covered" >    UsuarioBusiness.belongsTo(Empresa, { foreignKey: 'empresa_id', as: 'empresa' });</span>
 &nbsp;
-    // AuditLog pertenece a Usuario (relación cross-domain CORE -&gt; AUTH)
-<span class="cstat-no" title="statement not covered" >    AuditLog.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });</span>
-<span class="cstat-no" title="statement not covered" >    Usuario.hasMany(AuditLog, { foreignKey: 'usuario_id', as: 'auditLogs' });</span>
+    // AuditLog pertenece a UsuarioBusiness (relación cross-domain CORE -&gt; AUTH)
+<span class="cstat-no" title="statement not covered" >    AuditLog.belongsTo(UsuarioBusiness, { foreignKey: 'usuario_id', as: 'usuario' });</span>
+<span class="cstat-no" title="statement not covered" >    UsuarioBusiness.hasMany(AuditLog, { foreignKey: 'usuario_id', as: 'auditLogs' });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    _crossDomainRelationsInitialized = true;</span>
 <span class="cstat-no" title="statement not covered" >    console.log('[AUTH] Relaciones cross-domain con CORE inicializadas');</span>
@@ -370,7 +370,7 @@ const initializeCrossDomainRelations = <span class="cstat-no" title="statement n
 <span class="cstat-no" title="statement not covered" >module.exports = {</span>
   sequelize,
   // Entidades principales
-  Usuario,
+  UsuarioBusiness,
   Rol,
   Permiso,
   RolPermiso,
@@ -394,7 +394,7 @@ const initializeCrossDomainRelations = <span class="cstat-no" title="statement n
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-11T19:28:37.699Z
+                at 2026-06-13T00:00:59.229Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

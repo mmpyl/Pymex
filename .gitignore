@@ -1,66 +1,62 @@
 ```
+# Coverage reports
+coverage/
+backend/coverage/
+
 # Dependencies
-node_modules/
+backend/node_modules/
 
-# Build artifacts
-dist/
-build/
-target/
+# Test reports
+**/test-reports/
+**/test-output/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.py.class
-.Python
-env/
-venv/
-.venv/
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment specific
 .env
 .env.local
 .env.*
+!*.env.example
 
-# Logs
-*.log
-
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Build outputs (if any JS builds happen)
+dist/
+build/
+*.min.js
+*.bundle.js
 
-# Compressed
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Python cache (if any Python parts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+logs/
+
+# Database (if SQLite files are created temporarily)
+*.db
+*.sqlite
+*.sqlite3
+
+# Processed images (if any processing creates temp files)
+*.processed.*
+
+# Coverage and testing artifacts
+clover.xml
+lcov.info
+coverage-final.json
 ```
