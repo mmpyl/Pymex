@@ -26,7 +26,7 @@ const { Plan, Suscripcion } = billingModels;
 const registerEmpresa = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { empresa_nombre, nombre, email, password } = req.body;
+    const { nombre, email, password } = req.body;
 
     if (!nombre || !email || !password) {
       await t.rollback();
@@ -42,9 +42,9 @@ const registerEmpresa = asyncHandler(async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     
-    // Crear empresa automáticamente - usar empresa_nombre si existe, sino generar desde nombre
+    // Crear empresa automáticamente - generar desde nombre
     const empresa = await Empresa.create({
-      nombre: empresa_nombre || `${nombre}'s Empresa`,
+      nombre: `${nombre}'s Empresa`,
       plan: 'basico',
       estado: 'activo'
     }, { transaction: t });

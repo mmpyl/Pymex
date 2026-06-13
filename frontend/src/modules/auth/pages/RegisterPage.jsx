@@ -122,7 +122,7 @@ const Register = () => {
         password: form.password
       };
       
-      await api.post('/auth/register', datosEnvio);
+      await api.post('/auth/register-empresa', datosEnvio);
       toast.success('Usuario registrado. Ya puedes iniciar sesión.');
       navigate('/empresa/login');
     } catch (error) {
