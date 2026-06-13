@@ -19,19 +19,20 @@ const authController = require('../controllers/authController');
 
 /**
  * @swagger
- * /auth/register:
+ * /auth/register-empresa:
  *   post:
- *     summary: Registrar una nueva empresa y usuario administrador
+ *     summary: Registrar una nueva empresa y usuario business (administrador de la empresa)
  *     tags: [Auth]
+ *     description: Registra una empresa en el sistema y crea un usuario business con rol admin para esa empresa
  */
-router.post('/register',
+router.post('/register-empresa',
   [
     check('nombre').trim().notEmpty().withMessage('Nombre es requerido'),
     check('email').isEmail().withMessage('Email inválido'),
     check('password').isLength({ min: 6 }).withMessage('Password debe tener al menos 6 caracteres')
   ],
   validate,
-  authController.register
+  authController.registerEmpresa
 );
 
 /**
@@ -54,26 +55,28 @@ router.post('/start-trial',
 
 /**
  * @swagger
- * /auth/login:
+ * /auth/login-empresa:
  *   post:
- *     summary: Login de usuario de empresa
+ *     summary: Login de usuario business (usuario de empresa)
  *     tags: [Auth]
+ *     description: Autentica un usuario business perteneciente a una empresa
  */
-router.post('/login',
+router.post('/login-empresa',
   [
     check('email').isEmail().withMessage('Email inválido'),
     check('password').notEmpty().withMessage('Password es requerido')
   ],
   validate,
-  authController.login
+  authController.loginEmpresa
 );
 
 /**
  * @swagger
  * /auth/login-admin:
  *   post:
- *     summary: Login de administrador
+ *     summary: Login de administrador del multitennant
  *     tags: [Auth]
+ *     description: Autentica un administrador del sistema multitennant (no pertenece a ninguna empresa)
  */
 router.post('/login-admin',
   [

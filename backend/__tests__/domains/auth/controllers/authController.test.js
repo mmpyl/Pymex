@@ -34,7 +34,7 @@ jest.mock('../../../../src/domains/auth/services/authService', () => ({
 }));
 
 jest.mock('../../../../src/domains/auth/models', () => ({
-  Usuario: {
+  UsuarioBusiness: {
     findOne: jest.fn(),
     findByPk: jest.fn(),
     create: jest.fn()
@@ -110,7 +110,7 @@ jest.mock('../../../../src/middleware/validation', () => ({
 const request = require('supertest');
 const express = require('express');
 const authService = require('../../../../src/domains/auth/services/authService');
-const { Usuario, Rol, sequelize, RevokedToken } = require('../../../../src/domains/auth/models');
+const { UsuarioBusiness, Rol, sequelize, RevokedToken } = require('../../../../src/domains/auth/models');
 const { Empresa } = require('../../../../src/domains/core/models');
 const { Plan, Suscripcion } = require('../../../../src/domains/billing/models');
 const { eventBus } = require('../../../../src/domains/eventBus');
@@ -148,8 +148,8 @@ describe('AuthController - Unit Tests', () => {
     });
 
     // Default stubs para evitar errores por llamados no configurados
-    Usuario.findOne.mockResolvedValue(null);
-    Usuario.findByPk.mockResolvedValue(null);
+    UsuarioBusiness.findOne.mockResolvedValue(null);
+    UsuarioBusiness.findByPk.mockResolvedValue(null);
     Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
     Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa" });
     Plan.findOne.mockResolvedValue(null);
@@ -164,18 +164,18 @@ describe('AuthController - Unit Tests', () => {
   });
 
 
-  describe('POST /auth/register', () => {
-    it('debería registrar un nuevo usuario y empresa exitosamente', async () => {
+  describe('POST /auth/register-empresa', () => {
+    it('debería registrar un nuevo usuario business y empresa exitosamente', async () => {
       const mockTransaction = {
         commit: jest.fn().mockResolvedValue(undefined),
         rollback: jest.fn().mockResolvedValue(undefined)
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
 
-      Usuario.findOne.mockResolvedValue(null);
+      UsuarioBusiness.findOne.mockResolvedValue(null);
       Rol.findOne.mockResolvedValue({ id: 1, nombre: 'admin' });
       Empresa.create.mockResolvedValue({ id: 1, nombre: "Test's Empresa", plan: 'basico', estado: 'activo' });
-      Usuario.create.mockResolvedValue({
+      UsuarioBusiness.create.mockResolvedValue({
         id: 1,
         nombre: 'Test User',
         email: 'test@pymex.com',
@@ -186,7 +186,7 @@ describe('AuthController - Unit Tests', () => {
       Suscripcion.create.mockResolvedValue({ id: 1, fecha_fin: new Date() });
 
       const response = await request(app)
-        .post('/auth/register')
+        .post('/auth/register-empresa')
         .send({
           nombre: 'Test User',
           email: 'test@pymex.com',
@@ -207,7 +207,7 @@ describe('AuthController - Unit Tests', () => {
 
     it('debería retornar error si faltan campos obligatorios', async () => {
       const response = await request(app)
-        .post('/auth/register')
+        .post('/auth/register-empresa')
         .send({
           nombre: 'Test User'
           // faltan email y password
@@ -223,10 +223,10 @@ describe('AuthController - Unit Tests', () => {
       };
       sequelize.transaction.mockResolvedValue(mockTransaction);
 
-      Usuario.findOne.mockResolvedValue({ id: 1, email: 'test@pymex.com' });
+      UsuarioBusiness.findOne.mockResolvedValue({ id: 1, email: 'test@pymex.com' });
 
       const response = await request(app)
-        .post('/auth/register')
+        .post('/auth/register-empresa')
         .send({
           nombre: 'Test User',
           email: 'test@pymex.com',
@@ -238,7 +238,7 @@ describe('AuthController - Unit Tests', () => {
     });
   });
 
-  describe('POST /auth/login', () => {
+  describe('POST /auth/login-empresa', () => {
     it('debería iniciar sesión exitosamente', async () => {
       const mockUsuario = {
         id: 1,
@@ -268,7 +268,7 @@ describe('AuthController - Unit Tests', () => {
       authService.registrarActividadAuth.mockResolvedValue(undefined);
 
       const response = await request(app)
-        .post('/auth/login')
+        .post('/auth/login-empresa')
         .send({
           email: 'test@pymex.com',
           password: 'password123'
@@ -285,7 +285,7 @@ describe('AuthController - Unit Tests', () => {
       authService.authenticateUser.mockRejectedValue(new AuthenticationError('Credenciales inválidas'));
 
       const response = await request(app)
-        .post('/auth/login')
+        .post('/auth/login-empresa')
         .send({
           email: 'wrong@pymex.com',
           password: 'wrongpassword'
@@ -321,7 +321,7 @@ describe('AuthController - Unit Tests', () => {
       RevokedToken.create.mockResolvedValue({ id: 1 });
 
       const response = await request(app)
-        .post('/auth/login')
+        .post('/auth/login-empresa')
         .send({
           email: 'test@pymex.com',
           password: 'password123'
@@ -355,7 +355,7 @@ describe('AuthController - Unit Tests', () => {
         }
       };
 
-      Usuario.findOne.mockResolvedValue(mockUsuario);
+      UsuarioBusiness.findOne.mockResolvedValue(mockUsuario);
 
       const response = await request(app)
         .get('/auth/perfil')
@@ -390,7 +390,7 @@ describe('AuthController - Unit Tests', () => {
         Empresa: { id: 100, nombre: 'Test Corp', estado: 'activo', plan: 'basic' }
       };
 
-      Usuario.findOne.mockResolvedValue(mockUsuario);
+      UsuarioBusiness.findOne.mockResolvedValue(mockUsuario);
       authService.generarTokenEmpresa.mockReturnValue('new_access_token');
       authService.generarRefreshToken.mockReturnValue({
         refreshToken: 'new_refresh_token',

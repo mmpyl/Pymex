@@ -10,7 +10,7 @@ const { asyncHandler, ValidationError, ConflictError, AuthenticationError, Autho
 const logger = require('../utils/logger');
 
 const { Empresa, sequelize } = coreModels;
-const { Usuario, Rol } = authModels;
+const { UsuarioBusiness, Rol } = authModels;
 const { Plan, Suscripcion } = billingModels;
 const UsuarioAdmin = require('../domains/auth/models/UsuarioAdmin');
 const RevokedToken = require('../domains/auth/models/RevokedToken');
@@ -141,7 +141,7 @@ const register = asyncHandler(async (req, res) => {
     }
 
     // Verificar si ya existe un usuario con ese email
-    const usuarioExistente = await Usuario.findOne({ where: { email }, transaction: t });
+    const usuarioExistente = await UsuarioBusiness.findOne({ where: { email }, transaction: t });
     if (usuarioExistente) {
       await t.rollback();
       throw new ConflictError('Ya existe un usuario registrado con ese email');
@@ -161,7 +161,7 @@ const register = asyncHandler(async (req, res) => {
       transaction: t
     });
 
-    const usuario = await Usuario.create({
+    const usuario = await UsuarioBusiness.create({
       empresa_id: empresa.id,
       rol_id:     rolAdmin?.id || 1,
       nombre, email, password: passwordHash, estado: 'activo'
@@ -236,7 +236,7 @@ const startTrial = asyncHandler(async (req, res) => {
     }, { transaction: t });
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const usuario = await Usuario.create({
+    const usuario = await UsuarioBusiness.create({
       empresa_id: empresa.id, rol_id: 1,
       nombre, email, password: passwordHash, estado: 'activo'
     }, { transaction: t });
@@ -281,7 +281,7 @@ const login = asyncHandler(async (req, res) => {
     throw new ValidationError('Email y contraseña son obligatorios');
   }
 
-  const usuario = await Usuario.findOne({
+  const usuario = await UsuarioBusiness.findOne({
     where:   { email, estado: 'activo' },
     include: [
       { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },
@@ -417,7 +417,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
 
 // ─── PERFIL ───────────────────────────────────────────────────────────────────
 const perfil = asyncHandler(async (req, res) => {
-  const usuario = await Usuario.findOne({
+  const usuario = await UsuarioBusiness.findOne({
     where:      { id: req.usuario.id, empresa_id: req.usuario.empresa_id },
     attributes: ['id', 'empresa_id', 'rol_id', 'nombre', 'email', 'estado'],
     include:    [
@@ -487,7 +487,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 
   if (storedToken.token_type === 'refresh') {
     // Token de empresa - buscar usuario y generar nuevo access token
-    const usuario = await Usuario.findOne({
+    const usuario = await UsuarioBusiness.findOne({
       where: { id: tokenUserId, estado: 'activo' },
       include: [
         { model: Empresa, attributes: ['id', 'nombre', 'estado', 'plan'] },

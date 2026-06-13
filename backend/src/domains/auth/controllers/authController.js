@@ -21,9 +21,9 @@ const { Empresa } = coreModels;
 const { Plan, Suscripcion } = billingModels;
 
 /**
- * Registra una nueva empresa y usuario administrador
+ * Registra una nueva empresa y usuario business (administrador de la empresa)
  */
-const register = asyncHandler(async (req, res) => {
+const registerEmpresa = asyncHandler(async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { empresa_nombre, nombre, email, password } = req.body;
@@ -104,9 +104,9 @@ const register = asyncHandler(async (req, res) => {
 });
 
 /**
- * Inicia sesión de usuario de empresa
+ * Inicia sesión de usuario business (usuario de empresa)
  */
-const login = asyncHandler(async (req, res) => {
+const loginEmpresa = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   
   // Autenticar usuario usando el servicio
@@ -477,9 +477,9 @@ const startTrial = asyncHandler(async (req, res) => {
 });
 
 module.exports = { 
-  register, 
+  registerEmpresa, 
   startTrial, 
-  login, 
+  loginEmpresa, 
   loginAdmin, 
   perfil, 
   refreshToken, 
