@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 
 const FEATURES = [
   'Dashboard en tiempo real',
