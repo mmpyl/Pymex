@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import api from '../api/axios';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import api from '@/api/axios';
 import toast from 'react-hot-toast';
 
 const Register = () => {
