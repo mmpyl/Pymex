@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
+=======
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
+import api from '@/api/axios';
+>>>>>>> 16e52987eed29c392d3cf5c5f260bbe5494ad0f1
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', remember: false });
