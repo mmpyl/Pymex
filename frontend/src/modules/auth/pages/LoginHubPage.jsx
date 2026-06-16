@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
 
 const cardStyle = 'w-full max-w-md border-slate-200 shadow-md hover:shadow-xl transition-shadow';
 
